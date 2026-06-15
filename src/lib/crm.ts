@@ -1,6 +1,7 @@
 export type LeadStatus =
   | "yangi"
   | "kotarmadi"
+  | "qayta_qongiroq"
   | "konsultatsiyaga_yozildi"
   | "konsultatsiyada_boldi"
   | "yotishga_yozildi"
@@ -8,9 +9,12 @@ export type LeadStatus =
 
 export type LeadSource = "facebook" | "instagram" | "website" | "boshqa";
 
+export type CanVisitClinic = "ha" | "yoq" | "bilmayman";
+
 export const STATUS_LABEL: Record<LeadStatus, string> = {
-  yangi: "Yangi",
+  yangi: "Yangi lid",
   kotarmadi: "Ko'tarmadi",
+  qayta_qongiroq: "Qayta qo'ng'iroq",
   konsultatsiyaga_yozildi: "Konsultatsiyaga yozildi",
   konsultatsiyada_boldi: "Konsultatsiyada bo'ldi",
   yotishga_yozildi: "Yotishga yozildi",
@@ -21,6 +25,7 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
 export const STATUS_BADGE: Record<LeadStatus, string> = {
   yangi: "bg-blue-50 text-blue-700 border border-blue-200",
   kotarmadi: "bg-orange-50 text-orange-700 border border-orange-200",
+  qayta_qongiroq: "bg-amber-50 text-amber-700 border border-amber-200",
   konsultatsiyaga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
   konsultatsiyada_boldi: "bg-sky-50 text-sky-700 border border-sky-200",
   yotishga_yozildi: "bg-emerald-50 text-emerald-700 border border-emerald-200",
@@ -30,11 +35,18 @@ export const STATUS_BADGE: Record<LeadStatus, string> = {
 export const STATUS_ORDER: LeadStatus[] = [
   "yangi",
   "kotarmadi",
+  "qayta_qongiroq",
   "konsultatsiyaga_yozildi",
   "konsultatsiyada_boldi",
   "yotishga_yozildi",
   "sifatsiz_lid",
 ];
+
+export const CAN_VISIT_LABEL: Record<CanVisitClinic, string> = {
+  ha: "Ha",
+  yoq: "Yo'q",
+  bilmayman: "Bilmayman",
+};
 
 export const CONVERSION_STATUS: LeadStatus = "yotishga_yozildi";
 

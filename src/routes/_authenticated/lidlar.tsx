@@ -22,10 +22,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   STATUS_LABEL, STATUS_BADGE, STATUS_ORDER,
   SOURCE_LABEL, SOURCE_LIST, formatDate,
-  type LeadStatus, type LeadSource,
+  CAN_VISIT_LABEL,
+  type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
 
 export const Route = createFileRoute("/_authenticated/lidlar")({ component: LidlarPage });
@@ -36,6 +38,8 @@ type Lead = {
   phone: string | null;
   region: string | null;
   problem_type: string | null;
+  can_visit_clinic: CanVisitClinic | null;
+  campaign_name: string | null;
   source: LeadSource;
   source_detail: string | null;
   status: LeadStatus;
@@ -191,7 +195,7 @@ function LidlarPage() {
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Viloyat</TableHead>
-              <TableHead>Muammo turi</TableHead>
+              <TableHead>Muammo tavsifi</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Operator</TableHead>
@@ -309,11 +313,13 @@ function LeadDetailSheet({
             </SheetHeader>
             <div className="space-y-4 p-4">
               <InfoRow label="Telefon" value={lead.phone ?? "—"} />
-              <InfoRow label="Viloyat" value={lead.region ?? "—"} />
-              <InfoRow label="Muammo turi" value={lead.problem_type ?? "—"} />
+              <InfoRow label="Viloyat / Shahar" value={lead.region ?? "—"} />
+              <InfoRow label="Muammo tavsifi" value={lead.problem_type ?? "—"} />
+              <InfoRow label="Klinikaga kela oladimi?" value={lead.can_visit_clinic ? CAN_VISIT_LABEL[lead.can_visit_clinic] : "—"} />
               <InfoRow label="Manba" value={SOURCE_LABEL[lead.source]} />
-              <InfoRow label="Manba tafsiloti" value={lead.source_detail ?? "—"} />
+              <InfoRow label="Kampaniya" value={lead.campaign_name ?? "—"} />
               <InfoRow label="Yaratilgan" value={formatDate(lead.created_at)} />
+
 
               <div>
                 <Label>Operator (qayta biriktirish)</Label>
@@ -378,9 +384,10 @@ function CreateLeadDialog({
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
-  const [problemType, setProblemType] = useState("");
+  const [problem, setProblem] = useState("");
+  const [canVisit, setCanVisit] = useState<CanVisitClinic | "">("");
   const [source, setSource] = useState<LeadSource>("boshqa");
-  const [appointment, setAppointment] = useState("");
+  const [campaign, setCampaign] = useState("");
   const [notes, setNotes] = useState("");
 
   const create = useMutation({
@@ -390,9 +397,10 @@ function CreateLeadDialog({
         full_name: fullName.trim(),
         phone: phone || null,
         region: region || null,
-        problem_type: problemType || null,
+        problem_type: problem || null,
+        can_visit_clinic: canVisit || null,
         source,
-        appointment_date: appointment || null,
+        campaign_name: campaign || null,
         notes: notes || null,
       });
       if (error) throw error;
@@ -400,8 +408,8 @@ function CreateLeadDialog({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Lid qo'shildi — operator avtomatik biriktirildi");
-      setFullName(""); setPhone(""); setRegion(""); setProblemType("");
-      setSource("boshqa"); setAppointment(""); setNotes("");
+      setFullName(""); setPhone(""); setRegion(""); setProblem("");
+      setCanVisit(""); setSource("boshqa"); setCampaign(""); setNotes("");
       onOpenChange(false);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -413,12 +421,12 @@ function CreateLeadDialog({
         <DialogHeader>
           <DialogTitle>Yangi lid qo'shish</DialogTitle>
           <DialogDescription>
-            Operator avtomatik teng taqsimlash (round-robin) orqali biriktiriladi.
+            Operator round-robin orqali avtomatik biriktiriladi.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <Label>Ism *</Label>
+            <Label>Ism va familiya *</Label>
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1" />
           </div>
           <div>
@@ -426,12 +434,33 @@ function CreateLeadDialog({
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="+998..." />
           </div>
           <div>
-            <Label>Viloyat</Label>
+            <Label>Viloyat / Shahar</Label>
             <Input value={region} onChange={(e) => setRegion(e.target.value)} className="mt-1" placeholder="Toshkent, Samarqand..." />
           </div>
           <div>
-            <Label>Muammo turi</Label>
-            <Input value={problemType} onChange={(e) => setProblemType(e.target.value)} className="mt-1" placeholder="Masalan: Bolada nutq kechikishi" />
+            <Label>Muammo tavsifi</Label>
+            <Textarea
+              value={problem}
+              onChange={(e) => setProblem(e.target.value)}
+              rows={3}
+              className="mt-1"
+              placeholder="Bemor o'z so'zlari bilan tasvirlagani..."
+            />
+          </div>
+          <div>
+            <Label>Klinikaga kela oladimi?</Label>
+            <RadioGroup
+              value={canVisit}
+              onValueChange={(v) => setCanVisit(v as CanVisitClinic)}
+              className="mt-2 flex gap-4"
+            >
+              {(Object.keys(CAN_VISIT_LABEL) as CanVisitClinic[]).map((k) => (
+                <label key={k} className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value={k} id={`new-cv-${k}`} />
+                  <span className="text-sm">{CAN_VISIT_LABEL[k]}</span>
+                </label>
+              ))}
+            </RadioGroup>
           </div>
           <div>
             <Label>Manba</Label>
@@ -445,12 +474,12 @@ function CreateLeadDialog({
             </Select>
           </div>
           <div>
-            <Label>Konsultatsiya sanasi (ixtiyoriy)</Label>
-            <Input type="date" value={appointment} onChange={(e) => setAppointment(e.target.value)} className="mt-1" />
+            <Label>Kampaniya nomi (ixtiyoriy)</Label>
+            <Input value={campaign} onChange={(e) => setCampaign(e.target.value)} className="mt-1" placeholder="masalan: insult-mart-2026" />
           </div>
           <div>
             <Label>Izoh (ixtiyoriy)</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} className="mt-1" />
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="mt-1" />
           </div>
         </div>
         <DialogFooter>

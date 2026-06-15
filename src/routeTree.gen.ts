@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ArizaRouteImport } from './routes/ariza'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
@@ -21,6 +22,11 @@ import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_aut
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArizaRoute = ArizaRouteImport.update({
+  id: '/ariza',
+  path: '/ariza',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -62,6 +68,7 @@ const AuthenticatedFoydalanuvchilarRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ariza'
     | '/auth'
     | '/foydalanuvchilar'
     | '/hisobotlar'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ariza'
     | '/auth'
     | '/foydalanuvchilar'
     | '/hisobotlar'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/ariza'
     | '/auth'
     | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
@@ -123,6 +135,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ArizaRoute: typeof ArizaRoute
   AuthRoute: typeof AuthRoute
 }
 
@@ -133,6 +146,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ariza': {
+      id: '/ariza'
+      path: '/ariza'
+      fullPath: '/ariza'
+      preLoaderRoute: typeof ArizaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -209,18 +229,9 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ArizaRoute: ArizaRoute,
   AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

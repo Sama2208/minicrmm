@@ -106,7 +106,7 @@ function MeningLidlarimPage() {
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Viloyat</TableHead>
-              <TableHead>Muammo turi</TableHead>
+              <TableHead>Muammo tavsifi</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Konsultatsiya</TableHead>
@@ -180,7 +180,7 @@ function DetailSheet({ lead, onClose }: { lead: Lead | null; onClose: () => void
             <div className="space-y-4 p-4">
               <Row label="Telefon" value={lead.phone ?? "—"} />
               <Row label="Viloyat" value={lead.region ?? "—"} />
-              <Row label="Muammo turi" value={lead.problem_type ?? "—"} />
+              <Row label="Muammo tavsifi" value={lead.problem_type ?? "—"} />
               <Row label="Manba" value={SOURCE_LABEL[lead.source]} />
               <Row label="Yaratilgan" value={formatDate(lead.created_at)} />
               <div>
