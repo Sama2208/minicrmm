@@ -125,6 +125,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           telegram_chat_id: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -132,6 +133,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           telegram_chat_id?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -139,6 +141,25 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           telegram_chat_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -178,9 +199,12 @@ export type Database = {
       }
     }
     Functions: {
+      current_operator_id: { Args: never; Returns: string }
       get_next_operator: { Args: never; Returns: string }
+      has_role: { Args: { _role: string }; Returns: boolean }
     }
     Enums: {
+      app_role: "admin" | "operator"
       lead_source: "facebook" | "instagram" | "website" | "boshqa"
       lead_status:
         | "yangi"
@@ -316,6 +340,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "operator"],
       lead_source: ["facebook", "instagram", "website", "boshqa"],
       lead_status: [
         "yangi",
