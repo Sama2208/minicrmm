@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +31,12 @@ type Lead = {
 };
 
 function HisobotlarPage() {
+  const { role, loading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!loading && role && role !== "admin") navigate({ to: "/mening-lidlarim", replace: true });
+  }, [role, loading, navigate]);
+
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 

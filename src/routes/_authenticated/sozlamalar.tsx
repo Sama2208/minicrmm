@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +25,12 @@ type Operator = {
 };
 
 function SozlamalarPage() {
+  const { role, loading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!loading && role && role !== "admin") navigate({ to: "/mening-lidlarim", replace: true });
+  }, [role, loading, navigate]);
+
   const qc = useQueryClient();
   const [newName, setNewName] = useState("");
   const [newTg, setNewTg] = useState("");
