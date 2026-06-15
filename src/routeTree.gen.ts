@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SozlamalarRouteImport } from './routes/sozlamalar'
+import { Route as LidlarRouteImport } from './routes/lidlar'
+import { Route as HisobotlarRouteImport } from './routes/hisobotlar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SozlamalarRoute = SozlamalarRouteImport.update({
+  id: '/sozlamalar',
+  path: '/sozlamalar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LidlarRoute = LidlarRouteImport.update({
+  id: '/lidlar',
+  path: '/lidlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HisobotlarRoute = HisobotlarRouteImport.update({
+  id: '/hisobotlar',
+  path: '/hisobotlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/hisobotlar': typeof HisobotlarRoute
+  '/lidlar': typeof LidlarRoute
+  '/sozlamalar': typeof SozlamalarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/hisobotlar': typeof HisobotlarRoute
+  '/lidlar': typeof LidlarRoute
+  '/sozlamalar': typeof SozlamalarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/hisobotlar': typeof HisobotlarRoute
+  '/lidlar': typeof LidlarRoute
+  '/sozlamalar': typeof SozlamalarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  id: '__root__' | '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HisobotlarRoute: typeof HisobotlarRoute
+  LidlarRoute: typeof LidlarRoute
+  SozlamalarRoute: typeof SozlamalarRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sozlamalar': {
+      id: '/sozlamalar'
+      path: '/sozlamalar'
+      fullPath: '/sozlamalar'
+      preLoaderRoute: typeof SozlamalarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lidlar': {
+      id: '/lidlar'
+      path: '/lidlar'
+      fullPath: '/lidlar'
+      preLoaderRoute: typeof LidlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hisobotlar': {
+      id: '/hisobotlar'
+      path: '/hisobotlar'
+      fullPath: '/hisobotlar'
+      preLoaderRoute: typeof HisobotlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HisobotlarRoute: HisobotlarRoute,
+  LidlarRoute: LidlarRoute,
+  SozlamalarRoute: SozlamalarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
