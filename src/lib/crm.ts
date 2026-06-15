@@ -1,48 +1,42 @@
 export type LeadStatus =
   | "yangi"
-  | "boglanildi"
-  | "qiziqdi"
-  | "uchrashuvga_yozildi"
-  | "keldi"
-  | "kelmadi"
-  | "mijozga_aylandi"
-  | "yoqotildi";
+  | "kotarmadi"
+  | "konsultatsiyaga_yozildi"
+  | "konsultatsiyada_boldi"
+  | "yotishga_yozildi"
+  | "sifatsiz_lid";
 
 export type LeadSource = "facebook" | "instagram" | "website" | "boshqa";
 
 export const STATUS_LABEL: Record<LeadStatus, string> = {
   yangi: "Yangi",
-  boglanildi: "Bog'lanildi",
-  qiziqdi: "Qiziqdi",
-  uchrashuvga_yozildi: "Uchrashuvga yozildi",
-  keldi: "Keldi",
-  kelmadi: "Kelmadi",
-  mijozga_aylandi: "Mijozga aylandi",
-  yoqotildi: "Yo'qotildi",
+  kotarmadi: "Ko'tarmadi",
+  konsultatsiyaga_yozildi: "Konsultatsiyaga yozildi",
+  konsultatsiyada_boldi: "Konsultatsiyada bo'ldi",
+  yotishga_yozildi: "Yotishga yozildi",
+  sifatsiz_lid: "Sifatsiz lid",
 };
 
-// Tailwind classes — light bg + colored text + border
+// Light bg + colored text + border
 export const STATUS_BADGE: Record<LeadStatus, string> = {
   yangi: "bg-blue-50 text-blue-700 border border-blue-200",
-  boglanildi: "bg-sky-50 text-sky-700 border border-sky-200",
-  qiziqdi: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-  uchrashuvga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
-  keldi: "bg-teal-50 text-teal-700 border border-teal-200",
-  kelmadi: "bg-amber-50 text-amber-700 border border-amber-200",
-  mijozga_aylandi: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  yoqotildi: "bg-rose-50 text-rose-700 border border-rose-200",
+  kotarmadi: "bg-orange-50 text-orange-700 border border-orange-200",
+  konsultatsiyaga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
+  konsultatsiyada_boldi: "bg-sky-50 text-sky-700 border border-sky-200",
+  yotishga_yozildi: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  sifatsiz_lid: "bg-rose-50 text-rose-700 border border-rose-200",
 };
 
 export const STATUS_ORDER: LeadStatus[] = [
   "yangi",
-  "boglanildi",
-  "qiziqdi",
-  "uchrashuvga_yozildi",
-  "keldi",
-  "kelmadi",
-  "mijozga_aylandi",
-  "yoqotildi",
+  "kotarmadi",
+  "konsultatsiyaga_yozildi",
+  "konsultatsiyada_boldi",
+  "yotishga_yozildi",
+  "sifatsiz_lid",
 ];
+
+export const CONVERSION_STATUS: LeadStatus = "yotishga_yozildi";
 
 export const SOURCE_LABEL: Record<LeadSource, string> = {
   facebook: "Facebook",
