@@ -14,16 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      lead_status_history: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          lead_id: string | null
+          new_status: Database["public"]["Enums"]["lead_status"]
+          old_status: Database["public"]["Enums"]["lead_status"] | null
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          lead_id?: string | null
+          new_status: Database["public"]["Enums"]["lead_status"]
+          old_status?: Database["public"]["Enums"]["lead_status"] | null
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          lead_id?: string | null
+          new_status?: Database["public"]["Enums"]["lead_status"]
+          old_status?: Database["public"]["Enums"]["lead_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_status_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          last_contact_at: string | null
+          next_followup_date: string | null
+          notes: string | null
+          phone: string | null
+          service_interest: string | null
+          source: Database["public"]["Enums"]["lead_source"]
+          source_detail: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          last_contact_at?: string | null
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          service_interest?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          last_contact_at?: string | null
+          next_followup_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          service_interest?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          source_detail?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operators: {
+        Row: {
+          created_at: string | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          telegram_chat_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          telegram_chat_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          telegram_chat_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      v_daily_leads: {
+        Row: {
+          day: string | null
+          source: Database["public"]["Enums"]["lead_source"] | null
+          total: number | null
+        }
+        Relationships: []
+      }
+      v_funnel_summary: {
+        Row: {
+          status: Database["public"]["Enums"]["lead_status"] | null
+          total: number | null
+        }
+        Relationships: []
+      }
+      v_operator_summary: {
+        Row: {
+          conversion_rate: number | null
+          converted: number | null
+          full_name: string | null
+          total_leads: number | null
+        }
+        Relationships: []
+      }
+      v_source_summary: {
+        Row: {
+          converted: number | null
+          source: Database["public"]["Enums"]["lead_source"] | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_next_operator: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      lead_source: "facebook" | "instagram" | "website" | "boshqa"
+      lead_status:
+        | "yangi"
+        | "boglanildi"
+        | "qiziqdi"
+        | "uchrashuvga_yozildi"
+        | "keldi"
+        | "kelmadi"
+        | "mijozga_aylandi"
+        | "yoqotildi"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +311,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      lead_source: ["facebook", "instagram", "website", "boshqa"],
+      lead_status: [
+        "yangi",
+        "boglanildi",
+        "qiziqdi",
+        "uchrashuvga_yozildi",
+        "keldi",
+        "kelmadi",
+        "mijozga_aylandi",
+        "yoqotildi",
+      ],
+    },
   },
 } as const
