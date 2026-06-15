@@ -195,7 +195,7 @@ function LidlarPage() {
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Viloyat</TableHead>
-              <TableHead>Muammo turi</TableHead>
+              <TableHead>Muammo tavsifi</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Operator</TableHead>
