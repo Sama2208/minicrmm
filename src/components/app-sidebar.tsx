@@ -1,8 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, Settings } from "lucide-react";
+import { Users, BarChart3, Settings, UserCog, Inbox, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -10,25 +11,30 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/lib/auth";
 
-const items = [
-  { title: "Lidlar", url: "/lidlar", icon: Users },
+const ADMIN_ITEMS = [
+  { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
+  { title: "Foydalanuvchilar", url: "/foydalanuvchilar", icon: UserCog },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
+];
+
+const OPERATOR_ITEMS = [
+  { title: "Mening lidlarim", url: "/mening-lidlarim", icon: Inbox },
 ];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const { role, user, signOut } = useAuth();
+  const items = role === "admin" ? ADMIN_ITEMS : OPERATOR_ITEMS;
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold">
-            C
-          </div>
-          <span className="font-semibold text-base group-data-[collapsible=icon]:hidden">
-            CRM Dashboard
-          </span>
+          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold">C</div>
+          <span className="font-semibold text-base group-data-[collapsible=icon]:hidden">CRM Dashboard</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -52,6 +58,19 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t">
+        <div className="px-2 py-2 text-xs text-muted-foreground truncate group-data-[collapsible=icon]:hidden">
+          {user?.email} · {role ?? "—"}
+        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => signOut()} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              <span>Chiqish</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
