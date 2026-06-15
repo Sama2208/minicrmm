@@ -13,8 +13,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
+import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
+import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_authenticated/foydalanuvchilar'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -35,6 +37,12 @@ const AuthenticatedSozlamalarRoute = AuthenticatedSozlamalarRouteImport.update({
   path: '/sozlamalar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMeningLidlarimRoute =
+  AuthenticatedMeningLidlarimRouteImport.update({
+    id: '/mening-lidlarim',
+    path: '/mening-lidlarim',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLidlarRoute = AuthenticatedLidlarRouteImport.update({
   id: '/lidlar',
   path: '/lidlar',
@@ -45,19 +53,29 @@ const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   path: '/hisobotlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFoydalanuvchilarRoute =
+  AuthenticatedFoydalanuvchilarRouteImport.update({
+    id: '/foydalanuvchilar',
+    path: '/foydalanuvchilar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
+  '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
+  '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRoutesById {
@@ -65,22 +83,40 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
+  '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/foydalanuvchilar'
+    | '/hisobotlar'
+    | '/lidlar'
+    | '/mening-lidlarim'
+    | '/sozlamalar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  to:
+    | '/'
+    | '/auth'
+    | '/foydalanuvchilar'
+    | '/hisobotlar'
+    | '/lidlar'
+    | '/mening-lidlarim'
+    | '/sozlamalar'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/lidlar'
+    | '/_authenticated/mening-lidlarim'
     | '/_authenticated/sozlamalar'
   fileRoutesById: FileRoutesById
 }
@@ -120,6 +156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSozlamalarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mening-lidlarim': {
+      id: '/_authenticated/mening-lidlarim'
+      path: '/mening-lidlarim'
+      fullPath: '/mening-lidlarim'
+      preLoaderRoute: typeof AuthenticatedMeningLidlarimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/lidlar': {
       id: '/_authenticated/lidlar'
       path: '/lidlar'
@@ -134,18 +177,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/foydalanuvchilar': {
+      id: '/_authenticated/foydalanuvchilar'
+      path: '/foydalanuvchilar'
+      fullPath: '/foydalanuvchilar'
+      preLoaderRoute: typeof AuthenticatedFoydalanuvchilarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedFoydalanuvchilarRoute: typeof AuthenticatedFoydalanuvchilarRoute
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
+  AuthenticatedMeningLidlarimRoute: typeof AuthenticatedMeningLidlarimRoute
   AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedFoydalanuvchilarRoute: AuthenticatedFoydalanuvchilarRoute,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
+  AuthenticatedMeningLidlarimRoute: AuthenticatedMeningLidlarimRoute,
   AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,
 }
 
