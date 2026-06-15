@@ -9,89 +9,73 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SozlamalarRouteImport } from './routes/sozlamalar'
-import { Route as LidlarRouteImport } from './routes/lidlar'
-import { Route as HisobotlarRouteImport } from './routes/hisobotlar'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
+import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
+import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 
-const SozlamalarRoute = SozlamalarRouteImport.update({
-  id: '/sozlamalar',
-  path: '/sozlamalar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LidlarRoute = LidlarRouteImport.update({
-  id: '/lidlar',
-  path: '/lidlar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HisobotlarRoute = HisobotlarRouteImport.update({
-  id: '/hisobotlar',
-  path: '/hisobotlar',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSozlamalarRoute = AuthenticatedSozlamalarRouteImport.update({
+  id: '/_authenticated/sozlamalar',
+  path: '/sozlamalar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedLidlarRoute = AuthenticatedLidlarRouteImport.update({
+  id: '/_authenticated/lidlar',
+  path: '/lidlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
+  id: '/_authenticated/hisobotlar',
+  path: '/hisobotlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/hisobotlar': typeof HisobotlarRoute
-  '/lidlar': typeof LidlarRoute
-  '/sozlamalar': typeof SozlamalarRoute
+  '/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/lidlar': typeof AuthenticatedLidlarRoute
+  '/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/hisobotlar': typeof HisobotlarRoute
-  '/lidlar': typeof LidlarRoute
-  '/sozlamalar': typeof SozlamalarRoute
+  '/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/lidlar': typeof AuthenticatedLidlarRoute
+  '/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/hisobotlar': typeof HisobotlarRoute
-  '/lidlar': typeof LidlarRoute
-  '/sozlamalar': typeof SozlamalarRoute
+  '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
+  '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
-  id: '__root__' | '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated/hisobotlar'
+    | '/_authenticated/lidlar'
+    | '/_authenticated/sozlamalar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  HisobotlarRoute: typeof HisobotlarRoute
-  LidlarRoute: typeof LidlarRoute
-  SozlamalarRoute: typeof SozlamalarRoute
+  AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
+  AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
+  AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sozlamalar': {
-      id: '/sozlamalar'
-      path: '/sozlamalar'
-      fullPath: '/sozlamalar'
-      preLoaderRoute: typeof SozlamalarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lidlar': {
-      id: '/lidlar'
-      path: '/lidlar'
-      fullPath: '/lidlar'
-      preLoaderRoute: typeof LidlarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hisobotlar': {
-      id: '/hisobotlar'
-      path: '/hisobotlar'
-      fullPath: '/hisobotlar'
-      preLoaderRoute: typeof HisobotlarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -99,14 +83,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/sozlamalar': {
+      id: '/_authenticated/sozlamalar'
+      path: '/sozlamalar'
+      fullPath: '/sozlamalar'
+      preLoaderRoute: typeof AuthenticatedSozlamalarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/lidlar': {
+      id: '/_authenticated/lidlar'
+      path: '/lidlar'
+      fullPath: '/lidlar'
+      preLoaderRoute: typeof AuthenticatedLidlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/hisobotlar': {
+      id: '/_authenticated/hisobotlar'
+      path: '/hisobotlar'
+      fullPath: '/hisobotlar'
+      preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  HisobotlarRoute: HisobotlarRoute,
-  LidlarRoute: LidlarRoute,
-  SozlamalarRoute: SozlamalarRoute,
+  AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
+  AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
+  AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

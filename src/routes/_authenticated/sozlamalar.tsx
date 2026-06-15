@@ -13,7 +13,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/sozlamalar")({ component: SozlamalarPage });
+export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
 
 type Operator = {
   id: string;

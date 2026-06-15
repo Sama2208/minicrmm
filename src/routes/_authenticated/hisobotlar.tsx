@@ -18,7 +18,7 @@ import {
   type LeadStatus, type LeadSource,
 } from "@/lib/crm";
 
-export const Route = createFileRoute("/hisobotlar")({ component: HisobotlarPage });
+export const Route = createFileRoute("/_authenticated/hisobotlar")({ component: HisobotlarPage });
 
 type Lead = {
   id: string;
