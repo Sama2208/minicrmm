@@ -58,6 +58,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          appointment_date: string | null
           assigned_to: string | null
           created_at: string | null
           full_name: string
@@ -66,13 +67,15 @@ export type Database = {
           next_followup_date: string | null
           notes: string | null
           phone: string | null
-          service_interest: string | null
+          problem_type: string | null
+          region: string | null
           source: Database["public"]["Enums"]["lead_source"]
           source_detail: string | null
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string | null
         }
         Insert: {
+          appointment_date?: string | null
           assigned_to?: string | null
           created_at?: string | null
           full_name: string
@@ -81,13 +84,15 @@ export type Database = {
           next_followup_date?: string | null
           notes?: string | null
           phone?: string | null
-          service_interest?: string | null
+          problem_type?: string | null
+          region?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string | null
         }
         Update: {
+          appointment_date?: string | null
           assigned_to?: string | null
           created_at?: string | null
           full_name?: string
@@ -96,7 +101,8 @@ export type Database = {
           next_followup_date?: string | null
           notes?: string | null
           phone?: string | null
-          service_interest?: string | null
+          problem_type?: string | null
+          region?: string | null
           source?: Database["public"]["Enums"]["lead_source"]
           source_detail?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
@@ -178,13 +184,11 @@ export type Database = {
       lead_source: "facebook" | "instagram" | "website" | "boshqa"
       lead_status:
         | "yangi"
-        | "boglanildi"
-        | "qiziqdi"
-        | "uchrashuvga_yozildi"
-        | "keldi"
-        | "kelmadi"
-        | "mijozga_aylandi"
-        | "yoqotildi"
+        | "kotarmadi"
+        | "konsultatsiyaga_yozildi"
+        | "konsultatsiyada_boldi"
+        | "yotishga_yozildi"
+        | "sifatsiz_lid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -315,13 +319,11 @@ export const Constants = {
       lead_source: ["facebook", "instagram", "website", "boshqa"],
       lead_status: [
         "yangi",
-        "boglanildi",
-        "qiziqdi",
-        "uchrashuvga_yozildi",
-        "keldi",
-        "kelmadi",
-        "mijozga_aylandi",
-        "yoqotildi",
+        "kotarmadi",
+        "konsultatsiyaga_yozildi",
+        "konsultatsiyada_boldi",
+        "yotishga_yozildi",
+        "sifatsiz_lid",
       ],
     },
   },
