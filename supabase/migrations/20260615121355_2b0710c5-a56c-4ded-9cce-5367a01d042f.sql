@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trg_log_status_change ON public.leads; DROP TRIGGER IF EXISTS trg_status_change ON public.leads;
