@@ -9,40 +9,53 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSozlamalarRoute = AuthenticatedSozlamalarRouteImport.update({
-  id: '/_authenticated/sozlamalar',
+  id: '/sozlamalar',
   path: '/sozlamalar',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLidlarRoute = AuthenticatedLidlarRouteImport.update({
-  id: '/_authenticated/lidlar',
+  id: '/lidlar',
   path: '/lidlar',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
-  id: '/_authenticated/hisobotlar',
+  id: '/hisobotlar',
   path: '/hisobotlar',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
@@ -50,18 +63,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  fullPaths: '/' | '/auth' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
+  to: '/' | '/auth' | '/hisobotlar' | '/lidlar' | '/sozlamalar'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/lidlar'
     | '/_authenticated/sozlamalar'
@@ -69,13 +86,26 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
-  AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
-  AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -88,30 +118,44 @@ declare module '@tanstack/react-router' {
       path: '/sozlamalar'
       fullPath: '/sozlamalar'
       preLoaderRoute: typeof AuthenticatedSozlamalarRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/lidlar': {
       id: '/_authenticated/lidlar'
       path: '/lidlar'
       fullPath: '/lidlar'
       preLoaderRoute: typeof AuthenticatedLidlarRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hisobotlar': {
       id: '/_authenticated/hisobotlar'
       path: '/hisobotlar'
       fullPath: '/hisobotlar'
       preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
+  AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
+  AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
