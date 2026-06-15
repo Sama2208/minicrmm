@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import {
   STATUS_LABEL, STATUS_ORDER, SOURCE_LABEL, SOURCE_LIST, SOURCE_COLOR,
+  CONVERSION_STATUS,
   type LeadStatus, type LeadSource,
 } from "@/lib/crm";
 
@@ -61,10 +62,10 @@ function HisobotlarPage() {
   }, [leadsQ.data, dateFrom, dateTo]);
 
   const total = leads.length;
-  const converted = leads.filter((l) => l.status === "mijozga_aylandi").length;
+  const converted = leads.filter((l) => l.status === CONVERSION_STATUS).length;
   const conversion = total ? Math.round((converted / total) * 1000) / 10 : 0;
   const activePipeline = leads.filter(
-    (l) => !["mijozga_aylandi", "yoqotildi", "kelmadi"].includes(l.status)
+    (l) => !["yotishga_yozildi", "sifatsiz_lid", "kotarmadi"].includes(l.status)
   ).length;
 
   const funnelData = STATUS_ORDER.map((s) => ({
@@ -74,7 +75,7 @@ function HisobotlarPage() {
 
   const sourceData = SOURCE_LIST.map((s) => {
     const list = leads.filter((l) => l.source === s);
-    const conv = list.filter((l) => l.status === "mijozga_aylandi").length;
+    const conv = list.filter((l) => l.status === CONVERSION_STATUS).length;
     return {
       source: SOURCE_LABEL[s],
       total: list.length,
@@ -84,7 +85,7 @@ function HisobotlarPage() {
 
   const operatorData = (opsQ.data ?? []).map((o) => {
     const list = leads.filter((l) => l.assigned_to === o.id);
-    const conv = list.filter((l) => l.status === "mijozga_aylandi").length;
+    const conv = list.filter((l) => l.status === CONVERSION_STATUS).length;
     return {
       name: o.full_name,
       total: list.length,
@@ -129,7 +130,7 @@ function HisobotlarPage() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Jami lidlar" value={total} color="text-blue-600" />
-        <KpiCard title="Mijozga aylangan" value={converted} color="text-emerald-600" />
+        <KpiCard title="Yotishga yozilgan" value={converted} color="text-emerald-600" />
         <KpiCard title="Konversiya" value={`${conversion}%`} color="text-violet-600" />
         <KpiCard title="Faol pipeline" value={activePipeline} color="text-amber-600" />
       </div>
