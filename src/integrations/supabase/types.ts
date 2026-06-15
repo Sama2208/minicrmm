@@ -60,6 +60,8 @@ export type Database = {
         Row: {
           appointment_date: string | null
           assigned_to: string | null
+          campaign_name: string | null
+          can_visit_clinic: Database["public"]["Enums"]["clinic_visit"] | null
           created_at: string | null
           full_name: string
           id: string
@@ -77,6 +79,8 @@ export type Database = {
         Insert: {
           appointment_date?: string | null
           assigned_to?: string | null
+          campaign_name?: string | null
+          can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           created_at?: string | null
           full_name: string
           id?: string
@@ -94,6 +98,8 @@ export type Database = {
         Update: {
           appointment_date?: string | null
           assigned_to?: string | null
+          campaign_name?: string | null
+          can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           created_at?: string | null
           full_name?: string
           id?: string
@@ -205,10 +211,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "operator"
+      clinic_visit: "ha" | "yoq" | "bilmayman"
       lead_source: "facebook" | "instagram" | "website" | "boshqa"
       lead_status:
         | "yangi"
         | "kotarmadi"
+        | "qayta_qongiroq"
         | "konsultatsiyaga_yozildi"
         | "konsultatsiyada_boldi"
         | "yotishga_yozildi"
@@ -341,10 +349,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "operator"],
+      clinic_visit: ["ha", "yoq", "bilmayman"],
       lead_source: ["facebook", "instagram", "website", "boshqa"],
       lead_status: [
         "yangi",
         "kotarmadi",
+        "qayta_qongiroq",
         "konsultatsiyaga_yozildi",
         "konsultatsiyada_boldi",
         "yotishga_yozildi",
