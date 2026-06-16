@@ -95,7 +95,7 @@ function AdminLeadsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12 text-center">№</TableHead>
+              <TableHead className="w-16 text-center font-semibold">№</TableHead>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Asosiy raqam</TableHead>
