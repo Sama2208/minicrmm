@@ -1,8 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,11 +40,6 @@ type Lead = {
 };
 
 function MeningLidlarimPage() {
-  const { role, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && role && role !== "operator" && role !== "admin") navigate({ to: "/auth", replace: true });
-  }, [role, loading, navigate]);
 
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("all");

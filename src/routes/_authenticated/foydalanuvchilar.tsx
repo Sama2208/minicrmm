@@ -1,9 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
 import { createOperatorUser } from "@/lib/users.functions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,11 +22,6 @@ export const Route = createFileRoute("/_authenticated/foydalanuvchilar")({ compo
 type Op = { id: string; full_name: string; user_id: string | null; is_active: boolean };
 
 function FoydalanuvchilarPage() {
-  const { role, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && role !== "admin") navigate({ to: "/mening-lidlarim", replace: true });
-  }, [role, loading, navigate]);
 
   const qc = useQueryClient();
   const opsQ = useQuery({
