@@ -189,6 +189,7 @@ function LidlarPage() {
               <TableHead>Telefon</TableHead>
               <TableHead>Viloyat</TableHead>
               <TableHead>Muammo tavsifi</TableHead>
+              <TableHead>Kela olasizmi?</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Operator</TableHead>
@@ -198,10 +199,10 @@ function LidlarPage() {
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading && (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
             )}
             {!leadsQ.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
             )}
             {filtered.map((l) => (
               <TableRow
@@ -213,6 +214,7 @@ function LidlarPage() {
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.region ?? "—"}</TableCell>
                 <TableCell>{l.problem_type ?? "—"}</TableCell>
+                <TableCell>{l.can_visit_clinic ? CAN_VISIT_LABEL[l.can_visit_clinic] : "—"}</TableCell>
                 <TableCell>{SOURCE_LABEL[l.source]}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
