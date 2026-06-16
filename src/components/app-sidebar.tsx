@@ -1,9 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, Settings, UserCog, Inbox, LogOut } from "lucide-react";
+import { Users, BarChart3, Settings, UserCog } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -11,23 +10,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/lib/auth";
 
-const ADMIN_ITEMS = [
+const ITEMS = [
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Foydalanuvchilar", url: "/foydalanuvchilar", icon: UserCog },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
 ];
 
-const OPERATOR_ITEMS = [
-  { title: "Mening lidlarim", url: "/mening-lidlarim", icon: Inbox },
-];
-
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const { role, user, signOut } = useAuth();
-  const items = role === "admin" ? ADMIN_ITEMS : OPERATOR_ITEMS;
+  const items = ITEMS;
 
   return (
     <Sidebar collapsible="icon">
