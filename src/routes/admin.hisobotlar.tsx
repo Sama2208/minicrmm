@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { AdminGuard } from "@/lib/admin-guard";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -12,7 +12,7 @@ import { STATUS_LABEL, STATUS_ORDER, SOURCE_LABEL, type LeadStatus, type LeadSou
 
 export const Route = createFileRoute("/admin/hisobotlar")({
   ssr: false,
-  component: () => <AdminGuard><AdminHisobotlarPage /></AdminGuard>,
+  component: () => <AdminHisobotlarPage />,
 });
 
 type Lead = { id: string; status: LeadStatus; source: LeadSource; assigned_to: string | null; created_at: string };

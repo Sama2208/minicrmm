@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { AdminGuard } from "@/lib/admin-guard";
+
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +16,7 @@ import { STATUS_LABEL, STATUS_ORDER, SOURCE_LABEL, CAN_VISIT_LABEL, CAN_VISIT_BA
 
 export const Route = createFileRoute("/admin/leads")({
   ssr: false,
-  component: () => <AdminGuard><AdminLeadsPage /></AdminGuard>,
+  component: () => <AdminLeadsPage />,
 });
 
 type Lead = {

@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
@@ -12,8 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -131,28 +129,13 @@ const TITLES: Record<string, string> = {
   "/mening-lidlarim": "Mening lidlarim",
 };
 
-function AuthListener() {
-  const router = useRouter();
-  const qc = useQueryClient();
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") qc.invalidateQueries();
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [router, qc]);
-  return null;
-}
-
 function Shell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = TITLES[pathname] ?? "CRM";
 
-  if (pathname === "/auth" || pathname === "/ariza") {
+  if (pathname === "/auth" || pathname === "/ariza" || pathname.startsWith("/admin")) {
     return <Outlet />;
   }
-
 
   return (
     <SidebarProvider>
@@ -176,11 +159,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AuthListener />
-        <Shell />
-        <Toaster />
-      </AuthProvider>
+      <Shell />
+      <Toaster />
     </QueryClientProvider>
   );
 }
