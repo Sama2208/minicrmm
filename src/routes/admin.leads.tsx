@@ -95,7 +95,7 @@ function AdminLeadsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12 text-center">№</TableHead>
+              <TableHead className="w-16 text-center font-semibold">№</TableHead>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Asosiy raqam</TableHead>
@@ -114,7 +114,7 @@ function AdminLeadsPage() {
               <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
             ) : filtered.map((l, idx) => (
               <TableRow key={l.id}>
-                <TableCell className="text-center text-slate-500">{idx + 1}</TableCell>
+                <TableCell className="text-center text-slate-600 font-medium">{idx + 1}</TableCell>
                 <TableCell className="font-medium">{l.full_name}</TableCell>
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
