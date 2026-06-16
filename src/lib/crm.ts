@@ -5,6 +5,7 @@ export type LeadStatus =
   | "konsultatsiyaga_yozildi"
   | "konsultatsiyada_boldi"
   | "yotishga_yozildi"
+  | "qatnovchi"
   | "sifatsiz_lid";
 
 export type LeadSource = "facebook" | "instagram" | "website" | "boshqa";
