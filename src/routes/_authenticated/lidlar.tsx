@@ -24,7 +24,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   STATUS_LABEL, STATUS_BADGE, STATUS_ORDER,
   SOURCE_LABEL, SOURCE_LIST, formatDate,
-  CAN_VISIT_LABEL,
+  CAN_VISIT_LABEL, CAN_VISIT_BADGE,
   type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
 
