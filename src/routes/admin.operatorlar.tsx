@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
-import { AdminGuard } from "@/lib/admin-guard";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/operatorlar")({
   ssr: false,
-  component: () => <AdminGuard><AdminOperatorsPage /></AdminGuard>,
+  component: () => <AdminOperatorsPage />,
 });
 
 type Operator = { id: string; full_name: string; telegram_chat_id: string | null; is_active: boolean; user_id: string | null };
