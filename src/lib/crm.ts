@@ -43,9 +43,15 @@ export const STATUS_ORDER: LeadStatus[] = [
 ];
 
 export const CAN_VISIT_LABEL: Record<CanVisitClinic, string> = {
-  ha: "Ha",
-  yoq: "Yo'q",
-  bilmayman: "Bilmayman",
+  ha: "Ha kela olaman",
+  yoq: "Yo'q bora olmayman",
+  bilmayman: "Vaziyatga qarab, o'ylab ko'raman",
+};
+
+export const CAN_VISIT_BADGE: Record<CanVisitClinic, string> = {
+  ha: "bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md px-2 py-0.5 text-xs font-medium inline-block",
+  yoq: "bg-rose-50 text-rose-700 border border-rose-200 rounded-md px-2 py-0.5 text-xs font-medium inline-block",
+  bilmayman: "bg-amber-50 text-amber-700 border border-amber-200 rounded-md px-2 py-0.5 text-xs font-medium inline-block",
 };
 
 export const CONVERSION_STATUS: LeadStatus = "yotishga_yozildi";

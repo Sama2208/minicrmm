@@ -24,7 +24,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   STATUS_LABEL, STATUS_BADGE, STATUS_ORDER,
   SOURCE_LABEL, SOURCE_LIST, formatDate,
-  CAN_VISIT_LABEL,
+  CAN_VISIT_LABEL, CAN_VISIT_BADGE,
   type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
 
@@ -214,7 +214,7 @@ function LidlarPage() {
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.region ?? "—"}</TableCell>
                 <TableCell>{l.problem_type ?? "—"}</TableCell>
-                <TableCell>{l.can_visit_clinic ? CAN_VISIT_LABEL[l.can_visit_clinic] : "—"}</TableCell>
+                <TableCell>{l.can_visit_clinic ? <span className={CAN_VISIT_BADGE[l.can_visit_clinic]}>{CAN_VISIT_LABEL[l.can_visit_clinic]}</span> : "—"}</TableCell>
                 <TableCell>{SOURCE_LABEL[l.source]}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
