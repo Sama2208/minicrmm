@@ -59,10 +59,3 @@ export function AdminShell({ title, children }: { title: string; children: React
   );
 }
 
-export async function requireAdmin(): Promise<{ ok: true } | { ok: false; reason: "no-user" | "no-admin" }> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false, reason: "no-user" };
-  const { data, error } = await supabase.rpc("has_role", { _role: "admin" });
-  if (error || !data) return { ok: false, reason: "no-admin" };
-  return { ok: true };
-}
