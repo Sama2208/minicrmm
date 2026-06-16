@@ -380,6 +380,7 @@ function CreateLeadDialog({
 }) {
   const qc = useQueryClient();
   const [fullName, setFullName] = useState("");
+  const [nomerAsosiy, setNomerAsosiy] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
