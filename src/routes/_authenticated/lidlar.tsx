@@ -430,7 +430,11 @@ function CreateLeadDialog({
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1" />
           </div>
           <div>
-            <Label>Telefon</Label>
+            <Label>Asosiy raqam (qo'lda yozilgan)</Label>
+            <Input value={nomerAsosiy} onChange={(e) => setNomerAsosiy(e.target.value)} className="mt-1" placeholder="+998..." />
+          </div>
+          <div>
+            <Label>Telefon (Instagram/FB ro'yxat raqami)</Label>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="+998..." />
           </div>
           <div>
