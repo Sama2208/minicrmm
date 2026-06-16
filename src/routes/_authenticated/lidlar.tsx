@@ -199,10 +199,10 @@ function LidlarPage() {
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading && (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
             )}
             {!leadsQ.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
             )}
             {filtered.map((l) => (
               <TableRow
