@@ -189,6 +189,7 @@ function LidlarPage() {
               <TableHead>Telefon</TableHead>
               <TableHead>Viloyat</TableHead>
               <TableHead>Muammo tavsifi</TableHead>
+              <TableHead>Kela olasizmi?</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Operator</TableHead>
@@ -213,6 +214,7 @@ function LidlarPage() {
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.region ?? "—"}</TableCell>
                 <TableCell>{l.problem_type ?? "—"}</TableCell>
+                <TableCell>{l.can_visit_clinic ? CAN_VISIT_LABEL[l.can_visit_clinic] : "—"}</TableCell>
                 <TableCell>{SOURCE_LABEL[l.source]}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
