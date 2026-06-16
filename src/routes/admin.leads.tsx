@@ -95,6 +95,7 @@ function AdminLeadsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12 text-center">№</TableHead>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Asosiy raqam</TableHead>
@@ -108,11 +109,12 @@ function AdminLeadsPage() {
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading ? (
-              <TableRow><TableCell colSpan={9} className="text-center text-slate-500 py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Yuklanmoqda...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
-            ) : filtered.map((l) => (
+              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
+            ) : filtered.map((l, idx) => (
               <TableRow key={l.id}>
+                <TableCell className="text-center text-slate-500">{idx + 1}</TableCell>
                 <TableCell className="font-medium">{l.full_name}</TableCell>
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
