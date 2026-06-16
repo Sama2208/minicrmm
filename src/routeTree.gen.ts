@@ -13,6 +13,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArizaRouteImport } from './routes/ariza'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminOperatorlarRouteImport } from './routes/admin.operatorlar'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as AdminHisobotlarRouteImport } from './routes/admin.hisobotlar'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
@@ -36,6 +41,31 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOperatorlarRoute = AdminOperatorlarRouteImport.update({
+  id: '/admin/operatorlar',
+  path: '/admin/operatorlar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/admin/leads',
+  path: '/admin/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminHisobotlarRoute = AdminHisobotlarRouteImport.update({
+  id: '/admin/hisobotlar',
+  path: '/admin/hisobotlar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSozlamalarRoute = AuthenticatedSozlamalarRouteImport.update({
@@ -75,6 +105,11 @@ export interface FileRoutesByFullPath {
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
+  '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/operatorlar': typeof AdminOperatorlarRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +120,11 @@ export interface FileRoutesByTo {
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
+  '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/operatorlar': typeof AdminOperatorlarRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +137,11 @@ export interface FileRoutesById {
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
+  '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/operatorlar': typeof AdminOperatorlarRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +154,11 @@ export interface FileRouteTypes {
     | '/lidlar'
     | '/mening-lidlarim'
     | '/sozlamalar'
+    | '/admin/hisobotlar'
+    | '/admin/leads'
+    | '/admin/login'
+    | '/admin/operatorlar'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,6 +169,11 @@ export interface FileRouteTypes {
     | '/lidlar'
     | '/mening-lidlarim'
     | '/sozlamalar'
+    | '/admin/hisobotlar'
+    | '/admin/leads'
+    | '/admin/login'
+    | '/admin/operatorlar'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -130,6 +185,11 @@ export interface FileRouteTypes {
     | '/_authenticated/lidlar'
     | '/_authenticated/mening-lidlarim'
     | '/_authenticated/sozlamalar'
+    | '/admin/hisobotlar'
+    | '/admin/leads'
+    | '/admin/login'
+    | '/admin/operatorlar'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,6 +197,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ArizaRoute: typeof ArizaRoute
   AuthRoute: typeof AuthRoute
+  AdminHisobotlarRoute: typeof AdminHisobotlarRoute
+  AdminLeadsRoute: typeof AdminLeadsRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminOperatorlarRoute: typeof AdminOperatorlarRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,6 +232,41 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/operatorlar': {
+      id: '/admin/operatorlar'
+      path: '/admin/operatorlar'
+      fullPath: '/admin/operatorlar'
+      preLoaderRoute: typeof AdminOperatorlarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/admin/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/hisobotlar': {
+      id: '/admin/hisobotlar'
+      path: '/admin/hisobotlar'
+      fullPath: '/admin/hisobotlar'
+      preLoaderRoute: typeof AdminHisobotlarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/sozlamalar': {
@@ -231,17 +331,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ArizaRoute: ArizaRoute,
   AuthRoute: AuthRoute,
+  AdminHisobotlarRoute: AdminHisobotlarRoute,
+  AdminLeadsRoute: AdminLeadsRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminOperatorlarRoute: AdminOperatorlarRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
