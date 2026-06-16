@@ -34,6 +34,7 @@ type Lead = {
   id: string;
   full_name: string;
   phone: string | null;
+  nomer_asosiy: string | null;
   region: string | null;
   problem_type: string | null;
   can_visit_clinic: CanVisitClinic | null;
@@ -187,6 +188,7 @@ function LidlarPage() {
             <TableRow>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
+              <TableHead>Asosiy raqam</TableHead>
               <TableHead>Viloyat</TableHead>
               <TableHead>Muammo tavsifi</TableHead>
               <TableHead>Kela olasizmi?</TableHead>
@@ -199,10 +201,10 @@ function LidlarPage() {
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading && (
-              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
             )}
             {!leadsQ.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
             )}
             {filtered.map((l) => (
               <TableRow
@@ -212,6 +214,7 @@ function LidlarPage() {
               >
                 <TableCell className="font-medium">{l.full_name}</TableCell>
                 <TableCell>{l.phone ?? "—"}</TableCell>
+                <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
                 <TableCell>{l.region ?? "—"}</TableCell>
                 <TableCell>{l.problem_type ?? "—"}</TableCell>
                 <TableCell>{l.can_visit_clinic ? <span className={CAN_VISIT_BADGE[l.can_visit_clinic]}>{CAN_VISIT_LABEL[l.can_visit_clinic]}</span> : "—"}</TableCell>
