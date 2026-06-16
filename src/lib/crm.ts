@@ -5,6 +5,7 @@ export type LeadStatus =
   | "konsultatsiyaga_yozildi"
   | "konsultatsiyada_boldi"
   | "yotishga_yozildi"
+  | "qatnovchi"
   | "sifatsiz_lid";
 
 export type LeadSource = "facebook" | "instagram" | "website" | "boshqa";
@@ -18,6 +19,7 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
   konsultatsiyaga_yozildi: "Konsultatsiyaga yozildi",
   konsultatsiyada_boldi: "Konsultatsiyada bo'ldi",
   yotishga_yozildi: "Yotishga yozildi",
+  qatnovchi: "Qatnovchi",
   sifatsiz_lid: "Sifatsiz lid",
 };
 
@@ -29,6 +31,7 @@ export const STATUS_BADGE: Record<LeadStatus, string> = {
   konsultatsiyaga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
   konsultatsiyada_boldi: "bg-sky-50 text-sky-700 border border-sky-200",
   yotishga_yozildi: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  qatnovchi: "bg-teal-50 text-teal-700 border border-teal-200",
   sifatsiz_lid: "bg-rose-50 text-rose-700 border border-rose-200",
 };
 
@@ -39,6 +42,7 @@ export const STATUS_ORDER: LeadStatus[] = [
   "konsultatsiyaga_yozildi",
   "konsultatsiyada_boldi",
   "yotishga_yozildi",
+  "qatnovchi",
   "sifatsiz_lid",
 ];
 
