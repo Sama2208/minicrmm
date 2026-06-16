@@ -23,11 +23,6 @@ export const Route = createFileRoute("/_authenticated/foydalanuvchilar")({ compo
 type Op = { id: string; full_name: string; user_id: string | null; is_active: boolean };
 
 function FoydalanuvchilarPage() {
-  const { role, loading } = useAuth();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (!loading && role !== "admin") navigate({ to: "/mening-lidlarim", replace: true });
-  }, [role, loading, navigate]);
 
   const qc = useQueryClient();
   const opsQ = useQuery({
