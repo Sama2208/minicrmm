@@ -394,6 +394,7 @@ function CreateLeadDialog({
       if (!fullName.trim()) throw new Error("Ism kiritilishi shart");
       const { error } = await supabase.from("leads").insert({
         full_name: fullName.trim(),
+        nomer_asosiy: nomerAsosiy || null,
         phone: phone || null,
         region: region || null,
         problem_type: problem || null,
@@ -407,7 +408,7 @@ function CreateLeadDialog({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Lid qo'shildi — operator avtomatik biriktirildi");
-      setFullName(""); setPhone(""); setRegion(""); setProblem("");
+      setFullName(""); setNomerAsosiy(""); setPhone(""); setRegion(""); setProblem("");
       setCanVisit(""); setSource("boshqa"); setCampaign(""); setNotes("");
       onOpenChange(false);
     },
