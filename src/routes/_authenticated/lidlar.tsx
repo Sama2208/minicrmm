@@ -380,6 +380,7 @@ function CreateLeadDialog({
 }) {
   const qc = useQueryClient();
   const [fullName, setFullName] = useState("");
+  const [nomerAsosiy, setNomerAsosiy] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
@@ -393,6 +394,7 @@ function CreateLeadDialog({
       if (!fullName.trim()) throw new Error("Ism kiritilishi shart");
       const { error } = await supabase.from("leads").insert({
         full_name: fullName.trim(),
+        nomer_asosiy: nomerAsosiy || null,
         phone: phone || null,
         region: region || null,
         problem_type: problem || null,
@@ -406,7 +408,7 @@ function CreateLeadDialog({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Lid qo'shildi — operator avtomatik biriktirildi");
-      setFullName(""); setPhone(""); setRegion(""); setProblem("");
+      setFullName(""); setNomerAsosiy(""); setPhone(""); setRegion(""); setProblem("");
       setCanVisit(""); setSource("boshqa"); setCampaign(""); setNotes("");
       onOpenChange(false);
     },
@@ -428,7 +430,11 @@ function CreateLeadDialog({
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1" />
           </div>
           <div>
-            <Label>Telefon</Label>
+            <Label>Asosiy raqam (qo'lda yozilgan)</Label>
+            <Input value={nomerAsosiy} onChange={(e) => setNomerAsosiy(e.target.value)} className="mt-1" placeholder="+998..." />
+          </div>
+          <div>
+            <Label>Telefon (Instagram/FB ro'yxat raqami)</Label>
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="+998..." />
           </div>
           <div>
