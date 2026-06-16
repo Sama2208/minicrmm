@@ -12,8 +12,8 @@ export const Route = createFileRoute("/auth")({ component: AuthPage });
 
 function AuthPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
   const navigate = useNavigate();
   const { session, role, loading } = useAuth();
 
@@ -22,19 +22,12 @@ function AuthPage() {
     navigate({ to: role === "admin" ? "/lidlar" : "/mening-lidlarim", replace: true });
   }, [session, role, loading, navigate]);
 
-  async function onSend(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) toast.error(error.message);
-    else {
-      setSent(true);
-      toast.success("Kirish linki emailingizga yuborildi");
-    }
   }
 
   return (
@@ -42,46 +35,40 @@ function AuthPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>CRM Tizim</CardTitle>
-          <CardDescription>
-            {sent
-              ? "Emailingizni tekshiring — kirish linki yuborildi"
-              : "Emailingizni kiriting, sizga kirish linki yuboramiz"}
-          </CardDescription>
+          <CardDescription>Email va parolingizni kiriting</CardDescription>
         </CardHeader>
         <CardContent>
-          {sent ? (
+          <form onSubmit={onSubmit} className="space-y-3">
+            <div>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1"
+                placeholder="siz@example.com"
+              />
+            </div>
+            <div>
+              <Label>Parol</Label>
+              <Input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
             <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setSent(false);
-                setEmail("");
-              }}
+              type="submit"
+              disabled={busy}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
             >
-              Boshqa email bilan urinish
+              {busy ? "Kirilmoqda..." : "Kirish"}
             </Button>
-          ) : (
-            <form onSubmit={onSend} className="space-y-3">
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1"
-                  placeholder="siz@example.com"
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={busy}
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
-              >
-                {busy ? "Yuborilmoqda..." : "Kirish linkini yuborish"}
-              </Button>
-            </form>
-          )}
+          </form>
         </CardContent>
       </Card>
     </div>
