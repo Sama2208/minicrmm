@@ -283,6 +283,26 @@ function LidlarPage() {
         onOpenChange={setCreateOpen}
         operators={opsQ.data ?? []}
       />
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ushbu lidni o'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu amalni qaytarib bo'lmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => { e.preventDefault(); if (deleteId) deleteLead.mutate(deleteId); }}
+              disabled={deleteLead.isPending}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
