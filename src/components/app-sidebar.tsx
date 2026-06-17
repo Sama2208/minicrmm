@@ -14,6 +14,7 @@ import {
 const ITEMS = [
   { title: "Ariza qoldirish", url: "/ariza", icon: ClipboardList },
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
+  { title: "Mening lidlarim", url: "/mening-lidlarim", icon: ListChecks },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Foydalanuvchilar", url: "/foydalanuvchilar", icon: UserCog },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
