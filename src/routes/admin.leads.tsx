@@ -41,8 +41,21 @@ type Lead = {
 };
 
 function AdminLeadsPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
+
+  const deleteLead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("leads").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-leads"] });
+      toast.success("Lid o'chirildi");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const leadsQ = useQuery({
     queryKey: ["admin-leads"],
