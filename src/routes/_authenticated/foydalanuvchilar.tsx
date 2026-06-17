@@ -44,6 +44,22 @@ function FoydalanuvchilarPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [opId, setOpId] = useState<string>("new");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("operators").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["operators-with-users"] });
+      qc.invalidateQueries({ queryKey: ["operators"] });
+      qc.invalidateQueries({ queryKey: ["operators-full"] });
+      setDeleteId(null);
+      toast.success("O'chirildi");
+    },
+    onError: (e: Error) => { setDeleteId(null); toast.error(e.message); },
+  });
 
   const addUser = useMutation({
     mutationFn: async () => {
