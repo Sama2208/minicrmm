@@ -10,7 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
@@ -27,6 +31,22 @@ function SozlamalarPage() {
   const qc = useQueryClient();
   const [newName, setNewName] = useState("");
   const [newTg, setNewTg] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("operators").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["operators-full"] });
+      qc.invalidateQueries({ queryKey: ["operators"] });
+      qc.invalidateQueries({ queryKey: ["operators-with-users"] });
+      setDeleteId(null);
+      toast.success("O'chirildi");
+    },
+    onError: (e: Error) => { setDeleteId(null); toast.error(e.message); },
+  });
 
   const opsQ = useQuery({
     queryKey: ["operators-full"],
@@ -102,16 +122,40 @@ function SozlamalarPage() {
                 <TableHead>Ism</TableHead>
                 <TableHead>Telegram chat ID</TableHead>
                 <TableHead>Faol</TableHead>
+                <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(opsQ.data ?? []).map((o) => (
-                <OperatorRow key={o.id} op={o} onUpdate={(patch) => update.mutate({ id: o.id, ...patch })} />
+                <OperatorRow
+                  key={o.id}
+                  op={o}
+                  onUpdate={(patch) => update.mutate({ id: o.id, ...patch })}
+                  onDelete={() => setDeleteId(o.id)}
+                />
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>O'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogDescription>Bu amalni qaytarib bo'lmaydi.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteId && remove.mutate(deleteId)}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -119,9 +163,11 @@ function SozlamalarPage() {
 function OperatorRow({
   op,
   onUpdate,
+  onDelete,
 }: {
   op: Operator;
   onUpdate: (patch: Partial<Operator>) => void;
+  onDelete: () => void;
 }) {
   const [name, setName] = useState(op.full_name);
   const [tg, setTg] = useState(op.telegram_chat_id ?? "");
@@ -147,6 +193,16 @@ function OperatorRow({
       </TableCell>
       <TableCell>
         <Switch checked={op.is_active} onCheckedChange={(v) => onUpdate({ is_active: v })} />
+      </TableCell>
+      <TableCell>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </TableCell>
     </TableRow>
   );

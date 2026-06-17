@@ -15,6 +15,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/foydalanuvchilar")({ component: FoydalanuvchilarPage });
@@ -39,6 +44,22 @@ function FoydalanuvchilarPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [opId, setOpId] = useState<string>("new");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("operators").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["operators-with-users"] });
+      qc.invalidateQueries({ queryKey: ["operators"] });
+      qc.invalidateQueries({ queryKey: ["operators-full"] });
+      setDeleteId(null);
+      toast.success("O'chirildi");
+    },
+    onError: (e: Error) => { setDeleteId(null); toast.error(e.message); },
+  });
 
   const addUser = useMutation({
     mutationFn: async () => {
@@ -104,6 +125,7 @@ function FoydalanuvchilarPage() {
                 <TableHead>Ism</TableHead>
                 <TableHead>Login holati</TableHead>
                 <TableHead>Faol</TableHead>
+                <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,12 +138,40 @@ function FoydalanuvchilarPage() {
                       : <Badge variant="outline">Login yo'q</Badge>}
                   </TableCell>
                   <TableCell>{o.is_active ? "Ha" : "Yo'q"}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => setDeleteId(o.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>O'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogDescription>Bu amalni qaytarib bo'lmaydi.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteId && remove.mutate(deleteId)}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
