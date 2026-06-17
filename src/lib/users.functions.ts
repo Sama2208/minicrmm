@@ -13,13 +13,11 @@ export const createOperatorUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data, context }) => {
-    // Authorize: only admins
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _role: "admin" });
     if (!isAdmin) throw new Error("Faqat admin operator yarata oladi");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1. Create auth user
     const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
       password: data.password,
@@ -29,7 +27,6 @@ export const createOperatorUser = createServerFn({ method: "POST" })
     if (cErr || !created.user) throw new Error(cErr?.message ?? "Foydalanuvchi yaratilmadi");
     const newUserId = created.user.id;
 
-    // 2. Find or create operator row, attach user_id
     let opId = data.operator_id;
     if (opId) {
       const { error } = await supabaseAdmin.from("operators")
@@ -50,10 +47,38 @@ export const createOperatorUser = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Grant operator role
     const { error: rErr } = await supabaseAdmin.from("user_roles")
       .insert({ user_id: newUserId, role: "operator" });
     if (rErr && !rErr.message.includes("duplicate")) throw new Error(rErr.message);
 
     return { ok: true, user_id: newUserId, operator_id: opId };
+  });
+
+const DeleteInput = z.object({ operator_id: z.string().uuid() });
+
+export const deleteOperatorUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => DeleteInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _role: "admin" });
+    if (!isAdmin) throw new Error("Faqat admin o'chira oladi");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: op } = await supabaseAdmin.from("operators")
+      .select("user_id").eq("id", data.operator_id).maybeSingle();
+
+    // Unassign leads first so FK doesn't block deletion
+    await supabaseAdmin.from("leads").update({ assigned_to: null }).eq("assigned_to", data.operator_id);
+
+    const { error: opErr } = await supabaseAdmin.from("operators").delete().eq("id", data.operator_id);
+    if (opErr) throw new Error(opErr.message);
+
+    if (op?.user_id) {
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", op.user_id);
+      const { error: uErr } = await supabaseAdmin.auth.admin.deleteUser(op.user_id);
+      if (uErr) throw new Error(uErr.message);
+    }
+
+    return { ok: true };
   });
