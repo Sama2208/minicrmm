@@ -67,6 +67,7 @@ function LidlarPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
