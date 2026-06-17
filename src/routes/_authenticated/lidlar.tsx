@@ -131,6 +131,19 @@ function LidlarPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const deleteLead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("leads").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      toast.success("Lid o'chirildi");
+      setDeleteId(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const selected = filtered.find((l) => l.id === selectedId) ?? leadsQ.data?.find((l) => l.id === selectedId);
 
   return (
