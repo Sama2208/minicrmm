@@ -98,7 +98,7 @@ function AdminLeadsPage() {
               <TableHead className="w-16 text-center font-semibold">№</TableHead>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
-              <TableHead>Asosiy raqam</TableHead>
+              <TableHead>Raqam 2</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Manba</TableHead>
               <TableHead>Hudud</TableHead>

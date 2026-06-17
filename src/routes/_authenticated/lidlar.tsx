@@ -188,7 +188,7 @@ function LidlarPage() {
             <TableRow>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
-              <TableHead>Asosiy raqam</TableHead>
+              <TableHead>Raqam 2</TableHead>
               <TableHead>Viloyat</TableHead>
               <TableHead>Muammo tavsifi</TableHead>
               <TableHead>Kela olasizmi?</TableHead>
@@ -430,7 +430,7 @@ function CreateLeadDialog({
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1" />
           </div>
           <div>
-            <Label>Asosiy raqam (qo'lda yozilgan)</Label>
+            <Label>Raqam 2</Label>
             <Input value={nomerAsosiy} onChange={(e) => setNomerAsosiy(e.target.value)} className="mt-1" placeholder="+998..." />
           </div>
           <div>
