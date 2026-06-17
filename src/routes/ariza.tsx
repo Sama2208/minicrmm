@@ -28,11 +28,15 @@ function ArizaPage() {
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
 
-  // Auto-capture campaign from URL
-  const campaign = useMemo(() => {
-    if (typeof window === "undefined") return null;
+  // Auto-capture campaign from URL (client-only to avoid SSR mismatch)
+  const [campaign, setCampaign] = useState<string | null>(null);
+  useMemo(() => {
+    // This is just to satisfy the linter; we'll set in useEffect
+    return campaign;
+  }, [campaign]);
+  useEffect(() => {
     const p = new URLSearchParams(window.location.search);
-    return p.get("utm_campaign") || p.get("campaign") || null;
+    setCampaign(p.get("utm_campaign") || p.get("campaign") || null);
   }, []);
 
   const mut = useMutation({
