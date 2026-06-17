@@ -18,12 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Trash2 } from "lucide-react";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -131,18 +126,6 @@ function LidlarPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const deleteLead = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("leads").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Lid o'chirildi");
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
   const selected = filtered.find((l) => l.id === selectedId) ?? leadsQ.data?.find((l) => l.id === selectedId);
 
   return (
@@ -214,15 +197,14 @@ function LidlarPage() {
               <TableHead>Operator</TableHead>
               <TableHead>Konsultatsiya sanasi</TableHead>
               <TableHead>Yaratilgan sana</TableHead>
-              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading && (
-              <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
             )}
             {!leadsQ.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
             )}
             {filtered.map((l) => (
               <TableRow
@@ -255,32 +237,6 @@ function LidlarPage() {
                 <TableCell>{l.assigned_to ? opMap.get(l.assigned_to) ?? "—" : "—"}</TableCell>
                 <TableCell>{formatDate(l.appointment_date)}</TableCell>
                 <TableCell>{formatDate(l.created_at)}</TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Lidni o'chirishni tasdiqlang</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          <b>{l.full_name}</b> ma'lumotlari butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteLead.mutate(l.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          O'chirish
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
