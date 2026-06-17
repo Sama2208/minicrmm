@@ -220,6 +220,17 @@ function LidlarPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id))}
+                  onCheckedChange={(v) => {
+                    if (v) setSelectedIds(new Set(filtered.map((l) => l.id)));
+                    else setSelectedIds(new Set());
+                  }}
+                  aria-label="Hammasini tanlash"
+                />
+              </TableHead>
+              <TableHead className="w-[50px]">#</TableHead>
               <TableHead>Ism</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead>Raqam 2</TableHead>
@@ -231,22 +242,36 @@ function LidlarPage() {
               <TableHead>Operator</TableHead>
               <TableHead>Konsultatsiya sanasi</TableHead>
               <TableHead>Yaratilgan sana</TableHead>
-              <TableHead className="w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading && (
-              <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={13} className="text-center text-muted-foreground py-8">Yuklanmoqda...</TableCell></TableRow>
             )}
             {!leadsQ.isLoading && filtered.length === 0 && (
-              <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={13} className="text-center text-muted-foreground py-8">Lidlar topilmadi</TableCell></TableRow>
             )}
-            {filtered.map((l) => (
+            {filtered.map((l, idx) => (
               <TableRow
                 key={l.id}
                 className="cursor-pointer"
+                data-state={selectedIds.has(l.id) ? "selected" : undefined}
                 onClick={() => setSelectedId(l.id)}
               >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedIds.has(l.id)}
+                    onCheckedChange={(v) => {
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        if (v) next.add(l.id); else next.delete(l.id);
+                        return next;
+                      });
+                    }}
+                    aria-label="Tanlash"
+                  />
+                </TableCell>
+                <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
                 <TableCell className="font-medium">{l.full_name}</TableCell>
                 <TableCell>{l.phone ?? "—"}</TableCell>
                 <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
@@ -272,17 +297,6 @@ function LidlarPage() {
                 <TableCell>{l.assigned_to ? opMap.get(l.assigned_to) ?? "—" : "—"}</TableCell>
                 <TableCell>{formatDate(l.appointment_date)}</TableCell>
                 <TableCell>{formatDate(l.created_at)}</TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="h-8 w-8"
-                    onClick={() => setDeleteId(l.id)}
-                    aria-label="O'chirish"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -299,20 +313,20 @@ function LidlarPage() {
         onOpenChange={setCreateOpen}
         operators={opsQ.data ?? []}
       />
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ushbu lidni o'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogTitle>Tanlangan lidlarni o'chirishni tasdiqlaysizmi?</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu amalni qaytarib bo'lmaydi.
+              {selectedIds.size} ta lid o'chiriladi. Bu amalni qaytarib bo'lmaydi.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={(e) => { e.preventDefault(); if (deleteId) deleteLead.mutate(deleteId); }}
-              disabled={deleteLead.isPending}
+              onClick={(e) => { e.preventDefault(); bulkDelete.mutate(Array.from(selectedIds)); }}
+              disabled={bulkDelete.isPending}
             >
               O'chirish
             </AlertDialogAction>
