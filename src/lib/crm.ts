@@ -8,7 +8,7 @@ export type LeadStatus =
   | "qatnovchi"
   | "sifatsiz_lid";
 
-export type LeadSource = "facebook" | "instagram" | "website" | "boshqa";
+export type LeadSource = "facebook" | "instagram" | "telegram" | "friends" | "website" | "boshqa";
 
 export type CanVisitClinic = "ha" | "yoq" | "bilmayman";
 
@@ -63,15 +63,19 @@ export const CONVERSION_STATUS: LeadStatus = "yotishga_yozildi";
 export const SOURCE_LABEL: Record<LeadSource, string> = {
   facebook: "Facebook",
   instagram: "Instagram",
+  telegram: "Telegram",
+  friends: "Do'stlar orqali",
   website: "Sayt",
   boshqa: "Boshqa",
 };
 
-export const SOURCE_LIST: LeadSource[] = ["facebook", "instagram", "website", "boshqa"];
+export const SOURCE_LIST: LeadSource[] = ["facebook", "instagram", "telegram", "friends", "website", "boshqa"];
 
 export const SOURCE_COLOR: Record<LeadSource, string> = {
   facebook: "#2563eb",
   instagram: "#db2777",
+  telegram: "#0ea5e9",
+  friends: "#8b5cf6",
   website: "#059669",
   boshqa: "#6b7280",
 };

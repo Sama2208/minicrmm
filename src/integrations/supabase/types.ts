@@ -215,7 +215,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "operator"
       clinic_visit: "ha" | "yoq" | "bilmayman"
-      lead_source: "facebook" | "instagram" | "website" | "boshqa"
+      lead_source:
+        | "facebook"
+        | "instagram"
+        | "website"
+        | "boshqa"
+        | "telegram"
+        | "friends"
       lead_status:
         | "yangi"
         | "kotarmadi"
@@ -354,7 +360,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "operator"],
       clinic_visit: ["ha", "yoq", "bilmayman"],
-      lead_source: ["facebook", "instagram", "website", "boshqa"],
+      lead_source: [
+        "facebook",
+        "instagram",
+        "website",
+        "boshqa",
+        "telegram",
+        "friends",
+      ],
       lead_status: [
         "yangi",
         "kotarmadi",
