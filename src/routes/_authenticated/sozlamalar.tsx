@@ -122,16 +122,40 @@ function SozlamalarPage() {
                 <TableHead>Ism</TableHead>
                 <TableHead>Telegram chat ID</TableHead>
                 <TableHead>Faol</TableHead>
+                <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(opsQ.data ?? []).map((o) => (
-                <OperatorRow key={o.id} op={o} onUpdate={(patch) => update.mutate({ id: o.id, ...patch })} />
+                <OperatorRow
+                  key={o.id}
+                  op={o}
+                  onUpdate={(patch) => update.mutate({ id: o.id, ...patch })}
+                  onDelete={() => setDeleteId(o.id)}
+                />
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>O'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogDescription>Bu amalni qaytarib bo'lmaydi.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteId && remove.mutate(deleteId)}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -139,9 +163,11 @@ function SozlamalarPage() {
 function OperatorRow({
   op,
   onUpdate,
+  onDelete,
 }: {
   op: Operator;
   onUpdate: (patch: Partial<Operator>) => void;
+  onDelete: () => void;
 }) {
   const [name, setName] = useState(op.full_name);
   const [tg, setTg] = useState(op.telegram_chat_id ?? "");
@@ -167,6 +193,16 @@ function OperatorRow({
       </TableCell>
       <TableCell>
         <Switch checked={op.is_active} onCheckedChange={(v) => onUpdate({ is_active: v })} />
+      </TableCell>
+      <TableCell>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </TableCell>
     </TableRow>
   );
