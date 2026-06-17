@@ -215,6 +215,7 @@ function LidlarPage() {
               <TableHead>Operator</TableHead>
               <TableHead>Konsultatsiya sanasi</TableHead>
               <TableHead>Yaratilgan sana</TableHead>
+              <TableHead className="w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
