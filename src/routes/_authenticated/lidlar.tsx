@@ -69,6 +69,8 @@ function LidlarPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
