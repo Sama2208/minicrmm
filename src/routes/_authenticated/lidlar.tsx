@@ -202,6 +202,19 @@ function LidlarPage() {
         </Button>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2">
+          <span className="text-sm">{selectedIds.size} ta tanlangan</span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkDeleteOpen(true)}
+          >
+            <Trash2 className="h-4 w-4" /> Tanlangan lidlarni o'chirish
+          </Button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="rounded-lg border bg-card overflow-hidden">
         <Table>
