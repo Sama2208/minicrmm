@@ -31,6 +31,22 @@ function SozlamalarPage() {
   const qc = useQueryClient();
   const [newName, setNewName] = useState("");
   const [newTg, setNewTg] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("operators").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["operators-full"] });
+      qc.invalidateQueries({ queryKey: ["operators"] });
+      qc.invalidateQueries({ queryKey: ["operators-with-users"] });
+      setDeleteId(null);
+      toast.success("O'chirildi");
+    },
+    onError: (e: Error) => { setDeleteId(null); toast.error(e.message); },
+  });
 
   const opsQ = useQuery({
     queryKey: ["operators-full"],
