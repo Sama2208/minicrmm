@@ -133,15 +133,16 @@ function LidlarPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const deleteLead = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("leads").delete().eq("id", id);
+  const bulkDelete = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.from("leads").delete().in("id", ids);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, ids) => {
       qc.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Lid o'chirildi");
-      setDeleteId(null);
+      toast.success(`${ids.length} ta lid o'chirildi`);
+      setSelectedIds(new Set());
+      setBulkDeleteOpen(false);
     },
     onError: (e: Error) => toast.error(e.message),
   });
