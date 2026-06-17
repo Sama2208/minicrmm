@@ -125,6 +125,7 @@ function FoydalanuvchilarPage() {
                 <TableHead>Ism</TableHead>
                 <TableHead>Login holati</TableHead>
                 <TableHead>Faol</TableHead>
+                <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -137,12 +138,40 @@ function FoydalanuvchilarPage() {
                       : <Badge variant="outline">Login yo'q</Badge>}
                   </TableCell>
                   <TableCell>{o.is_active ? "Ha" : "Yo'q"}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => setDeleteId(o.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>O'chirishni tasdiqlaysizmi?</AlertDialogTitle>
+            <AlertDialogDescription>Bu amalni qaytarib bo'lmaydi.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteId && remove.mutate(deleteId)}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
