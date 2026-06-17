@@ -6,9 +6,8 @@ const PublicLeadSchema = z.object({
   phone: z.string().trim().min(5).max(40),
   region: z.string().trim().min(1).max(120),
   problem_description: z.string().trim().min(2).max(2000),
-  can_visit_clinic: z.enum(["ha", "yoq", "bilmayman"]),
   campaign_name: z.string().trim().max(200).optional().nullable(),
-  source: z.enum(["facebook", "instagram", "website", "boshqa"]).optional(),
+  source: z.enum(["facebook", "instagram", "telegram", "friends", "website", "boshqa"]).optional(),
 });
 
 export const submitPublicLead = createServerFn({ method: "POST" })
@@ -20,7 +19,6 @@ export const submitPublicLead = createServerFn({ method: "POST" })
       phone: data.phone,
       region: data.region,
       problem_type: data.problem_description,
-      can_visit_clinic: data.can_visit_clinic,
       campaign_name: data.campaign_name || null,
       source: data.source ?? "website",
     });

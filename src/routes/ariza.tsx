@@ -6,21 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { submitPublicLead } from "@/lib/leads.functions";
-import { CAN_VISIT_LABEL, type CanVisitClinic } from "@/lib/crm";
 import { CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/ariza")({
   component: ArizaPage,
   head: () => ({
     meta: [
-      { title: "Ariza qoldirish — Nevrologiya markazi" },
-      { name: "description", content: "Bemorlar uchun onlayn ariza. Ma'lumotlaringizni qoldiring — operatorimiz tez orada bog'lanadi." },
+      { title: "Klinikaga qabulga yozilish" },
+      { name: "description", content: "Formani to'ldiring, operatorimiz siz bilan bog'lanadi." },
     ],
   }),
 });
+
+const SOURCE_OPTIONS = [
+  { value: "facebook", label: "Facebook" },
+  { value: "instagram", label: "Instagram" },
+  { value: "telegram", label: "Telegram" },
+  { value: "friends", label: "Do'stlar orqali" },
+  { value: "boshqa", label: "Boshqa" },
+];
 
 function ArizaPage() {
   const submit = useServerFn(submitPublicLead);
@@ -29,7 +42,7 @@ function ArizaPage() {
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
-  const [canVisit, setCanVisit] = useState<CanVisitClinic | "">("");
+  const [source, setSource] = useState("");
 
   // Auto-capture campaign from URL
   const campaign = useMemo(() => {
@@ -40,16 +53,14 @@ function ArizaPage() {
 
   const mut = useMutation({
     mutationFn: async () => {
-      if (!canVisit) throw new Error("Klinikaga kelish imkoniyatingizni tanlang");
       await submit({
         data: {
           full_name: fullName,
           phone,
           region,
           problem_description: problem,
-          can_visit_clinic: canVisit,
           campaign_name: campaign,
-          source: "website",
+          source: source as "facebook" | "instagram" | "telegram" | "friends" | "website" | "boshqa" | undefined,
         },
       });
     },
@@ -64,7 +75,7 @@ function ArizaPage() {
           <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
           <h1 className="text-2xl font-bold">Arizangiz qabul qilindi!</h1>
           <p className="text-muted-foreground">
-            Operatorimiz tez orada siz bilan ko'rsatilgan telefon raqami orqali bog'lanadi.
+            Tez orada bog'lanamiz.
           </p>
         </div>
       </div>
@@ -74,9 +85,9 @@ function ArizaPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white px-4 py-10">
       <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
-        <h1 className="text-2xl font-bold mb-1">Ariza qoldirish</h1>
+        <h1 className="text-2xl font-bold mb-1">Klinikaga qabulga yozilish</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Ma'lumotlaringizni to'ldiring — mutaxassisimiz siz bilan tez orada bog'lanadi.
+          Formani to'ldiring, operatorimiz siz bilan bog'lanadi
         </p>
 
         <form
@@ -87,11 +98,12 @@ function ArizaPage() {
           }}
         >
           <div>
-            <Label>Ism va familiya *</Label>
+            <Label>Ism *</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="mt-1"
+              placeholder="Ismingizni kiriting"
               required
               maxLength={120}
             />
@@ -108,42 +120,40 @@ function ArizaPage() {
             />
           </div>
           <div>
-            <Label>Viloyat / Shahar *</Label>
+            <Label>Shahar / Viloyat</Label>
             <Input
               value={region}
               onChange={(e) => setRegion(e.target.value)}
               className="mt-1"
               placeholder="Toshkent"
-              required
               maxLength={120}
             />
           </div>
           <div>
-            <Label>Muammoni qisqacha tasvirlab bering *</Label>
+            <Label>Muammo tavsifi</Label>
             <Textarea
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
               rows={4}
               className="mt-1"
-              placeholder="Masalan: 5 yoshli bolam yaxshi gapira olmayapti..."
-              required
+              placeholder="Muammongizni qisqacha tavsiflab bering..."
               maxLength={2000}
             />
           </div>
           <div>
-            <Label>Klinikaga kela olasizmi? *</Label>
-            <RadioGroup
-              value={canVisit}
-              onValueChange={(v) => setCanVisit(v as CanVisitClinic)}
-              className="mt-2 flex gap-4"
-            >
-              {(Object.keys(CAN_VISIT_LABEL) as CanVisitClinic[]).map((k) => (
-                <label key={k} className="flex items-center gap-2 cursor-pointer">
-                  <RadioGroupItem value={k} id={`cv-${k}`} />
-                  <span className="text-sm">{CAN_VISIT_LABEL[k]}</span>
-                </label>
-              ))}
-            </RadioGroup>
+            <Label>Qayerdan bildingiz?</Label>
+            <Select value={source} onValueChange={setSource}>
+              <SelectTrigger className="mt-1 w-full">
+                <SelectValue placeholder="Tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {SOURCE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Button
@@ -151,7 +161,7 @@ function ArizaPage() {
             disabled={mut.isPending}
             className="w-full bg-emerald-600 hover:bg-emerald-700 h-11 text-base"
           >
-            {mut.isPending ? "Yuborilmoqda..." : "Arizani yuborish"}
+            {mut.isPending ? "Yuborilmoqda..." : "Yuborish"}
           </Button>
         </form>
       </div>
