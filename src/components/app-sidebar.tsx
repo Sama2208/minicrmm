@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, Settings, UserCog } from "lucide-react";
+import { Users, BarChart3, Settings, UserCog, ClipboardList } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const ITEMS = [
+  { title: "Ariza qoldirish", url: "/ariza", icon: ClipboardList },
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Foydalanuvchilar", url: "/foydalanuvchilar", icon: UserCog },
