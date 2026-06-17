@@ -256,6 +256,17 @@ function LidlarPage() {
                 <TableCell>{l.assigned_to ? opMap.get(l.assigned_to) ?? "—" : "—"}</TableCell>
                 <TableCell>{formatDate(l.appointment_date)}</TableCell>
                 <TableCell>{formatDate(l.created_at)}</TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    className="h-8 w-8"
+                    onClick={() => setDeleteId(l.id)}
+                    aria-label="O'chirish"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
