@@ -1,11 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/admin-shell";
 
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -33,8 +41,21 @@ type Lead = {
 };
 
 function AdminLeadsPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
+
+  const deleteLead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("leads").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-leads"] });
+      toast.success("Lid o'chirildi");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const leadsQ = useQuery({
     queryKey: ["admin-leads"],
@@ -105,13 +126,14 @@ function AdminLeadsPage() {
               <TableHead>Kela olasizmi?</TableHead>
               <TableHead>Operator</TableHead>
               <TableHead>Sana</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Yuklanmoqda...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-slate-500 py-8">Yuklanmoqda...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
+              <TableRow><TableCell colSpan={11} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
             ) : filtered.map((l, idx) => (
               <TableRow key={l.id}>
                 <TableCell className="text-center text-slate-600 font-medium">{idx + 1}</TableCell>
@@ -128,6 +150,29 @@ function AdminLeadsPage() {
                 </TableCell>
                 <TableCell>{l.assigned_to ? opMap.get(l.assigned_to) ?? "—" : "—"}</TableCell>
                 <TableCell>{new Date(l.created_at).toLocaleDateString("uz-UZ")}</TableCell>
+                <TableCell>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Lidni o'chirishni tasdiqlang</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <b>{l.full_name}</b> ma'lumotlari butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteLead.mutate(l.id)} className="bg-red-600 hover:bg-red-700">
+                          O'chirish
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
