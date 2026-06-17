@@ -129,27 +129,36 @@ function FoydalanuvchilarPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(opsQ.data ?? []).map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="font-medium">{o.full_name}</TableCell>
-                  <TableCell>
-                    {o.user_id
-                      ? <Badge className="bg-emerald-600">Login bog'langan</Badge>
-                      : <Badge variant="outline">Login yo'q</Badge>}
-                  </TableCell>
-                  <TableCell>{o.is_active ? "Ha" : "Yo'q"}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => setDeleteId(o.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {(() => {
+                const seen = new Map<string, Op>();
+                for (const o of opsQ.data ?? []) {
+                  const key = o.full_name.trim().toLowerCase();
+                  const prev = seen.get(key);
+                  // prefer the row that has a linked user_id
+                  if (!prev || (!prev.user_id && o.user_id)) seen.set(key, o);
+                }
+                return Array.from(seen.values()).map((o) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-medium">{o.full_name}</TableCell>
+                    <TableCell>
+                      {o.user_id
+                        ? <Badge className="bg-emerald-600">Login bog'langan</Badge>
+                        : <Badge variant="outline">Login yo'q</Badge>}
+                    </TableCell>
+                    <TableCell>{o.is_active ? "Ha" : "Yo'q"}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setDeleteId(o.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ));
+              })()}
             </TableBody>
           </Table>
         </CardContent>
