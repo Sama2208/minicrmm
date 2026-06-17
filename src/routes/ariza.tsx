@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { submitPublicLead } from "@/lib/leads.functions";
 import { CheckCircle2 } from "lucide-react";
@@ -27,14 +20,6 @@ export const Route = createFileRoute("/ariza")({
   }),
 });
 
-const SOURCE_OPTIONS = [
-  { value: "facebook", label: "Facebook" },
-  { value: "instagram", label: "Instagram" },
-  { value: "telegram", label: "Telegram" },
-  { value: "friends", label: "Do'stlar orqali" },
-  { value: "boshqa", label: "Boshqa" },
-];
-
 function ArizaPage() {
   const submit = useServerFn(submitPublicLead);
   const [done, setDone] = useState(false);
@@ -42,7 +27,6 @@ function ArizaPage() {
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
-  const [source, setSource] = useState("");
 
   // Auto-capture campaign from URL
   const campaign = useMemo(() => {
@@ -60,7 +44,6 @@ function ArizaPage() {
           region,
           problem_description: problem,
           campaign_name: campaign,
-          source: source as "facebook" | "instagram" | "telegram" | "friends" | "website" | "boshqa" | undefined,
         },
       });
     },
@@ -139,21 +122,6 @@ function ArizaPage() {
               placeholder="Muammongizni qisqacha tavsiflab bering..."
               maxLength={2000}
             />
-          </div>
-          <div>
-            <Label>Qayerdan bildingiz?</Label>
-            <Select value={source} onValueChange={setSource}>
-              <SelectTrigger className="mt-1 w-full">
-                <SelectValue placeholder="Tanlang" />
-              </SelectTrigger>
-              <SelectContent>
-                {SOURCE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <Button
