@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, UserCog, LogOut } from "lucide-react";
+import { Users, BarChart3, UserCog, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
@@ -50,7 +50,18 @@ export function AdminShell({ title, children }: { title: string; children: React
         </div>
       </aside>
       <main className="flex-1 overflow-auto">
-        <header className="bg-white border-b px-6 py-4">
+        <header className="bg-white border-b px-6 py-4 flex items-center gap-3">
+          {pathname !== "/admin" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 -ml-2"
+              onClick={() => typeof window !== "undefined" && window.history.back()}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Orqaga</span>
+            </Button>
+          )}
           <h1 className="text-xl font-semibold text-slate-800">{title}</h1>
         </header>
         <div className="p-6">{children}</div>
