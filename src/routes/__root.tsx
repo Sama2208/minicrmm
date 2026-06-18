@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -144,6 +146,17 @@ function Shell() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-3 border-b bg-background px-4 sticky top-0 z-10">
             <SidebarTrigger />
+            {pathname !== "/" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => typeof window !== "undefined" && window.history.back()}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Orqaga</span>
+              </Button>
+            )}
             <h1 className="text-lg font-semibold">{title}</h1>
           </header>
           <main className="flex-1 p-4 md:p-6 min-w-0">
