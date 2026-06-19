@@ -32,6 +32,8 @@ import {
   CAN_VISIT_LABEL, CAN_VISIT_BADGE,
   type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
+import { LidlarKanban } from "@/components/lidlar-kanban";
+
 
 export const Route = createFileRoute("/_authenticated/lidlar")({ component: LidlarPage });
 
