@@ -323,6 +323,11 @@ function LidlarPage() {
         </Table>
       </div>
 
+      {view === "kanban" && (
+        <LidlarKanban leads={filtered} operators={opsQ.data ?? []} />
+      )}
+
+
       <LeadDetailSheet
         lead={selected ?? null}
         operators={opsQ.data ?? []}
