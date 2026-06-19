@@ -260,10 +260,12 @@ function KanbanCard({
   }, [lead.id, lead.assigned_to, lead.notes]);
 
   const saveField = async (patch: Record<string, unknown>) => {
-    const { error } = await supabase.from("leads").update(patch).eq("id", lead.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("leads").update(patch as any).eq("id", lead.id);
     if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["leads"] });
   };
+
 
   const borderClass =
     accent === "green" ? "border border-[#97C459]" :
