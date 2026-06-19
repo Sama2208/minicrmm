@@ -32,6 +32,8 @@ import {
   CAN_VISIT_LABEL, CAN_VISIT_BADGE,
   type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
+import { LidlarKanban } from "@/components/lidlar-kanban";
+
 
 export const Route = createFileRoute("/_authenticated/lidlar")({ component: LidlarPage });
 
@@ -70,6 +72,8 @@ function LidlarPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [view, setView] = useState<"table" | "kanban">("table");
+
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
@@ -151,8 +155,23 @@ function LidlarPage() {
 
   return (
     <div className="space-y-4">
+      {/* View toggle */}
+      <div className="flex items-center gap-1 bg-slate-100 rounded-md p-1 w-fit">
+        <button
+          type="button"
+          onClick={() => setView("table")}
+          className={`px-3 py-1 text-sm rounded ${view === "table" ? "bg-white shadow text-slate-900" : "text-slate-600"}`}
+        >Jadval</button>
+        <button
+          type="button"
+          onClick={() => setView("kanban")}
+          className={`px-3 py-1 text-sm rounded ${view === "kanban" ? "bg-white shadow text-slate-900" : "text-slate-600"}`}
+        >Kanban</button>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
+
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -216,7 +235,8 @@ function LidlarPage() {
       )}
 
       {/* Table */}
-      <div className="rounded-lg border bg-card overflow-hidden">
+      <div className="rounded-lg border bg-card overflow-hidden" style={{ display: view === "table" ? undefined : "none" }}>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -302,6 +322,11 @@ function LidlarPage() {
           </TableBody>
         </Table>
       </div>
+
+      {view === "kanban" && (
+        <LidlarKanban leads={filtered} operators={opsQ.data ?? []} />
+      )}
+
 
       <LeadDetailSheet
         lead={selected ?? null}
