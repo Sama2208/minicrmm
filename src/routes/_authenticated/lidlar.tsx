@@ -72,6 +72,8 @@ function LidlarPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [view, setView] = useState<"table" | "kanban">("table");
+
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
