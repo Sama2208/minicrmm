@@ -235,7 +235,8 @@ function LidlarPage() {
       )}
 
       {/* Table */}
-      <div className="rounded-lg border bg-card overflow-hidden">
+      <div className="rounded-lg border bg-card overflow-hidden" style={{ display: view === "table" ? undefined : "none" }}>
+
         <Table>
           <TableHeader>
             <TableRow>
