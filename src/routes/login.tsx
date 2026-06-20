@@ -1,0 +1,126 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/login")({
+  ssr: false,
+  component: LoginPage,
+});
+
+function LoginPage() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/lidlar" });
+    });
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Email va parol kiritilishi shart");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate({ to: "/lidlar" });
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        toast.success("Ro'yxatdan o'tdingiz! Emailingizni tasdiqlang.");
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Xatolik yuz berdi";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border p-8 space-y-6">
+        <div className="text-center space-y-1">
+          <h1 className="text-xl font-semibold text-slate-900">
+            {mode === "signin" ? "Tizimga kirish" : "Ro'yxatdan o'tish"}
+          </h1>
+          <p className="text-sm text-slate-500">Shaxzod CRM</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="email@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Parol</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            />
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            disabled={loading}
+          >
+            {loading
+              ? "Yuklanmoqda..."
+              : mode === "signin"
+              ? "Kirish"
+              : "Ro'yxatdan o'tish"}
+          </Button>
+        </form>
+
+        <div className="text-center text-sm text-slate-500">
+          {mode === "signin" ? (
+            <>
+              Hisobingiz yo'qmi?{" "}
+              <button
+                type="button"
+                className="text-emerald-600 hover:underline font-medium"
+                onClick={() => setMode("signup")}
+              >
+                Ro'yxatdan o'ting
+              </button>
+            </>
+          ) : (
+            <>
+              Hisobingiz bormi?{" "}
+              <button
+                type="button"
+                className="text-emerald-600 hover:underline font-medium"
+                onClick={() => setMode("signin")}
+              >
+                Kirish
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

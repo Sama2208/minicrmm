@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ArizaRouteImport } from './routes/ariza'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -24,6 +25,11 @@ import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_authenticated/foydalanuvchilar'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
   '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ariza'
     | '/auth'
+    | '/login'
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/lidlar'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ariza'
     | '/auth'
+    | '/login'
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/lidlar'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/ariza'
     | '/auth'
+    | '/login'
     | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/lidlar'
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ArizaRoute: typeof ArizaRoute
   AuthRoute: typeof AuthRoute
+  LoginRoute: typeof LoginRoute
   AdminHisobotlarRoute: typeof AdminHisobotlarRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -206,6 +219,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -331,6 +351,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ArizaRoute: ArizaRoute,
   AuthRoute: AuthRoute,
+  LoginRoute: LoginRoute,
   AdminHisobotlarRoute: AdminHisobotlarRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminLoginRoute: AdminLoginRoute,
