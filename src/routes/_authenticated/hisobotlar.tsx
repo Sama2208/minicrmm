@@ -13,7 +13,7 @@ import {
   LineChart, Line, Legend,
 } from "recharts";
 import {
-  STATUS_LABEL, STATUS_ORDER, SOURCE_LABEL, SOURCE_LIST, SOURCE_COLOR,
+  STATUS_LABEL, STATUS_ORDER, STATUS_BADGE, SOURCE_LABEL, SOURCE_LIST, SOURCE_COLOR,
   CONVERSION_STATUS,
   type LeadStatus, type LeadSource,
 } from "@/lib/crm";
@@ -134,6 +134,24 @@ function HisobotlarPage() {
         <KpiCard title="Yotishga yozilgan" value={converted} color="text-emerald-600" />
         <KpiCard title="Konversiya" value={`${conversion}%`} color="text-violet-600" />
         <KpiCard title="Faol pipeline" value={activePipeline} color="text-amber-600" />
+      </div>
+
+      {/* Kanban ustunlari bo'yicha */}
+      <div>
+        <h2 className="text-base font-semibold text-slate-700 mb-3">Kanban ustunlari bo'yicha</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {STATUS_ORDER.map((s) => {
+            const count = leads.filter((l) => l.status === s).length;
+            const pct = total ? Math.round((count / total) * 100) : 0;
+            return (
+              <div key={s} className={`rounded-lg p-4 ${STATUS_BADGE[s]}`}>
+                <div className="text-xs font-medium mb-1">{STATUS_LABEL[s]}</div>
+                <div className="text-2xl font-bold">{count}</div>
+                <div className="text-xs opacity-60 mt-0.5">{pct}% jami</div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Funnel */}
