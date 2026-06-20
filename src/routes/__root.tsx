@@ -135,7 +135,7 @@ function Shell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = TITLES[pathname] ?? "CRM";
 
-  if (pathname === "/auth" || pathname === "/ariza" || pathname.startsWith("/admin")) {
+  if (pathname === "/auth" || pathname === "/login" || pathname === "/ariza" || pathname.startsWith("/admin")) {
     return <Outlet />;
   }
 

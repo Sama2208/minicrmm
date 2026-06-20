@@ -34,10 +34,22 @@ function LoginPage() {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error("Email yoki parol noto'g'ri. Qayta tekshiring.");
+        }
+        throw error;
+      }
       navigate({ to: "/lidlar" });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Xatolik yuz berdi";
+      const raw = err instanceof Error ? err.message : "Xatolik yuz berdi";
+      const isNetwork =
+        raw === "Load failed" ||
+        raw.toLowerCase().includes("fetch") ||
+        raw.toLowerCase().includes("network");
+      const msg = isNetwork
+        ? "Server bilan aloqa yo'q. Internetni tekshiring va sahifani yangilang."
+        : raw;
       toast.error(msg);
     } finally {
       setLoading(false);
