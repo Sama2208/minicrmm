@@ -137,11 +137,25 @@ export function LidlarKanban({
       const { error } = await supabase.from("leads").update({ status }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Status yangilandi");
+    onMutate: async ({ id, status }) => {
+      await qc.cancelQueries({ queryKey: ["leads"] });
+      const snapshots = qc.getQueriesData({ queryKey: ["leads"] });
+      snapshots.forEach(([key, data]) => {
+        if (!Array.isArray(data)) return;
+        qc.setQueryData(key, (data as KanbanLead[]).map((l) =>
+          l.id === id ? { ...l, status } : l
+        ));
+      });
+      return { snapshots };
     },
-    onError: (e: Error) => toast.error(e.message),
+    onSuccess: () => {
+      toast.success("Status yangilandi");
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => qc.setQueryData(key, data));
+      toast.error(e.message);
+    },
   });
 
   return (
