@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { submitPublicLead } from "@/lib/leads.functions";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/ariza")({
   component: ArizaPage,
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/ariza")({
 
 function ArizaPage() {
   const submit = useServerFn(submitPublicLead);
+  const navigate = useNavigate();
   const [done, setDone] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -71,6 +72,16 @@ function ArizaPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white px-4 py-10">
+      <div className="max-w-xl mx-auto">
+        <Button
+          variant="ghost"
+          className="mb-4 gap-2 text-slate-600 hover:text-slate-900 -ml-2"
+          onClick={() => navigate({ to: "/lidlar" })}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Orqaga
+        </Button>
+      </div>
       <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <h1 className="text-2xl font-bold mb-1">Klinikaga qabulga yozilish</h1>
         <p className="text-sm text-muted-foreground mb-6">

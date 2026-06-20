@@ -1,8 +1,11 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, Settings, UserCog, ClipboardList } from "lucide-react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Users, BarChart3, Settings, UserCog, ClipboardList, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -21,7 +24,13 @@ const ITEMS = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
   const items = ITEMS;
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -52,6 +61,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t p-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-slate-600 hover:text-red-600 hover:bg-red-50 group-data-[collapsible=icon]:justify-center"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span className="group-data-[collapsible=icon]:hidden">Chiqish</span>
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
