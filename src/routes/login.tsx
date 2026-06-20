@@ -13,7 +13,6 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,15 +31,9 @@ function LoginPage() {
     }
     setLoading(true);
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate({ to: "/lidlar" });
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast.success("Ro'yxatdan o'tdingiz! Emailingizni tasdiqlang.");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate({ to: "/lidlar" });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Xatolik yuz berdi";
       toast.error(msg);
@@ -53,9 +46,7 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border p-8 space-y-6">
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-semibold text-slate-900">
-            {mode === "signin" ? "Tizimga kirish" : "Ro'yxatdan o'tish"}
-          </h1>
+          <h1 className="text-xl font-semibold text-slate-900">Tizimga kirish</h1>
           <p className="text-sm text-slate-500">Shaxzod CRM</p>
         </div>
 
@@ -79,7 +70,7 @@ function LoginPage() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              autoComplete="current-password"
             />
           </div>
           <Button
@@ -87,39 +78,9 @@ function LoginPage() {
             className="w-full bg-emerald-600 hover:bg-emerald-700"
             disabled={loading}
           >
-            {loading
-              ? "Yuklanmoqda..."
-              : mode === "signin"
-              ? "Kirish"
-              : "Ro'yxatdan o'tish"}
+            {loading ? "Yuklanmoqda..." : "Kirish"}
           </Button>
         </form>
-
-        <div className="text-center text-sm text-slate-500">
-          {mode === "signin" ? (
-            <>
-              Hisobingiz yo'qmi?{" "}
-              <button
-                type="button"
-                className="text-emerald-600 hover:underline font-medium"
-                onClick={() => setMode("signup")}
-              >
-                Ro'yxatdan o'ting
-              </button>
-            </>
-          ) : (
-            <>
-              Hisobingiz bormi?{" "}
-              <button
-                type="button"
-                className="text-emerald-600 hover:underline font-medium"
-                onClick={() => setMode("signin")}
-              >
-                Kirish
-              </button>
-            </>
-          )}
-        </div>
       </div>
     </div>
   );
