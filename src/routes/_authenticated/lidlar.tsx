@@ -284,10 +284,12 @@ function CreateLeadDialog({
               className="mt-2 flex gap-4"
             >
               {(Object.keys(CAN_VISIT_LABEL) as CanVisitClinic[]).map((k) => (
-                <label key={k} className="flex items-center gap-2 cursor-pointer">
+                <div key={k} className="flex items-center gap-2">
                   <RadioGroupItem value={k} id={`new-cv-${k}`} />
-                  <span className="text-sm">{CAN_VISIT_LABEL[k]}</span>
-                </label>
+                  <Label htmlFor={`new-cv-${k}`} className="text-sm font-normal cursor-pointer">
+                    {CAN_VISIT_LABEL[k]}
+                  </Label>
+                </div>
               ))}
             </RadioGroup>
           </div>
