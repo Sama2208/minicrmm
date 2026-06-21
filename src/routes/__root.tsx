@@ -127,7 +127,6 @@ const TITLES: Record<string, string> = {
   "/lidlar": "Umumiy lidlar",
   "/hisobotlar": "Hisobotlar",
   "/sozlamalar": "Sozlamalar",
-  "/foydalanuvchilar": "Foydalanuvchilar",
   "/mening-lidlarim": "Mening lidlarim",
 };
 
