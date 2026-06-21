@@ -449,7 +449,7 @@ function LeadDetailDialog({
   const [nextFollowup, setNextFollowup] = useState(
     lead.next_followup_date ? lead.next_followup_date.split("T")[0] : ""
   );
-  const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "");
+  const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "__none__");
 
   // Sync state when lead changes
   const [prevId, setPrevId] = useState(lead.id);
@@ -460,7 +460,7 @@ function LeadDetailDialog({
     setNomerAsosiy(lead.nomer_asosiy ?? "");
     setNotes(lead.notes ?? "");
     setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
-    setAssignedTo(lead.assigned_to ?? "");
+    setAssignedTo(lead.assigned_to ?? "__none__");
   }
 
   const save = useMutation({
@@ -472,7 +472,7 @@ function LeadDetailDialog({
         nomer_asosiy: nomerAsosiy.trim() || null,
         notes: notes.trim() || null,
         next_followup_date: nextFollowup || null,
-        assigned_to: assignedTo || null,
+        assigned_to: (assignedTo && assignedTo !== "__none__") ? assignedTo : null,
       }).eq("id", lead.id);
       if (error) throw error;
     },
@@ -552,7 +552,7 @@ function LeadDetailDialog({
                   <SelectValue placeholder="Operator tanlang" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">— Belgilanmagan —</SelectItem>
+                  <SelectItem value="__none__">— Belgilanmagan —</SelectItem>
                   {operators.map((o) => (
                     <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
                   ))}
