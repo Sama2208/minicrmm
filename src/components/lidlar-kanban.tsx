@@ -296,6 +296,7 @@ export function LidlarKanban({
           lead={selectedLead}
           open={!!selectedLead}
           onClose={() => setSelectedLead(null)}
+          operators={operators}
         />
       )}
     </>
@@ -433,11 +434,12 @@ function CardBody({
 // ─── Lead Detail Dialog ────────────────────────────────────────────────────────
 
 function LeadDetailDialog({
-  lead, open, onClose,
+  lead, open, onClose, operators,
 }: {
   lead: KanbanLead;
   open: boolean;
   onClose: () => void;
+  operators: KanbanOperator[];
 }) {
   const qc = useQueryClient();
   const [fullName, setFullName] = useState(lead.full_name);
@@ -447,6 +449,7 @@ function LeadDetailDialog({
   const [nextFollowup, setNextFollowup] = useState(
     lead.next_followup_date ? lead.next_followup_date.split("T")[0] : ""
   );
+  const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "");
 
   // Sync state when lead changes
   const [prevId, setPrevId] = useState(lead.id);
@@ -457,6 +460,7 @@ function LeadDetailDialog({
     setNomerAsosiy(lead.nomer_asosiy ?? "");
     setNotes(lead.notes ?? "");
     setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
+    setAssignedTo(lead.assigned_to ?? "");
   }
 
   const save = useMutation({
@@ -468,6 +472,7 @@ function LeadDetailDialog({
         nomer_asosiy: nomerAsosiy.trim() || null,
         notes: notes.trim() || null,
         next_followup_date: nextFollowup || null,
+        assigned_to: assignedTo || null,
       }).eq("id", lead.id);
       if (error) throw error;
     },
@@ -537,6 +542,24 @@ function LeadDetailDialog({
               className="mt-1 text-sm resize-none"
             />
           </div>
+
+          {/* Operator */}
+          {operators.length > 0 && (
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Operator</Label>
+              <Select value={assignedTo} onValueChange={setAssignedTo}>
+                <SelectTrigger className="mt-1 h-9">
+                  <SelectValue placeholder="Operator tanlang" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">— Belgilanmagan —</SelectItem>
+                  {operators.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Callback date */}
           <div>
