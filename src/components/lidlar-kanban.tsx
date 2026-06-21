@@ -2,19 +2,24 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   DndContext, PointerSensor, useSensor, useSensors,
   useDraggable, useDroppable, DragOverlay,
   type DragEndEvent, type DragStartEvent,
 } from "@dnd-kit/core";
 import {
-  SOURCE_LABEL, SOURCE_LIST, CAN_VISIT_LABEL,
+  SOURCE_LABEL, SOURCE_LIST, CAN_VISIT_LABEL, formatDate,
   type LeadStatus, type LeadSource, type CanVisitClinic,
 } from "@/lib/crm";
 
@@ -32,6 +37,7 @@ export type KanbanLead = {
   assigned_to: string | null;
   notes: string | null;
   appointment_date: string | null;
+  next_followup_date: string | null;
   created_at: string;
 };
 
@@ -93,6 +99,7 @@ export function LidlarKanban({
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -187,100 +194,111 @@ export function LidlarKanban({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveId(null)}
-    >
-      <div className="flex gap-3 overflow-x-auto pb-3">
-        {columns.map((col) => {
-          const items = grouped.get(col.key) ?? [];
-          return (
-            <KanbanColumn key={col.key} colKey={col.key} accent={col.accent}>
-              <div className="flex items-center justify-between px-3 py-2 border-b">
-                {editingKey === col.key && !col.locked ? (
-                  <input
-                    autoFocus
-                    defaultValue={col.title}
-                    className="text-[12px] font-medium text-slate-700 bg-white border rounded px-1 w-full mr-2"
-                    onBlur={(e) => {
-                      saveTitles({ ...titles, [col.key]: e.target.value || col.title });
-                      setEditingKey(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                      if (e.key === "Escape") setEditingKey(null);
-                    }}
-                  />
-                ) : (
-                  <span
-                    className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none"
-                    onDoubleClick={() => { if (!col.locked) setEditingKey(col.key); }}
-                    title={col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"}
-                  >
-                    {col.title}
-                  </span>
-                )}
-                <span className="ml-2 inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
-                  {items.length}
-                </span>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-2 space-y-2 max-h-[calc(100vh-260px)]">
-                {items.map((l) => (
-                  <DraggableCard
-                    key={l.id}
-                    lead={l}
-                    opName={l.assigned_to ? opMap.get(l.assigned_to) ?? null : null}
-                    accent={col.accent}
-                    dragging={activeId === l.id}
-                  />
-                ))}
-
-                {col.key === "yangi" && (
-                  addOpenCol === "yangi" ? (
-                    <AddLeadMini onClose={() => setAddOpenCol(null)} />
+    <>
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveId(null)}
+      >
+        <div className="flex gap-3 overflow-x-auto pb-3">
+          {columns.map((col) => {
+            const items = grouped.get(col.key) ?? [];
+            return (
+              <KanbanColumn key={col.key} colKey={col.key} accent={col.accent}>
+                <div className="flex items-center justify-between px-3 py-2 border-b">
+                  {editingKey === col.key && !col.locked ? (
+                    <input
+                      autoFocus
+                      defaultValue={col.title}
+                      className="text-[12px] font-medium text-slate-700 bg-white border rounded px-1 w-full mr-2"
+                      onBlur={(e) => {
+                        saveTitles({ ...titles, [col.key]: e.target.value || col.title });
+                        setEditingKey(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                        if (e.key === "Escape") setEditingKey(null);
+                      }}
+                    />
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setAddOpenCol("yangi")}
-                      className="w-full text-xs text-slate-600 hover:text-slate-900 border border-dashed rounded-md py-2 flex items-center justify-center gap-1 bg-white"
+                    <span
+                      className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none"
+                      onDoubleClick={() => { if (!col.locked) setEditingKey(col.key); }}
+                      title={col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"}
                     >
-                      <Plus className="h-3.5 w-3.5" /> Lid qo'shish
-                    </button>
-                  )
-                )}
-              </div>
-            </KanbanColumn>
-          );
-        })}
+                      {col.title}
+                    </span>
+                  )}
+                  <span className="ml-2 inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
+                    {items.length}
+                  </span>
+                </div>
 
-        <div className="shrink-0 w-[260px] flex items-start">
-          <button
-            type="button"
-            onClick={() => {
-              const name = window.prompt("Yangi ustun nomi:");
-              if (!name) return;
-              const key = `custom_${Date.now()}`;
-              saveExtras([...extras, { key, title: name, custom: true }]);
-            }}
-            className="w-full text-sm text-slate-600 hover:text-slate-900 border border-dashed rounded-lg py-3 flex items-center justify-center gap-1 bg-white"
-          >
-            <Plus className="h-4 w-4" /> Ustun qo'shish
-          </button>
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 max-h-[calc(100vh-260px)]">
+                  {items.map((l) => (
+                    <DraggableCard
+                      key={l.id}
+                      lead={l}
+                      opName={l.assigned_to ? opMap.get(l.assigned_to) ?? null : null}
+                      accent={col.accent}
+                      dragging={activeId === l.id}
+                      onDetail={setSelectedLead}
+                    />
+                  ))}
+
+                  {col.key === "yangi" && (
+                    addOpenCol === "yangi" ? (
+                      <AddLeadMini onClose={() => setAddOpenCol(null)} />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAddOpenCol("yangi")}
+                        className="w-full text-xs text-slate-600 hover:text-slate-900 border border-dashed rounded-md py-2 flex items-center justify-center gap-1 bg-white"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> Lid qo'shish
+                      </button>
+                    )
+                  )}
+                </div>
+              </KanbanColumn>
+            );
+          })}
+
+          <div className="shrink-0 w-[260px] flex items-start">
+            <button
+              type="button"
+              onClick={() => {
+                const name = window.prompt("Yangi ustun nomi:");
+                if (!name) return;
+                const key = `custom_${Date.now()}`;
+                saveExtras([...extras, { key, title: name, custom: true }]);
+              }}
+              className="w-full text-sm text-slate-600 hover:text-slate-900 border border-dashed rounded-lg py-3 flex items-center justify-center gap-1 bg-white"
+            >
+              <Plus className="h-4 w-4" /> Ustun qo'shish
+            </button>
+          </div>
         </div>
-      </div>
 
-      <DragOverlay>
-        {activeLead ? (
-          <CardBody
-            lead={activeLead}
-            opName={activeLead.assigned_to ? opMap.get(activeLead.assigned_to) ?? null : null}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeLead ? (
+            <CardBody
+              lead={activeLead}
+              opName={activeLead.assigned_to ? opMap.get(activeLead.assigned_to) ?? null : null}
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {selectedLead && (
+        <LeadDetailDialog
+          lead={selectedLead}
+          open={!!selectedLead}
+          onClose={() => setSelectedLead(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -305,12 +323,13 @@ function KanbanColumn({
 }
 
 function DraggableCard({
-  lead, opName, accent, dragging,
+  lead, opName, accent, dragging, onDetail,
 }: {
   lead: KanbanLead;
   opName: string | null;
   accent?: "green" | "muted";
   dragging: boolean;
+  onDetail: (lead: KanbanLead) => void;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id: lead.id });
   return (
@@ -320,25 +339,30 @@ function DraggableCard({
       {...listeners}
       className={dragging ? "opacity-30" : ""}
     >
-      <CardBody lead={lead} opName={opName} accent={accent} />
+      <CardBody lead={lead} opName={opName} accent={accent} onDetail={onDetail} />
     </div>
   );
 }
 
 function CardBody({
-  lead, opName, accent,
+  lead, opName, accent, onDetail,
 }: {
   lead: KanbanLead;
   opName: string | null;
   accent?: "green" | "muted";
+  onDetail?: (lead: KanbanLead) => void;
 }) {
   const borderClass =
     accent === "green" ? "border border-[#97C459]" :
     "border border-slate-200";
   const opacityClass = accent === "muted" ? "opacity-70" : "";
 
+  const today = new Date().toISOString().split("T")[0];
+  const isCallbackToday = lead.next_followup_date === today;
+  const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
+
   return (
-    <div className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow cursor-grab active:cursor-grabbing`}>
+    <div className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow`}>
       <div className="px-3 py-2 flex items-start gap-2">
         <div className="flex-1 min-w-0 space-y-0.5">
           <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
@@ -357,24 +381,207 @@ function CardBody({
               🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}
             </div>
           )}
+          {/* Notes indicator */}
+          {lead.notes && (
+            <div className="text-[10px] text-slate-400 line-clamp-1 italic">📝 {lead.notes}</div>
+          )}
+          {/* Callback date */}
+          {lead.next_followup_date && (
+            <div className={`text-[10px] font-medium flex items-center gap-0.5 ${
+              isCallbackOverdue ? "text-red-500" :
+              isCallbackToday ? "text-amber-600" :
+              "text-slate-400"
+            }`}>
+              <Calendar className="h-3 w-3" />
+              {isCallbackToday ? "Bugun qo'ng'iroq!" :
+               isCallbackOverdue ? `O'tib ketgan: ${formatDate(lead.next_followup_date)}` :
+               formatDate(lead.next_followup_date)}
+            </div>
+          )}
           <div className="pt-1">
             <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}>
               {SOURCE_LABEL[lead.source]}
             </span>
           </div>
         </div>
-        {lead.assigned_to && (
-          <div
-            className={`h-6 w-6 rounded-full text-white text-[10px] font-semibold flex items-center justify-center shrink-0 ${opColor(lead.assigned_to)}`}
-            title={opName ?? ""}
-          >
-            {initials(opName ?? "?")}
-          </div>
-        )}
+        <div className="flex flex-col items-center gap-1 shrink-0">
+          {lead.assigned_to && (
+            <div
+              className={`h-6 w-6 rounded-full text-white text-[10px] font-semibold flex items-center justify-center ${opColor(lead.assigned_to)}`}
+              title={opName ?? ""}
+            >
+              {initials(opName ?? "?")}
+            </div>
+          )}
+          {onDetail && (
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onDetail(lead); }}
+              className="h-5 w-5 rounded flex items-center justify-center text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              title="Batafsil / Tahrirlash"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+// ─── Lead Detail Dialog ────────────────────────────────────────────────────────
+
+function LeadDetailDialog({
+  lead, open, onClose,
+}: {
+  lead: KanbanLead;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const [fullName, setFullName] = useState(lead.full_name);
+  const [phone, setPhone] = useState(lead.phone ?? "");
+  const [nomerAsosiy, setNomerAsosiy] = useState(lead.nomer_asosiy ?? "");
+  const [notes, setNotes] = useState(lead.notes ?? "");
+  const [nextFollowup, setNextFollowup] = useState(
+    lead.next_followup_date ? lead.next_followup_date.split("T")[0] : ""
+  );
+
+  // Sync state when lead changes
+  const [prevId, setPrevId] = useState(lead.id);
+  if (lead.id !== prevId) {
+    setPrevId(lead.id);
+    setFullName(lead.full_name);
+    setPhone(lead.phone ?? "");
+    setNomerAsosiy(lead.nomer_asosiy ?? "");
+    setNotes(lead.notes ?? "");
+    setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
+  }
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!fullName.trim()) throw new Error("Ism bo'sh bo'lishi mumkin emas");
+      const { error } = await supabase.from("leads").update({
+        full_name: fullName.trim(),
+        phone: phone.trim() || null,
+        nomer_asosiy: nomerAsosiy.trim() || null,
+        notes: notes.trim() || null,
+        next_followup_date: nextFollowup || null,
+      }).eq("id", lead.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      toast.success("Saqlandi ✓");
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-base">Lid ma'lumotlari</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3 py-1">
+          {/* Editable fields */}
+          <div>
+            <Label className="text-xs font-medium text-slate-600">Ism va familiya</Label>
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1 h-9"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Telefon</Label>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+998..."
+                className="mt-1 h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Raqam 2</Label>
+              <Input
+                value={nomerAsosiy}
+                onChange={(e) => setNomerAsosiy(e.target.value)}
+                placeholder="+998..."
+                className="mt-1 h-9"
+              />
+            </div>
+          </div>
+
+          {/* Read-only info */}
+          {(lead.region || lead.problem_type || lead.can_visit_clinic) && (
+            <div className="bg-slate-50 rounded-md p-2.5 space-y-1 text-[12px] text-slate-600">
+              {lead.region && <div>📍 {lead.region}</div>}
+              {lead.problem_type && <div>💬 {lead.problem_type}</div>}
+              {lead.can_visit_clinic && <div>🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}</div>}
+            </div>
+          )}
+
+          {/* Notes */}
+          <div>
+            <Label className="text-xs font-medium text-slate-600">Izoh / Eslatma</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Qo'ng'iroq natijalari, kelishuvlar, eslatmalar..."
+              rows={4}
+              className="mt-1 text-sm resize-none"
+            />
+          </div>
+
+          {/* Callback date */}
+          <div>
+            <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" /> Qayta qo'ng'iroq sanasi
+            </Label>
+            <Input
+              type="date"
+              value={nextFollowup}
+              onChange={(e) => setNextFollowup(e.target.value)}
+              className="mt-1 h-9"
+            />
+            {nextFollowup && (
+              <button
+                type="button"
+                onClick={() => setNextFollowup("")}
+                className="text-[11px] text-slate-400 hover:text-red-500 mt-1"
+              >
+                × Sanani o'chirish
+              </button>
+            )}
+          </div>
+
+          <div className="text-[11px] text-slate-400">
+            Yaratilgan: {formatDate(lead.created_at)}
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>Bekor</Button>
+          <Button
+            size="sm"
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {save.isPending ? "Saqlanmoqda..." : "Saqlash"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Add Lead Mini (Yangi ustunda) ────────────────────────────────────────────
 
 function AddLeadMini({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();

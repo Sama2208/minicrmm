@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -80,6 +80,20 @@ function LidlarPage() {
     },
   });
 
+  const todayCallbacks = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return (leadsQ.data ?? []).filter(
+      (l) => l.next_followup_date && l.next_followup_date.split("T")[0] === today
+    );
+  }, [leadsQ.data]);
+
+  const overdueCallbacks = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return (leadsQ.data ?? []).filter(
+      (l) => l.next_followup_date && l.next_followup_date.split("T")[0] < today
+    );
+  }, [leadsQ.data]);
+
   const filtered = useMemo(() => {
     const list = leadsQ.data ?? [];
     return list.filter((l) => {
@@ -101,6 +115,34 @@ function LidlarPage() {
 
   return (
     <div className="space-y-4">
+      {/* Bugungi callbacklar banneri */}
+      {overdueCallbacks.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
+          <Phone className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-red-700">
+              O'tib ketgan qo'ng'iroqlar: {overdueCallbacks.length} ta
+            </div>
+            <div className="text-xs text-red-500 mt-0.5 line-clamp-1">
+              {overdueCallbacks.map((l) => l.full_name).join(", ")}
+            </div>
+          </div>
+        </div>
+      )}
+      {todayCallbacks.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
+          <Phone className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-amber-700">
+              Bugun qayta qo'ng'iroq: {todayCallbacks.length} ta
+            </div>
+            <div className="text-xs text-amber-600 mt-0.5 line-clamp-1">
+              {todayCallbacks.map((l) => l.full_name).join(", ")}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
