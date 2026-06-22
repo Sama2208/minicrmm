@@ -14,6 +14,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      lead_assignment_history: {
+        Row: {
+          changed_at: string
+          id: string
+          lead_id: string
+          new_assigned_to: string | null
+          old_assigned_to: string | null
+        }
+        Insert: {
+          changed_at?: string
+          id?: string
+          lead_id: string
+          new_assigned_to?: string | null
+          old_assigned_to?: string | null
+        }
+        Update: {
+          changed_at?: string
+          id?: string
+          lead_id?: string
+          new_assigned_to?: string | null
+          old_assigned_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_assignment_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignment_history_new_assigned_to_fkey"
+            columns: ["new_assigned_to"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignment_history_old_assigned_to_fkey"
+            columns: ["old_assigned_to"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_status_history: {
         Row: {
           changed_at: string | null
@@ -127,6 +173,21 @@ export type Database = {
           },
         ]
       }
+      operator_rr_counter: {
+        Row: {
+          counter: number
+          id: number
+        }
+        Insert: {
+          counter?: number
+          id?: number
+        }
+        Update: {
+          counter?: number
+          id?: number
+        }
+        Relationships: []
+      }
       operators: {
         Row: {
           created_at: string | null
@@ -210,7 +271,15 @@ export type Database = {
     Functions: {
       current_operator_id: { Args: never; Returns: string }
       get_next_operator: { Args: never; Returns: string }
-      has_role: { Args: { _role: string }; Returns: boolean }
+      has_role:
+        | { Args: { _role: string }; Returns: boolean }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       app_role: "admin" | "operator"

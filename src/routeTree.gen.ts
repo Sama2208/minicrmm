@@ -23,7 +23,6 @@ import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
-import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_authenticated/foydalanuvchilar'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -95,19 +94,12 @@ const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   path: '/hisobotlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFoydalanuvchilarRoute =
-  AuthenticatedFoydalanuvchilarRouteImport.update({
-    id: '/foydalanuvchilar',
-    path: '/foydalanuvchilar',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
-  '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
@@ -123,7 +115,6 @@ export interface FileRoutesByTo {
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
-  '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
@@ -141,7 +132,6 @@ export interface FileRoutesById {
   '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
-  '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
@@ -159,7 +149,6 @@ export interface FileRouteTypes {
     | '/ariza'
     | '/auth'
     | '/login'
-    | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/lidlar'
     | '/mening-lidlarim'
@@ -175,7 +164,6 @@ export interface FileRouteTypes {
     | '/ariza'
     | '/auth'
     | '/login'
-    | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/lidlar'
     | '/mening-lidlarim'
@@ -192,7 +180,6 @@ export interface FileRouteTypes {
     | '/ariza'
     | '/auth'
     | '/login'
-    | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/lidlar'
     | '/_authenticated/mening-lidlarim'
@@ -317,18 +304,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/foydalanuvchilar': {
-      id: '/_authenticated/foydalanuvchilar'
-      path: '/foydalanuvchilar'
-      fullPath: '/foydalanuvchilar'
-      preLoaderRoute: typeof AuthenticatedFoydalanuvchilarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedFoydalanuvchilarRoute: typeof AuthenticatedFoydalanuvchilarRoute
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
   AuthenticatedMeningLidlarimRoute: typeof AuthenticatedMeningLidlarimRoute
@@ -336,7 +315,6 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedFoydalanuvchilarRoute: AuthenticatedFoydalanuvchilarRoute,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedMeningLidlarimRoute: AuthenticatedMeningLidlarimRoute,
