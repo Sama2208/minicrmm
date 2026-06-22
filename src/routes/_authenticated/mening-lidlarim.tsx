@@ -59,8 +59,15 @@ function MeningLidlarimPage() {
     return (leadsQ.data ?? []).filter((l) => {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (search) {
-        const s = search.toLowerCase();
-        if (!l.full_name.toLowerCase().includes(s) && !(l.phone ?? "").toLowerCase().includes(s)) return false;
+        const s = search.trim();
+        const sLow = s.toLowerCase();
+        const isDigits = /^\d+$/.test(s);
+        const digits1 = (l.phone ?? "").replace(/\D/g, "");
+        const matchesName = l.full_name.toLowerCase().includes(sLow);
+        const matchesPhone = isDigits
+          ? digits1.endsWith(s)
+          : (l.phone ?? "").includes(sLow);
+        if (!matchesName && !matchesPhone) return false;
       }
       return true;
     });
@@ -82,7 +89,7 @@ function MeningLidlarimPage() {
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Ism yoki telefon..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+          <Input placeholder="Ism, telefon yoki oxirgi 2-4 raqam..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="Status" /></SelectTrigger>

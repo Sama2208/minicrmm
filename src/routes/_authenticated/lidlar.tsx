@@ -103,11 +103,17 @@ function LidlarPage() {
       if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(l.created_at) > new Date(dateTo + "T23:59:59")) return false;
       if (search) {
-        const s = search.toLowerCase();
-        if (
-          !l.full_name.toLowerCase().includes(s) &&
-          !(l.phone ?? "").toLowerCase().includes(s)
-        ) return false;
+        const s = search.trim();
+        const sLow = s.toLowerCase();
+        const isDigits = /^\d+$/.test(s);
+        // Strip non-digits for suffix matching
+        const digits1 = (l.phone ?? "").replace(/\D/g, "");
+        const digits2 = (l.nomer_asosiy ?? "").replace(/\D/g, "");
+        const matchesName = l.full_name.toLowerCase().includes(sLow);
+        const matchesPhone = isDigits
+          ? digits1.endsWith(s) || digits2.endsWith(s)
+          : (l.phone ?? "").includes(sLow) || (l.nomer_asosiy ?? "").includes(sLow);
+        if (!matchesName && !matchesPhone) return false;
       }
       return true;
     });
@@ -147,7 +153,7 @@ function LidlarPage() {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Ism yoki telefon bo'yicha qidirish..."
+            placeholder="Ism, telefon yoki oxirgi 2-4 raqam..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8"
