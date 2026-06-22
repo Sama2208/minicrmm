@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, ChevronRight, Calendar, Trash2, GripVertical, X } from "lucide-react";
+import { Plus, ChevronRight, Calendar, Trash2, GripVertical, X, Square, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -123,6 +123,29 @@ export function LidlarKanban({
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const deleteSelected = useMutation({
+    mutationFn: async () => {
+      const ids = [...selectedIds];
+      const { error } = await supabase.from("leads").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`${selectedIds.size} ta lid o'chirildi`);
+      setSelectedIds(new Set());
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -332,6 +355,8 @@ export function LidlarKanban({
                       accent={col.accent}
                       dragging={activeId === l.id}
                       onDetail={setSelectedLead}
+                      isSelected={selectedIds.has(l.id)}
+                      onToggle={toggleSelect}
                     />
                   ))}
 
@@ -394,6 +419,34 @@ export function LidlarKanban({
           operators={operators}
         />
       )}
+
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-slate-200 rounded-xl shadow-xl px-4 py-3">
+          <span className="text-sm font-medium text-slate-700">
+            {selectedIds.size} ta lid tanlandi
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSelectedIds(new Set())}
+            className="h-8 text-xs"
+          >
+            Bekor
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              if (!window.confirm(`${selectedIds.size} ta lidni o'chirasizmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+              deleteSelected.mutate();
+            }}
+            disabled={deleteSelected.isPending}
+            className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1" />
+            {deleteSelected.isPending ? "O'chirilmoqda..." : "O'chirish"}
+          </Button>
+        </div>
+      )}
     </>
   );
 }
@@ -436,13 +489,15 @@ function KanbanColumn({
 }
 
 function DraggableCard({
-  lead, opName, accent, dragging, onDetail,
+  lead, opName, accent, dragging, onDetail, isSelected, onToggle,
 }: {
   lead: KanbanLead;
   opName: string | null;
   accent?: "green" | "muted";
   dragging: boolean;
   onDetail: (lead: KanbanLead) => void;
+  isSelected: boolean;
+  onToggle: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id: lead.id });
   return (
@@ -452,20 +507,23 @@ function DraggableCard({
       {...listeners}
       className={dragging ? "opacity-30" : ""}
     >
-      <CardBody lead={lead} opName={opName} accent={accent} onDetail={onDetail} />
+      <CardBody lead={lead} opName={opName} accent={accent} onDetail={onDetail} isSelected={isSelected} onToggle={onToggle} />
     </div>
   );
 }
 
 function CardBody({
-  lead, opName, accent, onDetail,
+  lead, opName, accent, onDetail, isSelected, onToggle,
 }: {
   lead: KanbanLead;
   opName: string | null;
   accent?: "green" | "muted";
   onDetail?: (lead: KanbanLead) => void;
+  isSelected?: boolean;
+  onToggle?: (id: string) => void;
 }) {
   const borderClass =
+    isSelected ? "border-2 border-red-400" :
     accent === "green" ? "border border-[#97C459]" :
     "border border-slate-200";
   const opacityClass = accent === "muted" ? "opacity-70" : "";
@@ -475,8 +533,22 @@ function CardBody({
   const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
 
   return (
-    <div className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow`}>
+    <div className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}>
       <div className="px-3 py-2 flex items-start gap-2">
+        {onToggle && (
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); onToggle(lead.id); }}
+            className="mt-0.5 shrink-0 text-slate-300 hover:text-red-500 transition-colors"
+            title="Tanlash"
+          >
+            {isSelected
+              ? <CheckSquare className="h-4 w-4 text-red-500" />
+              : <Square className="h-4 w-4" />
+            }
+          </button>
+        )}
         <div className="flex-1 min-w-0 space-y-0.5">
           <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
           <div className="text-[11px] text-slate-600 truncate">📞 {lead.phone ?? "—"}</div>
