@@ -271,7 +271,15 @@ export type Database = {
     Functions: {
       current_operator_id: { Args: never; Returns: string }
       get_next_operator: { Args: never; Returns: string }
-      has_role: { Args: { _role: string }; Returns: boolean }
+      has_role:
+        | { Args: { _role: string }; Returns: boolean }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       app_role: "admin" | "operator"
