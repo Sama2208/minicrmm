@@ -1,49 +1,56 @@
 export type LeadStatus =
   | "yangi"
   | "kotarmadi"
-  | "qayta_qongiroq"
+  | "sifatsiz_lid"
+  | "maslahat"
   | "konsultatsiyaga_yozildi"
-  | "konsultatsiyada_boldi"
   | "yotishga_yozildi"
-  | "qatnovchi"
-  | "sifatsiz_lid";
+  | "qatnashga_yozildi"
+  | "konsultatsiyada_boldi"
+  | "yotdi"
+  | "qatnadi";
 
 export type LeadSource = "facebook" | "instagram" | "telegram" | "friends" | "website" | "boshqa";
 
 export type CanVisitClinic = "ha" | "yoq" | "bilmayman";
 
 export const STATUS_LABEL: Record<LeadStatus, string> = {
-  yangi: "Yangi lid",
-  kotarmadi: "Ko'tarmadi",
-  qayta_qongiroq: "Qayta qo'ng'iroq",
-  konsultatsiyaga_yozildi: "Konsultatsiyaga yozildi",
-  konsultatsiyada_boldi: "Konsultatsiyada bo'ldi",
-  yotishga_yozildi: "Yotishga yozildi",
-  qatnovchi: "Qatnovchi",
-  sifatsiz_lid: "Sifatsiz lid",
+  yangi:                    "Yangi lid",
+  kotarmadi:                "Ko'tarmadi",
+  sifatsiz_lid:             "Sifatsiz",
+  maslahat:                 "Maslahat",
+  konsultatsiyaga_yozildi:  "Konsultatsiyaga yozildi",
+  yotishga_yozildi:         "Yotishga yozildi",
+  qatnashga_yozildi:        "Qatnashga yozildi",
+  konsultatsiyada_boldi:    "Konsultatsiyaga keldi",
+  yotdi:                    "Yotdi",
+  qatnadi:                  "Qatnadi",
 };
 
-// Light bg + colored text + border
 export const STATUS_BADGE: Record<LeadStatus, string> = {
-  yangi: "bg-blue-50 text-blue-700 border border-blue-200",
-  kotarmadi: "bg-orange-50 text-orange-700 border border-orange-200",
-  qayta_qongiroq: "bg-amber-50 text-amber-700 border border-amber-200",
-  konsultatsiyaga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
-  konsultatsiyada_boldi: "bg-sky-50 text-sky-700 border border-sky-200",
-  yotishga_yozildi: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  qatnovchi: "bg-teal-50 text-teal-700 border border-teal-200",
-  sifatsiz_lid: "bg-rose-50 text-rose-700 border border-rose-200",
+  yangi:                    "bg-blue-50 text-blue-700 border border-blue-200",
+  kotarmadi:                "bg-orange-50 text-orange-700 border border-orange-200",
+  sifatsiz_lid:             "bg-rose-50 text-rose-700 border border-rose-200",
+  maslahat:                 "bg-purple-50 text-purple-700 border border-purple-200",
+  konsultatsiyaga_yozildi:  "bg-violet-50 text-violet-700 border border-violet-200",
+  yotishga_yozildi:         "bg-amber-50 text-amber-700 border border-amber-200",
+  qatnashga_yozildi:        "bg-cyan-50 text-cyan-700 border border-cyan-200",
+  konsultatsiyada_boldi:    "bg-sky-50 text-sky-700 border border-sky-200",
+  yotdi:                    "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  qatnadi:                  "bg-teal-50 text-teal-700 border border-teal-200",
 };
 
 export const STATUS_ORDER: LeadStatus[] = [
   "yangi",
   "kotarmadi",
-  "qayta_qongiroq",
-  "konsultatsiyaga_yozildi",
-  "konsultatsiyada_boldi",
-  "yotishga_yozildi",
-  "qatnovchi",
   "sifatsiz_lid",
+  "maslahat",
+  "konsultatsiyaga_yozildi",
+  "yotishga_yozildi",
+  "qatnashga_yozildi",
+  "konsultatsiyada_boldi",
+  "yotdi",
+  "qatnadi",
 ];
 
 export const CAN_VISIT_LABEL: Record<CanVisitClinic, string> = {
@@ -58,7 +65,7 @@ export const CAN_VISIT_BADGE: Record<CanVisitClinic, string> = {
   bilmayman: "bg-amber-50 text-amber-700 border border-amber-200 rounded-md px-2 py-0.5 text-xs font-medium inline-block",
 };
 
-export const CONVERSION_STATUS: LeadStatus = "yotishga_yozildi";
+export const CONVERSION_STATUS: LeadStatus = "yotdi";
 
 export const SOURCE_LABEL: Record<LeadSource, string> = {
   facebook: "Facebook",

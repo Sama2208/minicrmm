@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, ChevronRight, Calendar, Trash2 } from "lucide-react";
+import { Plus, ChevronRight, Calendar, Trash2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ import {
   useDraggable, useDroppable, DragOverlay,
   type DragEndEvent, type DragStartEvent,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
   SOURCE_LABEL, SOURCE_LIST, CAN_VISIT_LABEL, formatDate,
   type LeadStatus, type LeadSource, type CanVisitClinic,
@@ -68,13 +69,16 @@ type ColumnDef = {
 };
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "yangi", status: "yangi", title: "Yangi lid", locked: true },
-  { key: "kotarmadi", status: "kotarmadi", title: "Ko'tarmadi / Qayta aloqa" },
-  { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiya" },
-  { key: "konsultatsiyada_boldi", status: "konsultatsiyada_boldi", title: "Konsultatsiyaga keldi" },
-  { key: "yotishga_yozildi", status: "yotishga_yozildi", title: "Yotdi", accent: "green" },
-  { key: "qatnovchi", status: "qatnovchi", title: "Qatnovchi" },
-  { key: "sifatsiz_lid", status: "sifatsiz_lid", title: "Sifatsiz lid", accent: "muted" },
+  { key: "yangi",                   status: "yangi",                   title: "Yangi lid",                locked: true },
+  { key: "kotarmadi",               status: "kotarmadi",               title: "Ko'tarmadi" },
+  { key: "sifatsiz_lid",            status: "sifatsiz_lid",            title: "Sifatsiz",                 accent: "muted" },
+  { key: "maslahat",                status: "maslahat",                title: "Maslahat" },
+  { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
+  { key: "yotishga_yozildi",        status: "yotishga_yozildi",        title: "Yotishga yozildi" },
+  { key: "qatnashga_yozildi",       status: "qatnashga_yozildi",       title: "Qatnashga yozildi" },
+  { key: "konsultatsiyada_boldi",   status: "konsultatsiyada_boldi",   title: "Konsultatsiyaga keldi" },
+  { key: "yotdi",                   status: "yotdi",                   title: "Yotdi",                    accent: "green" },
+  { key: "qatnadi",                 status: "qatnadi",                 title: "Qatnadi",                  accent: "green" },
 ];
 
 const SOURCE_BADGE: Record<LeadSource, string> = {
@@ -101,6 +105,7 @@ function initials(name: string) {
 
 const LS_TITLES = "kanban_column_titles_v1";
 const LS_EXTRA = "kanban_extra_columns_v1";
+const LS_COL_ORDER = "kanban_col_order_v2";
 
 export function LidlarKanban({
   leads, operators,
@@ -111,6 +116,7 @@ export function LidlarKanban({
   const qc = useQueryClient();
   const [titles, setTitles] = useState<Record<string, string>>({});
   const [extras, setExtras] = useState<ColumnDef[]>([]);
+  const [colOrder, setColOrder] = useState<string[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -126,6 +132,8 @@ export function LidlarKanban({
       if (t) setTitles(JSON.parse(t));
       const e = localStorage.getItem(LS_EXTRA);
       if (e) setExtras(JSON.parse(e));
+      const o = localStorage.getItem(LS_COL_ORDER);
+      if (o) setColOrder(JSON.parse(o));
     } catch { /* noop */ }
   }, []);
 
@@ -137,13 +145,26 @@ export function LidlarKanban({
     setExtras(next);
     try { localStorage.setItem(LS_EXTRA, JSON.stringify(next)); } catch { /* noop */ }
   };
+  const saveColOrder = (order: string[]) => {
+    setColOrder(order);
+    try { localStorage.setItem(LS_COL_ORDER, JSON.stringify(order)); } catch { /* noop */ }
+  };
 
   const columns = useMemo<ColumnDef[]>(() => {
-    return [...DEFAULT_COLUMNS, ...extras].map((c) => ({
+    const allCols = [...DEFAULT_COLUMNS, ...extras].map((c) => ({
       ...c,
       title: titles[c.key] ?? c.title,
     }));
-  }, [extras, titles]);
+    if (colOrder.length === 0) return allCols;
+    // "yangi" har doim birinchi
+    const yangi = allCols.find((c) => c.key === "yangi");
+    const rest = allCols.filter((c) => c.key !== "yangi");
+    const sorted = colOrder
+      .map((k) => rest.find((c) => c.key === k))
+      .filter((c): c is ColumnDef => !!c);
+    rest.forEach((c) => { if (!colOrder.includes(c.key)) sorted.push(c); });
+    return yangi ? [yangi, ...sorted] : sorted;
+  }, [extras, titles, colOrder]);
 
   const opMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -165,6 +186,7 @@ export function LidlarKanban({
     () => leads.find((l) => l.id === activeId) ?? null,
     [leads, activeId],
   );
+  const activeColKey = activeId?.startsWith("__col__") ? activeId.slice(7, -2) : null;
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
@@ -199,13 +221,29 @@ export function LidlarKanban({
   const handleDragEnd = (e: DragEndEvent) => {
     setActiveId(null);
     if (!e.over) return;
-    const leadId = String(e.active.id);
-    const colKey = String(e.over.id);
-    const col = columns.find((c) => c.key === colKey);
+    const activeStr = String(e.active.id);
+    const overStr = String(e.over.id);
+
+    // Ustun harakatlantirish
+    if (activeStr.startsWith("__col__")) {
+      const fromKey = activeStr.slice(7, -2);
+      const toKey = overStr;
+      const keys = columns.map((c) => c.key);
+      const fromIdx = keys.indexOf(fromKey);
+      const toIdx = keys.indexOf(toKey);
+      if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+        const newOrder = arrayMove(keys, fromIdx, toIdx);
+        saveColOrder(newOrder.filter((k) => k !== "yangi"));
+      }
+      return;
+    }
+
+    // Lid harakatlantirish
+    const col = columns.find((c) => c.key === overStr);
     if (!col || !col.status) return;
-    const lead = leads.find((l) => l.id === leadId);
+    const lead = leads.find((l) => l.id === activeStr);
     if (!lead || lead.status === col.status) return;
-    updateStatus.mutate({ id: leadId, status: col.status });
+    updateStatus.mutate({ id: lead.id, status: col.status });
   };
 
   return (
@@ -221,31 +259,34 @@ export function LidlarKanban({
             const items = grouped.get(col.key) ?? [];
             return (
               <KanbanColumn key={col.key} colKey={col.key} accent={col.accent}>
-                <div className="flex items-center justify-between px-3 py-2 border-b">
-                  {editingKey === col.key && !col.locked ? (
-                    <input
-                      autoFocus
-                      defaultValue={col.title}
-                      className="text-[12px] font-medium text-slate-700 bg-white border rounded px-1 w-full mr-2"
-                      onBlur={(e) => {
-                        saveTitles({ ...titles, [col.key]: e.target.value || col.title });
-                        setEditingKey(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                        if (e.key === "Escape") setEditingKey(null);
-                      }}
-                    />
-                  ) : (
-                    <span
-                      className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none"
-                      onDoubleClick={() => { if (!col.locked) setEditingKey(col.key); }}
-                      title={col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"}
-                    >
-                      {col.title}
-                    </span>
-                  )}
-                  <span className="ml-2 inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
+                <div className={`flex items-center justify-between px-2 py-2 border-b transition-opacity ${activeColKey === col.key ? "opacity-30" : ""}`}>
+                  <div className="flex items-center gap-1 min-w-0">
+                    {!col.locked && <ColGripHandle colKey={col.key} />}
+                    {editingKey === col.key && !col.locked ? (
+                      <input
+                        autoFocus
+                        defaultValue={col.title}
+                        className="text-[12px] font-medium text-slate-700 bg-white border rounded px-1 w-full"
+                        onBlur={(e) => {
+                          saveTitles({ ...titles, [col.key]: e.target.value || col.title });
+                          setEditingKey(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                          if (e.key === "Escape") setEditingKey(null);
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none truncate"
+                        onDoubleClick={() => { if (!col.locked) setEditingKey(col.key); }}
+                        title={col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"}
+                      >
+                        {col.title}
+                      </span>
+                    )}
+                  </div>
+                  <span className="ml-2 shrink-0 inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
                     {items.length}
                   </span>
                 </div>
@@ -297,7 +338,14 @@ export function LidlarKanban({
         </div>
 
         <DragOverlay>
-          {activeLead ? (
+          {activeColKey ? (
+            <div className="bg-white border border-slate-300 rounded-lg shadow-xl w-[260px] h-12 flex items-center px-3 gap-2 opacity-90">
+              <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
+              <span className="text-[12px] font-medium text-slate-600 uppercase tracking-wide truncate">
+                {columns.find((c) => c.key === activeColKey)?.title ?? activeColKey}
+              </span>
+            </div>
+          ) : activeLead ? (
             <CardBody
               lead={activeLead}
               opName={activeLead.assigned_to ? opMap.get(activeLead.assigned_to) ?? null : null}
@@ -315,6 +363,24 @@ export function LidlarKanban({
         />
       )}
     </>
+  );
+}
+
+// ─── Ustun drag handle ────────────────────────────────────────────────────────
+
+function ColGripHandle({ colKey }: { colKey: string }) {
+  const { attributes, listeners, setNodeRef } = useDraggable({ id: `__col__${colKey}__` });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-colors shrink-0"
+      title="Ushlab sudrang — ustun o'rnini o'zgartirish"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <GripVertical className="h-3.5 w-3.5" />
+    </div>
   );
 }
 

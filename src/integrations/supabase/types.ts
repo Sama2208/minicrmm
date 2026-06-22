@@ -329,12 +329,14 @@ export type Database = {
       lead_status:
         | "yangi"
         | "kotarmadi"
-        | "qayta_qongiroq"
-        | "konsultatsiyaga_yozildi"
-        | "konsultatsiyada_boldi"
-        | "yotishga_yozildi"
         | "sifatsiz_lid"
-        | "qatnovchi"
+        | "maslahat"
+        | "konsultatsiyaga_yozildi"
+        | "yotishga_yozildi"
+        | "qatnashga_yozildi"
+        | "konsultatsiyada_boldi"
+        | "yotdi"
+        | "qatnadi"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -475,12 +477,14 @@ export const Constants = {
       lead_status: [
         "yangi",
         "kotarmadi",
-        "qayta_qongiroq",
-        "konsultatsiyaga_yozildi",
-        "konsultatsiyada_boldi",
-        "yotishga_yozildi",
         "sifatsiz_lid",
-        "qatnovchi",
+        "maslahat",
+        "konsultatsiyaga_yozildi",
+        "yotishga_yozildi",
+        "qatnashga_yozildi",
+        "konsultatsiyada_boldi",
+        "yotdi",
+        "qatnadi",
       ],
     },
   },
