@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, ChevronRight, Calendar, Trash2, GripVertical } from "lucide-react";
+import { Plus, ChevronRight, Calendar, Trash2, GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -104,8 +104,9 @@ function initials(name: string) {
 }
 
 const LS_TITLES = "kanban_column_titles_v3";
-const LS_EXTRA = "kanban_extra_columns_v1";
+const LS_EXTRA = "kanban_extra_columns_v2";
 const LS_COL_ORDER = "kanban_col_order_v3";
+const LS_HIDDEN = "kanban_hidden_cols_v1";
 
 export function LidlarKanban({
   leads, operators,
@@ -117,6 +118,7 @@ export function LidlarKanban({
   const [titles, setTitles] = useState<Record<string, string>>({});
   const [extras, setExtras] = useState<ColumnDef[]>([]);
   const [colOrder, setColOrder] = useState<string[]>([]);
+  const [hidden, setHidden] = useState<string[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -134,6 +136,8 @@ export function LidlarKanban({
       if (e) setExtras(JSON.parse(e));
       const o = localStorage.getItem(LS_COL_ORDER);
       if (o) setColOrder(JSON.parse(o));
+      const h = localStorage.getItem(LS_HIDDEN);
+      if (h) setHidden(JSON.parse(h));
     } catch { /* noop */ }
   }, []);
 
@@ -149,12 +153,28 @@ export function LidlarKanban({
     setColOrder(order);
     try { localStorage.setItem(LS_COL_ORDER, JSON.stringify(order)); } catch { /* noop */ }
   };
+  const saveHidden = (next: string[]) => {
+    setHidden(next);
+    try { localStorage.setItem(LS_HIDDEN, JSON.stringify(next)); } catch { /* noop */ }
+  };
+
+  const deleteColumn = (col: ColumnDef) => {
+    if (!window.confirm(`"${col.title}" ustunini yashirmoqchimisiz?`)) return;
+    if (col.custom) {
+      saveExtras(extras.filter((e) => e.key !== col.key));
+    } else {
+      saveHidden([...hidden, col.key]);
+    }
+    saveColOrder(colOrder.filter((k) => k !== col.key));
+  };
 
   const columns = useMemo<ColumnDef[]>(() => {
-    const allCols = [...DEFAULT_COLUMNS, ...extras].map((c) => ({
-      ...c,
-      title: titles[c.key] ?? c.title,
-    }));
+    const allCols = [...DEFAULT_COLUMNS, ...extras]
+      .filter((c) => !hidden.includes(c.key))
+      .map((c) => ({
+        ...c,
+        title: titles[c.key] ?? c.title,
+      }));
     if (colOrder.length === 0) return allCols;
     // "yangi" har doim birinchi
     const yangi = allCols.find((c) => c.key === "yangi");
@@ -164,7 +184,7 @@ export function LidlarKanban({
       .filter((c): c is ColumnDef => !!c);
     rest.forEach((c) => { if (!colOrder.includes(c.key)) sorted.push(c); });
     return yangi ? [yangi, ...sorted] : sorted;
-  }, [extras, titles, colOrder]);
+  }, [extras, titles, colOrder, hidden]);
 
   const opMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -286,9 +306,21 @@ export function LidlarKanban({
                       </span>
                     )}
                   </div>
-                  <span className="ml-2 shrink-0 inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
-                    {items.length}
-                  </span>
+                  <div className="ml-2 shrink-0 flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
+                      {items.length}
+                    </span>
+                    {!col.locked && (
+                      <button
+                        type="button"
+                        onClick={() => deleteColumn(col)}
+                        className="p-0.5 rounded hover:bg-red-100 hover:text-red-500 text-slate-300 transition-colors"
+                        title="Ustunni yashirish"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 space-y-2 max-h-[calc(100vh-260px)]">
