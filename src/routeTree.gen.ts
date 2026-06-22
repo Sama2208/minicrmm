@@ -23,7 +23,6 @@ import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
-import { Route as ApiPublicResetPwdRouteImport } from './routes/api/public/_reset-pwd'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -95,11 +94,6 @@ const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   path: '/hisobotlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicResetPwdRoute = ApiPublicResetPwdRouteImport.update({
-  id: '/api/public/_reset-pwd',
-  path: '/api/public',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -115,7 +109,6 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
   '/admin/': typeof AdminIndexRoute
-  '/api/public': typeof ApiPublicResetPwdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,7 +124,6 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
   '/admin': typeof AdminIndexRoute
-  '/api/public': typeof ApiPublicResetPwdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,7 +141,6 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
   '/admin/': typeof AdminIndexRoute
-  '/api/public/_reset-pwd': typeof ApiPublicResetPwdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,7 +158,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/operatorlar'
     | '/admin/'
-    | '/api/public'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,7 +173,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/operatorlar'
     | '/admin'
-    | '/api/public'
   id:
     | '__root__'
     | '/'
@@ -200,7 +189,6 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/operatorlar'
     | '/admin/'
-    | '/api/public/_reset-pwd'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -214,7 +202,6 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOperatorlarRoute: typeof AdminOperatorlarRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  ApiPublicResetPwdRoute: typeof ApiPublicResetPwdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -317,13 +304,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/_reset-pwd': {
-      id: '/api/public/_reset-pwd'
-      path: '/api/public'
-      fullPath: '/api/public'
-      preLoaderRoute: typeof ApiPublicResetPwdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -355,7 +335,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminOperatorlarRoute: AdminOperatorlarRoute,
   AdminIndexRoute: AdminIndexRoute,
-  ApiPublicResetPwdRoute: ApiPublicResetPwdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
