@@ -60,6 +60,41 @@ export type Database = {
           },
         ]
       }
+      call_logs: {
+        Row: {
+          id: string
+          lead_id: string
+          operator_name: string
+          result: "gaplashdi" | "kotarmadi" | "qayta_kerak"
+          notes: string | null
+          called_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          operator_name: string
+          result: "gaplashdi" | "kotarmadi" | "qayta_kerak"
+          notes?: string | null
+          called_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          operator_name?: string
+          result?: "gaplashdi" | "kotarmadi" | "qayta_kerak"
+          notes?: string | null
+          called_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_status_history: {
         Row: {
           changed_at: string | null
