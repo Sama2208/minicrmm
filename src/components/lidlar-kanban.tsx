@@ -386,6 +386,13 @@ function CardBody({
           {lead.notes && (
             <div className="text-[10px] text-slate-400 line-clamp-1 italic">📝 {lead.notes}</div>
           )}
+          {/* Konsultatsiya sanasi */}
+          {lead.appointment_date && (
+            <div className="text-[10px] font-medium flex items-center gap-0.5 text-emerald-600">
+              <Calendar className="h-3 w-3" />
+              Konsultatsiya: {formatDate(lead.appointment_date)}
+            </div>
+          )}
           {/* Callback date */}
           {lead.next_followup_date && (
             <div className={`text-[10px] font-medium flex items-center gap-0.5 ${
@@ -450,6 +457,9 @@ function LeadDetailDialog({
     lead.next_followup_date ? lead.next_followup_date.split("T")[0] : ""
   );
   const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "__none__");
+  const [appointmentDate, setAppointmentDate] = useState(
+    lead.appointment_date ? lead.appointment_date.split("T")[0] : ""
+  );
 
   // Sync state when lead changes
   const [prevId, setPrevId] = useState(lead.id);
@@ -461,6 +471,7 @@ function LeadDetailDialog({
     setNotes(lead.notes ?? "");
     setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
     setAssignedTo(lead.assigned_to ?? "__none__");
+    setAppointmentDate(lead.appointment_date ? lead.appointment_date.split("T")[0] : "");
   }
 
   const save = useMutation({
@@ -472,6 +483,7 @@ function LeadDetailDialog({
         nomer_asosiy: nomerAsosiy.trim() || null,
         notes: notes.trim() || null,
         next_followup_date: nextFollowup || null,
+        appointment_date: appointmentDate || null,
         assigned_to: (assignedTo && assignedTo !== "__none__") ? assignedTo : null,
       }).eq("id", lead.id);
       if (error) throw error;
@@ -560,6 +572,29 @@ function LeadDetailDialog({
               </Select>
             </div>
           )}
+
+          {/* Konsultatsiya sanasi */}
+          <div>
+            <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              Konsultatsiya sanasi
+            </Label>
+            <Input
+              type="date"
+              value={appointmentDate}
+              onChange={(e) => setAppointmentDate(e.target.value)}
+              className="mt-1 h-9"
+            />
+            {appointmentDate && (
+              <button
+                type="button"
+                onClick={() => setAppointmentDate("")}
+                className="text-[11px] text-slate-400 hover:text-red-500 mt-1"
+              >
+                × Sanani o'chirish
+              </button>
+            )}
+          </div>
 
           {/* Callback date */}
           <div>
