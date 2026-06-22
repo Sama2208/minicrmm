@@ -70,12 +70,12 @@ type ColumnDef = {
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
   { key: "yangi",                   status: "yangi",                   title: "Yangi lid",                locked: true },
+  { key: "sifatsiz_lid",            status: "sifatsiz_lid",            title: "Sifatsiz lid",             accent: "muted" },
   { key: "kotarmadi",               status: "kotarmadi",               title: "Ko'tarmadi" },
-  { key: "sifatsiz_lid",            status: "sifatsiz_lid",            title: "Sifatsiz",                 accent: "muted" },
   { key: "maslahat",                status: "maslahat",                title: "Maslahat" },
   { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
+  { key: "qatnashga_yozildi",       status: "qatnashga_yozildi",       title: "Qatnashishga yozildi" },
   { key: "yotishga_yozildi",        status: "yotishga_yozildi",        title: "Yotishga yozildi" },
-  { key: "qatnashga_yozildi",       status: "qatnashga_yozildi",       title: "Qatnashga yozildi" },
   { key: "konsultatsiyada_boldi",   status: "konsultatsiyada_boldi",   title: "Konsultatsiyaga keldi" },
   { key: "yotdi",                   status: "yotdi",                   title: "Yotdi",                    accent: "green" },
   { key: "qatnadi",                 status: "qatnadi",                 title: "Qatnadi",                  accent: "green" },
@@ -103,9 +103,9 @@ function initials(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-const LS_TITLES = "kanban_column_titles_v2";
+const LS_TITLES = "kanban_column_titles_v3";
 const LS_EXTRA = "kanban_extra_columns_v1";
-const LS_COL_ORDER = "kanban_col_order_v2";
+const LS_COL_ORDER = "kanban_col_order_v3";
 
 export function LidlarKanban({
   leads, operators,
