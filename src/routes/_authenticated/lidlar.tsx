@@ -80,19 +80,28 @@ function LidlarPage() {
     },
   });
 
+  // Faqat operator filteri tanlanganda ko'rsatiladi
   const todayCallbacks = useMemo(() => {
+    if (operatorFilter === "all") return [];
     const today = new Date().toISOString().split("T")[0];
     return (leadsQ.data ?? []).filter(
-      (l) => l.next_followup_date && l.next_followup_date.split("T")[0] === today
+      (l) =>
+        l.next_followup_date &&
+        l.next_followup_date.split("T")[0] === today &&
+        l.assigned_to === operatorFilter
     );
-  }, [leadsQ.data]);
+  }, [leadsQ.data, operatorFilter]);
 
   const overdueCallbacks = useMemo(() => {
+    if (operatorFilter === "all") return [];
     const today = new Date().toISOString().split("T")[0];
     return (leadsQ.data ?? []).filter(
-      (l) => l.next_followup_date && l.next_followup_date.split("T")[0] < today
+      (l) =>
+        l.next_followup_date &&
+        l.next_followup_date.split("T")[0] < today &&
+        l.assigned_to === operatorFilter
     );
-  }, [leadsQ.data]);
+  }, [leadsQ.data, operatorFilter]);
 
   const filtered = useMemo(() => {
     const list = leadsQ.data ?? [];
@@ -106,7 +115,6 @@ function LidlarPage() {
         const s = search.trim();
         const sLow = s.toLowerCase();
         const isDigits = /^\d+$/.test(s);
-        // Strip non-digits for suffix matching
         const digits1 = (l.phone ?? "").replace(/\D/g, "");
         const digits2 = (l.nomer_asosiy ?? "").replace(/\D/g, "");
         const matchesName = l.full_name.toLowerCase().includes(sLow);
@@ -121,7 +129,7 @@ function LidlarPage() {
 
   return (
     <div className="space-y-4">
-      {/* Bugungi callbacklar banneri */}
+      {/* Callbacklar banneri — faqat operator tanlanganda */}
       {overdueCallbacks.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
           <Phone className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />

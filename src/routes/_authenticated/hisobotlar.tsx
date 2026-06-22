@@ -5,6 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Phone } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -22,23 +26,25 @@ export const Route = createFileRoute("/_authenticated/hisobotlar")({ component: 
 
 type Lead = {
   id: string;
+  full_name: string;
   status: LeadStatus;
   source: LeadSource;
   assigned_to: string | null;
+  next_followup_date: string | null;
   created_at: string;
 };
 
 function HisobotlarPage() {
-
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [operatorFilter, setOperatorFilter] = useState("all");
 
   const leadsQ = useQuery({
     queryKey: ["leads-report"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, status, source, assigned_to, created_at");
+        .select("id, full_name, status, source, assigned_to, next_followup_date, created_at");
       if (error) throw error;
       return data as Lead[];
     },
@@ -61,6 +67,29 @@ function HisobotlarPage() {
       return true;
     });
   }, [leadsQ.data, dateFrom, dateTo]);
+
+  // Callback bannerlar — faqat operator tanlanganda
+  const todayCallbacks = useMemo(() => {
+    if (operatorFilter === "all") return [];
+    const today = new Date().toISOString().split("T")[0];
+    return (leadsQ.data ?? []).filter(
+      (l) =>
+        l.next_followup_date &&
+        l.next_followup_date.split("T")[0] === today &&
+        l.assigned_to === operatorFilter
+    );
+  }, [leadsQ.data, operatorFilter]);
+
+  const overdueCallbacks = useMemo(() => {
+    if (operatorFilter === "all") return [];
+    const today = new Date().toISOString().split("T")[0];
+    return (leadsQ.data ?? []).filter(
+      (l) =>
+        l.next_followup_date &&
+        l.next_followup_date.split("T")[0] < today &&
+        l.assigned_to === operatorFilter
+    );
+  }, [leadsQ.data, operatorFilter]);
 
   const total = leads.length;
   const converted = leads.filter((l) => l.status === CONVERSION_STATUS).length;
@@ -96,7 +125,6 @@ function HisobotlarPage() {
   });
   const maxRate = Math.max(0, ...operatorData.map((o) => o.rate));
 
-  // Daily trend
   const dailyData = useMemo(() => {
     const map = new Map<string, Record<string, number | string>>();
     leads.forEach((l) => {
@@ -116,7 +144,7 @@ function HisobotlarPage() {
 
   return (
     <div className="space-y-6">
-      {/* Date filter */}
+      {/* Filters */}
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="text-xs">Boshlanish sanasi</Label>
@@ -126,7 +154,47 @@ function HisobotlarPage() {
           <Label className="text-xs">Tugash sanasi</Label>
           <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px] mt-1" />
         </div>
+        <div>
+          <Label className="text-xs">Operator</Label>
+          <Select value={operatorFilter} onValueChange={setOperatorFilter}>
+            <SelectTrigger className="w-[180px] mt-1"><SelectValue placeholder="Operator" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha operatorlar</SelectItem>
+              {(opsQ.data ?? []).map((o) => (
+                <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
+      {/* Callback bannerlar — faqat operator tanlanganda */}
+      {overdueCallbacks.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
+          <Phone className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-red-700">
+              O'tib ketgan qo'ng'iroqlar: {overdueCallbacks.length} ta
+            </div>
+            <div className="text-xs text-red-500 mt-0.5 line-clamp-1">
+              {overdueCallbacks.map((l) => l.full_name).join(", ")}
+            </div>
+          </div>
+        </div>
+      )}
+      {todayCallbacks.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
+          <Phone className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+          <div>
+            <div className="text-sm font-semibold text-amber-700">
+              Bugun qayta qo'ng'iroq: {todayCallbacks.length} ta
+            </div>
+            <div className="text-xs text-amber-600 mt-0.5 line-clamp-1">
+              {todayCallbacks.map((l) => l.full_name).join(", ")}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
