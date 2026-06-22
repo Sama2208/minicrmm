@@ -103,7 +103,7 @@ function initials(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-const LS_TITLES = "kanban_column_titles_v1";
+const LS_TITLES = "kanban_column_titles_v2";
 const LS_EXTRA = "kanban_extra_columns_v1";
 const LS_COL_ORDER = "kanban_col_order_v2";
 
@@ -375,11 +375,10 @@ function ColGripHandle({ colKey }: { colKey: string }) {
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-colors shrink-0"
+      className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors shrink-0 touch-none select-none"
       title="Ushlab sudrang — ustun o'rnini o'zgartirish"
-      onPointerDown={(e) => e.stopPropagation()}
     >
-      <GripVertical className="h-3.5 w-3.5" />
+      <GripVertical className="h-4 w-4" />
     </div>
   );
 }
