@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_logs: {
+        Row: {
+          called_at: string
+          id: string
+          lead_id: string
+          notes: string | null
+          operator_name: string
+          result: string
+        }
+        Insert: {
+          called_at?: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+          operator_name: string
+          result: string
+        }
+        Update: {
+          called_at?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          operator_name?: string
+          result?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_assignment_history: {
         Row: {
           changed_at: string
