@@ -300,6 +300,10 @@ export type Database = {
         | "yotishga_yozildi"
         | "sifatsiz_lid"
         | "qatnovchi"
+        | "maslahat"
+        | "qatnashga_yozildi"
+        | "yotdi"
+        | "qatnadi"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -446,6 +450,10 @@ export const Constants = {
         "yotishga_yozildi",
         "sifatsiz_lid",
         "qatnovchi",
+        "maslahat",
+        "qatnashga_yozildi",
+        "yotdi",
+        "qatnadi",
       ],
     },
   },
