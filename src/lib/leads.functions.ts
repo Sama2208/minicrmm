@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const PublicLeadSchema = z.object({
   full_name: z.string().trim().min(2).max(120),
-  phone: z.string().trim().min(5).max(40),
+  phone: z.string().trim().min(1).max(40),
   region: z.string().trim().max(120).optional().nullable(),
   problem_description: z.string().trim().max(2000).optional().nullable(),
   campaign_name: z.string().trim().max(200).optional().nullable(),
