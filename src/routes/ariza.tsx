@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ function ArizaPage() {
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [problem, setProblem] = useState("");
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const fullNameRef = useRef<HTMLInputElement>(null);
 
   // Auto-capture campaign from URL (client-only to avoid SSR mismatch)
   const [campaign, setCampaign] = useState<string | null>(null);
@@ -42,10 +44,15 @@ function ArizaPage() {
 
   const mut = useMutation({
     mutationFn: async () => {
+      const resolvedPhone = phone || phoneRef.current?.value || "";
+      const resolvedName = fullName || fullNameRef.current?.value || "";
+      if (!resolvedPhone.trim()) {
+        throw new Error("Telefon raqamni kiriting");
+      }
       await submit({
         data: {
-          full_name: fullName,
-          phone,
+          full_name: resolvedName,
+          phone: resolvedPhone,
           region,
           problem_description: problem,
           campaign_name: campaign,
@@ -53,7 +60,18 @@ function ArizaPage() {
       });
     },
     onSuccess: () => setDone(true),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      let msg = e.message;
+      try {
+        const parsed = JSON.parse(msg);
+        if (Array.isArray(parsed) && parsed[0]?.message) {
+          msg = parsed[0].message;
+        }
+      } catch {
+        // keep raw message
+      }
+      toast.error(msg);
+    },
   });
 
   if (done) {
@@ -98,8 +116,10 @@ function ArizaPage() {
           <div>
             <Label>Ism *</Label>
             <Input
+              ref={fullNameRef}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              onInput={(e) => setFullName((e.target as HTMLInputElement).value)}
               className="mt-1"
               placeholder="Ismingizni kiriting"
               required
@@ -109,12 +129,15 @@ function ArizaPage() {
           <div>
             <Label>Telefon raqam *</Label>
             <Input
+              ref={phoneRef}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              onInput={(e) => setPhone((e.target as HTMLInputElement).value)}
               className="mt-1"
               placeholder="+998 90 123 45 67"
               required
               maxLength={40}
+              type="tel"
             />
           </div>
           <div>
