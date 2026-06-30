@@ -8,11 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,7 +38,6 @@ type Operator = {
 };
 
 function SozlamalarPage() {
-
   const qc = useQueryClient();
   const [newName, setNewName] = useState("");
   const [newTg, setNewTg] = useState("");
@@ -45,7 +55,10 @@ function SozlamalarPage() {
       setDeleteId(null);
       toast.success("O'chirildi");
     },
-    onError: (e: Error) => { setDeleteId(null); toast.error(e.message); },
+    onError: (e: Error) => {
+      setDeleteId(null);
+      toast.error(e.message);
+    },
   });
 
   const opsQ = useQuery({
@@ -86,7 +99,8 @@ function SozlamalarPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["operators-full"] });
       qc.invalidateQueries({ queryKey: ["operators"] });
-      setNewName(""); setNewTg("");
+      setNewName("");
+      setNewTg("");
       toast.success("Operator qo'shildi");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -95,18 +109,33 @@ function SozlamalarPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <Card>
-        <CardHeader><CardTitle>Yangi operator qo'shish</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Yangi operator qo'shish</CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[180px]">
               <Label>Ism</Label>
-              <Input value={newName} onChange={(e) => setNewName(e.target.value)} className="mt-1" />
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div className="flex-1 min-w-[180px]">
               <Label>Telegram chat ID</Label>
-              <Input value={newTg} onChange={(e) => setNewTg(e.target.value)} className="mt-1" placeholder="ixtiyoriy" />
+              <Input
+                value={newTg}
+                onChange={(e) => setNewTg(e.target.value)}
+                className="mt-1"
+                placeholder="ixtiyoriy"
+              />
             </div>
-            <Button onClick={() => create.mutate()} disabled={create.isPending} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={() => create.mutate()}
+              disabled={create.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               <Plus className="h-4 w-4" /> Qo'shish
             </Button>
           </div>
@@ -114,7 +143,9 @@ function SozlamalarPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Operatorlar</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Operatorlar</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -186,7 +217,9 @@ function OperatorRow({
         <Input
           value={tg}
           onChange={(e) => setTg(e.target.value)}
-          onBlur={() => tg !== (op.telegram_chat_id ?? "") && onUpdate({ telegram_chat_id: tg || null })}
+          onBlur={() =>
+            tg !== (op.telegram_chat_id ?? "") && onUpdate({ telegram_chat_id: tg || null })
+          }
           className="h-8"
           placeholder="—"
         />

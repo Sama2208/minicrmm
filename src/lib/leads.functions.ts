@@ -1,9 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { normalizeUzPhone } from "@/lib/phone";
 
 const PublicLeadSchema = z.object({
   full_name: z.string().trim().min(2).max(120),
-  phone: z.string().trim().min(1).max(40),
+  // Raqamni E.164 (+998...) ko'rinishiga keltiramiz; tushunib bo'lmasa,
+  // mijozni rad etmasdan kiritilgan qiymatni tozalab saqlaymiz.
+  phone: z
+    .string()
+    .trim()
+    .min(1)
+    .max(40)
+    .transform((value) => normalizeUzPhone(value) ?? value),
   region: z.string().trim().max(120).optional().nullable(),
   problem_description: z.string().trim().max(2000).optional().nullable(),
   campaign_name: z.string().trim().max(200).optional().nullable(),

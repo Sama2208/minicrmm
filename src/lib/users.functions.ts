@@ -32,26 +32,38 @@ export const createOperatorUser = createServerFn({ method: "POST" })
     // 2. Find or create operator row, attach user_id
     let opId = data.operator_id;
     if (opId) {
-      const { error } = await supabaseAdmin.from("operators")
-        .update({ user_id: newUserId, is_active: true }).eq("id", opId);
+      const { error } = await supabaseAdmin
+        .from("operators")
+        .update({ user_id: newUserId, is_active: true })
+        .eq("id", opId);
       if (error) throw new Error(error.message);
     } else {
-      const { data: existing } = await supabaseAdmin.from("operators")
-        .select("id").eq("full_name", data.full_name).is("user_id", null).maybeSingle();
+      const { data: existing } = await supabaseAdmin
+        .from("operators")
+        .select("id")
+        .eq("full_name", data.full_name)
+        .is("user_id", null)
+        .maybeSingle();
       if (existing) {
         opId = existing.id;
-        await supabaseAdmin.from("operators").update({ user_id: newUserId, is_active: true }).eq("id", existing.id);
+        await supabaseAdmin
+          .from("operators")
+          .update({ user_id: newUserId, is_active: true })
+          .eq("id", existing.id);
       } else {
-        const { data: ins, error } = await supabaseAdmin.from("operators")
+        const { data: ins, error } = await supabaseAdmin
+          .from("operators")
           .insert({ full_name: data.full_name, user_id: newUserId, is_active: true })
-          .select("id").single();
+          .select("id")
+          .single();
         if (error) throw new Error(error.message);
         opId = ins.id;
       }
     }
 
     // 3. Grant operator role
-    const { error: rErr } = await supabaseAdmin.from("user_roles")
+    const { error: rErr } = await supabaseAdmin
+      .from("user_roles")
       .insert({ user_id: newUserId, role: "operator" });
     if (rErr && !rErr.message.includes("duplicate")) throw new Error(rErr.message);
 

@@ -80,9 +80,7 @@ function ArizaPage() {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center space-y-4">
           <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
           <h1 className="text-2xl font-bold">Arizangiz qabul qilindi!</h1>
-          <p className="text-muted-foreground">
-            Tez orada bog'lanamiz.
-          </p>
+          <p className="text-muted-foreground">Tez orada bog'lanamiz.</p>
         </div>
       </div>
     );

@@ -7,12 +7,27 @@ import { AdminShell } from "@/components/admin-shell";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { STATUS_LABEL, STATUS_ORDER, SOURCE_LABEL, CAN_VISIT_LABEL, CAN_VISIT_BADGE } from "@/lib/crm";
+import {
+  STATUS_LABEL,
+  STATUS_ORDER,
+  SOURCE_LABEL,
+  CAN_VISIT_LABEL,
+  CAN_VISIT_BADGE,
+} from "@/lib/crm";
 
 export const Route = createFileRoute("/admin/leads")({
   ssr: false,
@@ -41,7 +56,9 @@ function AdminLeadsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, full_name, phone, nomer_asosiy, status, source, region, can_visit_clinic, created_at, assigned_to")
+        .select(
+          "id, full_name, phone, nomer_asosiy, status, source, region, can_visit_clinic, created_at, assigned_to",
+        )
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Lead[];
@@ -69,9 +86,12 @@ function AdminLeadsPage() {
       if (status !== "all" && l.status !== status) return false;
       if (q) {
         const s = q.toLowerCase();
-        if (!l.full_name.toLowerCase().includes(s) &&
-            !(l.phone ?? "").includes(q) &&
-            !(l.nomer_asosiy ?? "").includes(q)) return false;
+        if (
+          !l.full_name.toLowerCase().includes(s) &&
+          !(l.phone ?? "").includes(q) &&
+          !(l.nomer_asosiy ?? "").includes(q)
+        )
+          return false;
       }
       return true;
     });
@@ -80,12 +100,23 @@ function AdminLeadsPage() {
   return (
     <AdminShell title="Lidlar">
       <div className="flex flex-wrap gap-3 mb-4">
-        <Input placeholder="Qidirish (ism yoki tel)..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="Qidirish (ism yoki tel)..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-xs"
+        />
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha statuslar</SelectItem>
-            {STATUS_ORDER.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
+            {STATUS_ORDER.map((s) => (
+              <SelectItem key={s} value={s}>
+                {STATUS_LABEL[s]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="ml-auto text-sm text-slate-500 self-center">Jami: {filtered.length}</div>
@@ -109,27 +140,45 @@ function AdminLeadsPage() {
           </TableHeader>
           <TableBody>
             {leadsQ.isLoading ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Yuklanmoqda...</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={10} className="text-center text-slate-500 py-8">Lidlar topilmadi</TableCell></TableRow>
-            ) : filtered.map((l, idx) => (
-              <TableRow key={l.id}>
-                <TableCell className="text-center text-slate-600 font-medium">{idx + 1}</TableCell>
-                <TableCell className="font-medium">{l.full_name}</TableCell>
-                <TableCell>{l.phone ?? "—"}</TableCell>
-                <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
-                <TableCell><Badge variant="outline">{STATUS_LABEL[l.status] ?? l.status}</Badge></TableCell>
-                <TableCell>{SOURCE_LABEL[l.source] ?? l.source}</TableCell>
-                <TableCell>{l.region ?? "—"}</TableCell>
-                <TableCell>
-                  {l.can_visit_clinic ? (
-                    <span className={CAN_VISIT_BADGE[l.can_visit_clinic]}>{CAN_VISIT_LABEL[l.can_visit_clinic]}</span>
-                  ) : "—"}
+              <TableRow>
+                <TableCell colSpan={10} className="text-center text-slate-500 py-8">
+                  Yuklanmoqda...
                 </TableCell>
-                <TableCell>{l.assigned_to ? opMap.get(l.assigned_to) ?? "—" : "—"}</TableCell>
-                <TableCell>{new Date(l.created_at).toLocaleDateString("uz-UZ")}</TableCell>
               </TableRow>
-            ))}
+            ) : filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center text-slate-500 py-8">
+                  Lidlar topilmadi
+                </TableCell>
+              </TableRow>
+            ) : (
+              filtered.map((l, idx) => (
+                <TableRow key={l.id}>
+                  <TableCell className="text-center text-slate-600 font-medium">
+                    {idx + 1}
+                  </TableCell>
+                  <TableCell className="font-medium">{l.full_name}</TableCell>
+                  <TableCell>{l.phone ?? "—"}</TableCell>
+                  <TableCell>{l.nomer_asosiy ?? "—"}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{STATUS_LABEL[l.status] ?? l.status}</Badge>
+                  </TableCell>
+                  <TableCell>{SOURCE_LABEL[l.source] ?? l.source}</TableCell>
+                  <TableCell>{l.region ?? "—"}</TableCell>
+                  <TableCell>
+                    {l.can_visit_clinic ? (
+                      <span className={CAN_VISIT_BADGE[l.can_visit_clinic]}>
+                        {CAN_VISIT_LABEL[l.can_visit_clinic]}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell>{l.assigned_to ? (opMap.get(l.assigned_to) ?? "—") : "—"}</TableCell>
+                  <TableCell>{new Date(l.created_at).toLocaleDateString("uz-UZ")}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

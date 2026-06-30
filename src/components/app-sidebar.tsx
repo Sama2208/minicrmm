@@ -35,8 +35,12 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold">C</div>
-          <span className="font-semibold text-base group-data-[collapsible=icon]:hidden">CRM Dashboard</span>
+          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold">
+            C
+          </div>
+          <span className="font-semibold text-base group-data-[collapsible=icon]:hidden">
+            CRM Dashboard
+          </span>
         </div>
       </SidebarHeader>
       <SidebarContent>

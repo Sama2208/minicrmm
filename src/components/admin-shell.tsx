@@ -23,7 +23,9 @@ export function AdminShell({ title, children }: { title: string; children: React
     <div className="min-h-screen flex bg-slate-50">
       <aside className="w-60 bg-slate-900 text-slate-100 flex flex-col">
         <div className="px-4 py-4 border-b border-slate-800 flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center font-bold">A</div>
+          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center font-bold">
+            A
+          </div>
           <span className="font-semibold">Admin Panel</span>
         </div>
         <nav className="flex-1 p-2 space-y-1">
@@ -44,7 +46,11 @@ export function AdminShell({ title, children }: { title: string; children: React
           })}
         </nav>
         <div className="p-2 border-t border-slate-800">
-          <Button variant="ghost" className="w-full justify-start text-slate-100 hover:bg-slate-800 hover:text-white" onClick={signOut}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-100 hover:bg-slate-800 hover:text-white"
+            onClick={signOut}
+          >
             <LogOut className="h-4 w-4" /> Chiqish
           </Button>
         </div>
@@ -69,4 +75,3 @@ export function AdminShell({ title, children }: { title: string; children: React
     </div>
   );
 }
-
