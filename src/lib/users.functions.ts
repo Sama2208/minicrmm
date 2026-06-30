@@ -17,6 +17,9 @@ export const createOperatorUser = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _role: "admin" });
     if (!isAdmin) throw new Error("Faqat admin operator yarata oladi");
 
+    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
+    if (!clinicId) throw new Error("Klinika aniqlanmadi");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Create auth user
@@ -53,7 +56,12 @@ export const createOperatorUser = createServerFn({ method: "POST" })
       } else {
         const { data: ins, error } = await supabaseAdmin
           .from("operators")
-          .insert({ full_name: data.full_name, user_id: newUserId, is_active: true })
+          .insert({
+            full_name: data.full_name,
+            user_id: newUserId,
+            is_active: true,
+            clinic_id: clinicId,
+          })
           .select("id")
           .single();
         if (error) throw new Error(error.message);
@@ -64,7 +72,7 @@ export const createOperatorUser = createServerFn({ method: "POST" })
     // 3. Grant operator role
     const { error: rErr } = await supabaseAdmin
       .from("user_roles")
-      .insert({ user_id: newUserId, role: "operator" });
+      .insert({ user_id: newUserId, role: "operator", clinic_id: clinicId });
     if (rErr && !rErr.message.includes("duplicate")) throw new Error(rErr.message);
 
     return { ok: true, user_id: newUserId, operator_id: opId };

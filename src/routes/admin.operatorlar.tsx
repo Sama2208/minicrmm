@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useClinicId } from "@/lib/clinic";
 
 export const Route = createFileRoute("/admin/operatorlar")({
   ssr: false,
@@ -36,6 +37,7 @@ type Operator = {
 
 function AdminOperatorsPage() {
   const qc = useQueryClient();
+  const clinicQ = useClinicId();
   const [name, setName] = useState("");
   const [tg, setTg] = useState("");
 
@@ -54,9 +56,10 @@ function AdminOperatorsPage() {
   const create = useMutation({
     mutationFn: async () => {
       if (!name.trim()) throw new Error("Ism kiritilishi shart");
+      if (!clinicQ.data) throw new Error("Klinika aniqlanmadi");
       const { error } = await supabase
         .from("operators")
-        .insert({ full_name: name.trim(), telegram_chat_id: tg || null });
+        .insert({ full_name: name.trim(), telegram_chat_id: tg || null, clinic_id: clinicQ.data });
       if (error) throw error;
     },
     onSuccess: () => {
