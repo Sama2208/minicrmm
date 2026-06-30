@@ -7,19 +7,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  LineChart, Line, Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
 import {
-  STATUS_LABEL, STATUS_ORDER, STATUS_BADGE, SOURCE_LABEL, SOURCE_LIST, SOURCE_COLOR,
+  STATUS_LABEL,
+  STATUS_ORDER,
+  STATUS_BADGE,
+  SOURCE_LABEL,
+  SOURCE_LIST,
+  SOURCE_COLOR,
   CONVERSION_STATUS,
-  type LeadStatus, type LeadSource,
+  type LeadStatus,
+  type LeadSource,
 } from "@/lib/crm";
 
 export const Route = createFileRoute("/_authenticated/hisobotlar")({ component: HisobotlarPage });
@@ -76,7 +99,7 @@ function HisobotlarPage() {
       (l) =>
         l.next_followup_date &&
         l.next_followup_date.split("T")[0] === today &&
-        l.assigned_to === operatorFilter
+        l.assigned_to === operatorFilter,
     );
   }, [leadsQ.data, operatorFilter]);
 
@@ -87,7 +110,7 @@ function HisobotlarPage() {
       (l) =>
         l.next_followup_date &&
         l.next_followup_date.split("T")[0] < today &&
-        l.assigned_to === operatorFilter
+        l.assigned_to === operatorFilter,
     );
   }, [leadsQ.data, operatorFilter]);
 
@@ -95,7 +118,7 @@ function HisobotlarPage() {
   const converted = leads.filter((l) => l.status === CONVERSION_STATUS).length;
   const conversion = total ? Math.round((converted / total) * 1000) / 10 : 0;
   const activePipeline = leads.filter(
-    (l) => !["yotishga_yozildi", "sifatsiz_lid", "kotarmadi"].includes(l.status)
+    (l) => !["yotishga_yozildi", "sifatsiz_lid", "kotarmadi"].includes(l.status),
   ).length;
 
   const funnelData = STATUS_ORDER.map((s) => ({
@@ -137,9 +160,7 @@ function HisobotlarPage() {
       const row = map.get(day)!;
       row[l.source] = (row[l.source] as number) + 1;
     });
-    return Array.from(map.values()).sort((a, b) =>
-      String(a.day).localeCompare(String(b.day))
-    );
+    return Array.from(map.values()).sort((a, b) => String(a.day).localeCompare(String(b.day)));
   }, [leads]);
 
   return (
@@ -148,20 +169,34 @@ function HisobotlarPage() {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="text-xs">Boshlanish sanasi</Label>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px] mt-1" />
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="w-[160px] mt-1"
+          />
         </div>
         <div>
           <Label className="text-xs">Tugash sanasi</Label>
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px] mt-1" />
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="w-[160px] mt-1"
+          />
         </div>
         <div>
           <Label className="text-xs">Operator</Label>
           <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-            <SelectTrigger className="w-[180px] mt-1"><SelectValue placeholder="Operator" /></SelectTrigger>
+            <SelectTrigger className="w-[180px] mt-1">
+              <SelectValue placeholder="Operator" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Barcha operatorlar</SelectItem>
               {(opsQ.data ?? []).map((o) => (
-                <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
+                <SelectItem key={o.id} value={o.id}>
+                  {o.full_name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -224,7 +259,9 @@ function HisobotlarPage() {
 
       {/* Funnel */}
       <Card>
-        <CardHeader><CardTitle>Voronka — statuslar bo'yicha</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Voronka — statuslar bo'yicha</CardTitle>
+        </CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 320 }}>
             <ResponsiveContainer>
@@ -242,7 +279,9 @@ function HisobotlarPage() {
 
       {/* Source */}
       <Card>
-        <CardHeader><CardTitle>Manba bo'yicha lidlar</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Manba bo'yicha lidlar</CardTitle>
+        </CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 280 }}>
             <ResponsiveContainer>
@@ -262,7 +301,9 @@ function HisobotlarPage() {
 
       {/* Operators */}
       <Card>
-        <CardHeader><CardTitle>Operatorlar samaradorligi</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Operatorlar samaradorligi</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -275,11 +316,16 @@ function HisobotlarPage() {
             </TableHeader>
             <TableBody>
               {operatorData.map((o) => (
-                <TableRow key={o.name} className={o.rate === maxRate && maxRate > 0 ? "bg-emerald-50" : ""}>
+                <TableRow
+                  key={o.name}
+                  className={o.rate === maxRate && maxRate > 0 ? "bg-emerald-50" : ""}
+                >
                   <TableCell className="font-medium">
                     {o.name}
                     {o.rate === maxRate && maxRate > 0 && (
-                      <span className="ml-2 text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded">Top</span>
+                      <span className="ml-2 text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded">
+                        Top
+                      </span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">{o.total}</TableCell>
@@ -294,7 +340,9 @@ function HisobotlarPage() {
 
       {/* Daily trend */}
       <Card>
-        <CardHeader><CardTitle>Kunlik trend — manba bo'yicha</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Kunlik trend — manba bo'yicha</CardTitle>
+        </CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 300 }}>
             <ResponsiveContainer>
@@ -305,7 +353,14 @@ function HisobotlarPage() {
                 <Tooltip />
                 <Legend />
                 {SOURCE_LIST.map((s) => (
-                  <Line key={s} type="monotone" dataKey={s} name={SOURCE_LABEL[s]} stroke={SOURCE_COLOR[s]} strokeWidth={2} />
+                  <Line
+                    key={s}
+                    type="monotone"
+                    dataKey={s}
+                    name={SOURCE_LABEL[s]}
+                    stroke={SOURCE_COLOR[s]}
+                    strokeWidth={2}
+                  />
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -316,7 +371,15 @@ function HisobotlarPage() {
   );
 }
 
-function KpiCard({ title, value, color }: { title: string; value: number | string; color: string }) {
+function KpiCard({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: number | string;
+  color: string;
+}) {
   return (
     <Card>
       <CardHeader className="pb-2">

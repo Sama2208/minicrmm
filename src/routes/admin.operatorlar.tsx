@@ -11,7 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -21,7 +26,13 @@ export const Route = createFileRoute("/admin/operatorlar")({
   component: () => <AdminOperatorsPage />,
 });
 
-type Operator = { id: string; full_name: string; telegram_chat_id: string | null; is_active: boolean; user_id: string | null };
+type Operator = {
+  id: string;
+  full_name: string;
+  telegram_chat_id: string | null;
+  is_active: boolean;
+  user_id: string | null;
+};
 
 function AdminOperatorsPage() {
   const qc = useQueryClient();
@@ -31,8 +42,10 @@ function AdminOperatorsPage() {
   const opsQ = useQuery({
     queryKey: ["admin-operators"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("operators")
-        .select("id, full_name, telegram_chat_id, is_active, user_id").order("full_name");
+      const { data, error } = await supabase
+        .from("operators")
+        .select("id, full_name, telegram_chat_id, is_active, user_id")
+        .order("full_name");
       if (error) throw error;
       return data as Operator[];
     },
@@ -41,10 +54,17 @@ function AdminOperatorsPage() {
   const create = useMutation({
     mutationFn: async () => {
       if (!name.trim()) throw new Error("Ism kiritilishi shart");
-      const { error } = await supabase.from("operators").insert({ full_name: name.trim(), telegram_chat_id: tg || null });
+      const { error } = await supabase
+        .from("operators")
+        .insert({ full_name: name.trim(), telegram_chat_id: tg || null });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-operators"] }); setName(""); setTg(""); toast.success("Operator qo'shildi"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-operators"] });
+      setName("");
+      setTg("");
+      toast.success("Operator qo'shildi");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -54,14 +74,19 @@ function AdminOperatorsPage() {
       const { error } = await supabase.from("operators").update(rest).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-operators"] }); toast.success("Yangilandi"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-operators"] });
+      toast.success("Yangilandi");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   return (
     <AdminShell title="Operatorlar">
       <Card className="mb-6">
-        <CardHeader><CardTitle>Yangi operator</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Yangi operator</CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[180px]">
@@ -70,9 +95,18 @@ function AdminOperatorsPage() {
             </div>
             <div className="flex-1 min-w-[180px]">
               <Label>Telegram chat ID</Label>
-              <Input value={tg} onChange={(e) => setTg(e.target.value)} className="mt-1" placeholder="ixtiyoriy" />
+              <Input
+                value={tg}
+                onChange={(e) => setTg(e.target.value)}
+                className="mt-1"
+                placeholder="ixtiyoriy"
+              />
             </div>
-            <Button onClick={() => create.mutate()} disabled={create.isPending} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button
+              onClick={() => create.mutate()}
+              disabled={create.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
               <Plus className="h-4 w-4" /> Qo'shish
             </Button>
           </div>
@@ -80,7 +114,9 @@ function AdminOperatorsPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Operatorlar ro'yxati</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Operatorlar ro'yxati</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -96,9 +132,18 @@ function AdminOperatorsPage() {
                 <TableRow key={o.id}>
                   <TableCell className="font-medium">{o.full_name}</TableCell>
                   <TableCell>{o.telegram_chat_id ?? "—"}</TableCell>
-                  <TableCell>{o.user_id ? <Badge className="bg-emerald-600">Bog'langan</Badge> : <Badge variant="outline">Yo'q</Badge>}</TableCell>
                   <TableCell>
-                    <Switch checked={o.is_active} onCheckedChange={(v) => update.mutate({ id: o.id, is_active: v })} />
+                    {o.user_id ? (
+                      <Badge className="bg-emerald-600">Bog'langan</Badge>
+                    ) : (
+                      <Badge variant="outline">Yo'q</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={o.is_active}
+                      onCheckedChange={(v) => update.mutate({ id: o.id, is_active: v })}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

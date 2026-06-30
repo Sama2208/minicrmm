@@ -5,10 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,10 +25,14 @@ import { Plus, Search, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  STATUS_LABEL, STATUS_ORDER,
-  SOURCE_LABEL, SOURCE_LIST,
+  STATUS_LABEL,
+  STATUS_ORDER,
+  SOURCE_LABEL,
+  SOURCE_LIST,
   CAN_VISIT_LABEL,
-  type LeadStatus, type LeadSource, type CanVisitClinic,
+  type LeadStatus,
+  type LeadSource,
+  type CanVisitClinic,
 } from "@/lib/crm";
 import { LidlarKanban } from "@/components/lidlar-kanban";
 
@@ -88,7 +101,7 @@ function LidlarPage() {
       (l) =>
         l.next_followup_date &&
         l.next_followup_date.split("T")[0] === today &&
-        l.assigned_to === operatorFilter
+        l.assigned_to === operatorFilter,
     );
   }, [leadsQ.data, operatorFilter]);
 
@@ -99,7 +112,7 @@ function LidlarPage() {
       (l) =>
         l.next_followup_date &&
         l.next_followup_date.split("T")[0] < today &&
-        l.assigned_to === operatorFilter
+        l.assigned_to === operatorFilter,
     );
   }, [leadsQ.data, operatorFilter]);
 
@@ -168,34 +181,56 @@ function LidlarPage() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha statuslar</SelectItem>
             {STATUS_ORDER.map((s) => (
-              <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {STATUS_LABEL[s]}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Manba" /></SelectTrigger>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Manba" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha manbalar</SelectItem>
             {SOURCE_LIST.map((s) => (
-              <SelectItem key={s} value={s}>{SOURCE_LABEL[s]}</SelectItem>
+              <SelectItem key={s} value={s}>
+                {SOURCE_LABEL[s]}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={operatorFilter} onValueChange={setOperatorFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Operator" /></SelectTrigger>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Operator" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha operatorlar</SelectItem>
             {(opsQ.data ?? []).map((o) => (
-              <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
+              <SelectItem key={o.id} value={o.id}>
+                {o.full_name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[150px]" />
-        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[150px]" />
+        <Input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="w-[150px]"
+        />
+        <Input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="w-[150px]"
+        />
         <Button onClick={() => setCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
           <Plus className="h-4 w-4" /> Yangi lid
         </Button>
@@ -217,7 +252,8 @@ function LidlarPage() {
 }
 
 function CreateLeadDialog({
-  open, onOpenChange,
+  open,
+  onOpenChange,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -253,8 +289,15 @@ function CreateLeadDialog({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       toast.success("Lid qo'shildi — operator avtomatik biriktirildi");
-      setFullName(""); setNomerAsosiy(""); setPhone(""); setRegion(""); setProblem("");
-      setCanVisit(""); setSource("boshqa"); setCampaign(""); setNotes("");
+      setFullName("");
+      setNomerAsosiy("");
+      setPhone("");
+      setRegion("");
+      setProblem("");
+      setCanVisit("");
+      setSource("boshqa");
+      setCampaign("");
+      setNotes("");
       onOpenChange(false);
     },
     onError: (e: Error) => toast.error(e.message),
@@ -272,15 +315,29 @@ function CreateLeadDialog({
         <div className="space-y-3">
           <div>
             <Label>Ism va familiya *</Label>
-            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1" />
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1"
+            />
           </div>
           <div>
             <Label>Raqam 2</Label>
-            <Input value={nomerAsosiy} onChange={(e) => setNomerAsosiy(e.target.value)} className="mt-1" placeholder="+998..." />
+            <Input
+              value={nomerAsosiy}
+              onChange={(e) => setNomerAsosiy(e.target.value)}
+              className="mt-1"
+              placeholder="+998..."
+            />
           </div>
           <div>
             <Label>Telefon</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1" placeholder="+998..." />
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-1"
+              placeholder="+998..."
+            />
           </div>
           <div>
             <Label>Viloyat / Shahar</Label>
@@ -288,7 +345,12 @@ function CreateLeadDialog({
           </div>
           <div>
             <Label>Muammo tavsifi</Label>
-            <Textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={3} className="mt-1" />
+            <Textarea
+              value={problem}
+              onChange={(e) => setProblem(e.target.value)}
+              rows={3}
+              className="mt-1"
+            />
           </div>
           <div>
             <Label>Klinikaga kela oladimi?</Label>
@@ -310,26 +372,45 @@ function CreateLeadDialog({
           <div>
             <Label>Manba</Label>
             <Select value={source} onValueChange={(v) => setSource(v as LeadSource)}>
-              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {SOURCE_LIST.map((s) => (
-                  <SelectItem key={s} value={s}>{SOURCE_LABEL[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {SOURCE_LABEL[s]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <Label>Kampaniya nomi (ixtiyoriy)</Label>
-            <Input value={campaign} onChange={(e) => setCampaign(e.target.value)} className="mt-1" />
+            <Input
+              value={campaign}
+              onChange={(e) => setCampaign(e.target.value)}
+              className="mt-1"
+            />
           </div>
           <div>
             <Label>Izoh (ixtiyoriy)</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="mt-1" />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="mt-1"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
-          <Button onClick={() => create.mutate()} disabled={create.isPending} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Bekor qilish
+          </Button>
+          <Button
+            onClick={() => create.mutate()}
+            disabled={create.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
             Qo'shish
           </Button>
         </DialogFooter>

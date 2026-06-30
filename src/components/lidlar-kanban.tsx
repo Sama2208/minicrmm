@@ -2,27 +2,70 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, ChevronRight, Calendar, Trash2, GripVertical, X, Square, CheckSquare } from "lucide-react";
+import {
+  Plus,
+  ChevronRight,
+  Calendar,
+  Trash2,
+  GripVertical,
+  X,
+  Square,
+  CheckSquare,
+  Search,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  DndContext, PointerSensor, useSensor, useSensors,
-  useDraggable, useDroppable, DragOverlay,
-  type DragEndEvent, type DragStartEvent,
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  DragOverlay,
+  type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
-  SOURCE_LABEL, SOURCE_LIST, CAN_VISIT_LABEL, formatDate,
-  type LeadStatus, type LeadSource, type CanVisitClinic,
+  SOURCE_LABEL,
+  SOURCE_LIST,
+  CAN_VISIT_LABEL,
+  STATUS_LABEL,
+  formatDate,
+  type LeadStatus,
+  type LeadSource,
+  type CanVisitClinic,
 } from "@/lib/crm";
+import { downloadCsv, toCsv, type CsvColumn } from "@/lib/csv";
+import {
+  DEFAULT_COLUMNS,
+  SOURCE_BADGE,
+  opColor,
+  initials,
+  LS_TITLES,
+  LS_EXTRA,
+  LS_COL_ORDER,
+  LS_HIDDEN,
+  type ColumnDef,
+} from "@/lib/kanban";
 
 export type KanbanLead = {
   id: string;
@@ -54,62 +97,26 @@ type CallLog = {
 };
 
 const RESULT_META: Record<CallLog["result"], { cls: string; label: string; icon: string }> = {
-  gaplashdi:   { cls: "bg-emerald-100 text-emerald-700 border border-emerald-200", label: "Gaplashdi",   icon: "✅" },
-  kotarmadi:   { cls: "bg-red-100 text-red-700 border border-red-200",             label: "Ko'tarmadi",  icon: "📵" },
-  qayta_kerak: { cls: "bg-amber-100 text-amber-700 border border-amber-200",       label: "Qayta kerak", icon: "🔄" },
+  gaplashdi: {
+    cls: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+    label: "Gaplashdi",
+    icon: "✅",
+  },
+  kotarmadi: {
+    cls: "bg-red-100 text-red-700 border border-red-200",
+    label: "Ko'tarmadi",
+    icon: "📵",
+  },
+  qayta_kerak: {
+    cls: "bg-amber-100 text-amber-700 border border-amber-200",
+    label: "Qayta kerak",
+    icon: "🔄",
+  },
 };
-
-type ColumnDef = {
-  key: LeadStatus | string;
-  status?: LeadStatus;
-  title: string;
-  locked?: boolean;
-  custom?: boolean;
-  accent?: "green" | "muted";
-};
-
-const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "yangi",                   status: "yangi",                   title: "Yangi lid",                locked: true },
-  { key: "sifatsiz_lid",            status: "sifatsiz_lid",            title: "Sifatsiz lid",             accent: "muted" },
-  { key: "kotarmadi",               status: "kotarmadi",               title: "Ko'tarmadi" },
-  { key: "maslahat",                status: "maslahat",                title: "Maslahat" },
-  { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
-  { key: "qatnashga_yozildi",       status: "qatnashga_yozildi",       title: "Qatnashishga yozildi" },
-  { key: "yotishga_yozildi",        status: "yotishga_yozildi",        title: "Yotishga yozildi" },
-  { key: "konsultatsiyada_boldi",   status: "konsultatsiyada_boldi",   title: "Konsultatsiyaga keldi" },
-  { key: "yotdi",                   status: "yotdi",                   title: "Yotdi",                    accent: "green" },
-  { key: "qatnadi",                 status: "qatnadi",                 title: "Qatnadi",                  accent: "green" },
-];
-
-const SOURCE_BADGE: Record<LeadSource, string> = {
-  facebook: "bg-blue-100 text-blue-700",
-  instagram: "bg-purple-100 text-purple-700",
-  telegram: "bg-sky-100 text-sky-700",
-  friends: "bg-violet-100 text-violet-700",
-  website: "bg-emerald-100 text-emerald-700",
-  boshqa: "bg-slate-100 text-slate-700",
-};
-
-const OP_COLORS = [
-  "bg-blue-500", "bg-amber-500", "bg-emerald-500",
-  "bg-violet-500", "bg-rose-500", "bg-cyan-500", "bg-orange-500",
-];
-function opColor(id: string) {
-  let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  return OP_COLORS[Math.abs(h) % OP_COLORS.length];
-}
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
-}
-
-const LS_TITLES = "kanban_column_titles_v3";
-const LS_EXTRA = "kanban_extra_columns_v2";
-const LS_COL_ORDER = "kanban_col_order_v3";
-const LS_HIDDEN = "kanban_hidden_cols_v1";
 
 export function LidlarKanban({
-  leads, operators,
+  leads,
+  operators,
 }: {
   leads: KanbanLead[];
   operators: KanbanOperator[];
@@ -124,11 +131,17 @@ export function LidlarKanban({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -147,9 +160,7 @@ export function LidlarKanban({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   useEffect(() => {
     try {
@@ -161,24 +172,42 @@ export function LidlarKanban({
       if (o) setColOrder(JSON.parse(o));
       const h = localStorage.getItem(LS_HIDDEN);
       if (h) setHidden(JSON.parse(h));
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, []);
 
   const saveTitles = (next: Record<string, string>) => {
     setTitles(next);
-    try { localStorage.setItem(LS_TITLES, JSON.stringify(next)); } catch { /* noop */ }
+    try {
+      localStorage.setItem(LS_TITLES, JSON.stringify(next));
+    } catch {
+      /* noop */
+    }
   };
   const saveExtras = (next: ColumnDef[]) => {
     setExtras(next);
-    try { localStorage.setItem(LS_EXTRA, JSON.stringify(next)); } catch { /* noop */ }
+    try {
+      localStorage.setItem(LS_EXTRA, JSON.stringify(next));
+    } catch {
+      /* noop */
+    }
   };
   const saveColOrder = (order: string[]) => {
     setColOrder(order);
-    try { localStorage.setItem(LS_COL_ORDER, JSON.stringify(order)); } catch { /* noop */ }
+    try {
+      localStorage.setItem(LS_COL_ORDER, JSON.stringify(order));
+    } catch {
+      /* noop */
+    }
   };
   const saveHidden = (next: string[]) => {
     setHidden(next);
-    try { localStorage.setItem(LS_HIDDEN, JSON.stringify(next)); } catch { /* noop */ }
+    try {
+      localStorage.setItem(LS_HIDDEN, JSON.stringify(next));
+    } catch {
+      /* noop */
+    }
   };
 
   const deleteColumn = (col: ColumnDef) => {
@@ -205,7 +234,9 @@ export function LidlarKanban({
     const sorted = colOrder
       .map((k) => rest.find((c) => c.key === k))
       .filter((c): c is ColumnDef => !!c);
-    rest.forEach((c) => { if (!colOrder.includes(c.key)) sorted.push(c); });
+    rest.forEach((c) => {
+      if (!colOrder.includes(c.key)) sorted.push(c);
+    });
     return yangi ? [yangi, ...sorted] : sorted;
   }, [extras, titles, colOrder, hidden]);
 
@@ -215,20 +246,46 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
+  const filteredLeads = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return leads.filter((l) => {
+      if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
+      if (!q) return true;
+      const haystack = [l.full_name, l.phone, l.nomer_asosiy, l.region]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [leads, search, sourceFilter]);
+
   const grouped = useMemo(() => {
     const m = new Map<string, KanbanLead[]>();
     columns.forEach((c) => m.set(c.key, []));
-    leads.forEach((l) => {
+    filteredLeads.forEach((l) => {
       const col = columns.find((c) => c.status === l.status);
       if (col) m.get(col.key)!.push(l);
     });
     return m;
-  }, [leads, columns]);
+  }, [filteredLeads, columns]);
 
-  const activeLead = useMemo(
-    () => leads.find((l) => l.id === activeId) ?? null,
-    [leads, activeId],
-  );
+  const exportCsv = () => {
+    const cols: CsvColumn<KanbanLead>[] = [
+      { header: "Ism", value: (l) => l.full_name },
+      { header: "Telefon", value: (l) => l.phone ?? l.nomer_asosiy },
+      { header: "Viloyat", value: (l) => l.region },
+      { header: "Manba", value: (l) => SOURCE_LABEL[l.source] ?? l.source },
+      { header: "Holat", value: (l) => STATUS_LABEL[l.status] ?? l.status },
+      { header: "Operator", value: (l) => (l.assigned_to ? (opMap.get(l.assigned_to) ?? "") : "") },
+      { header: "Muammo", value: (l) => l.problem_type },
+      { header: "Yaratilgan", value: (l) => formatDate(l.created_at) },
+    ];
+    const csv = toCsv(filteredLeads, cols);
+    const today = new Date().toISOString().slice(0, 10);
+    downloadCsv(`lidlar-${today}.csv`, csv);
+  };
+
+  const activeLead = useMemo(() => leads.find((l) => l.id === activeId) ?? null, [leads, activeId]);
   const activeColKey = activeId?.startsWith("__col__") ? activeId.slice(7, -2) : null;
 
   const updateStatus = useMutation({
@@ -241,9 +298,10 @@ export function LidlarKanban({
       const snapshots = qc.getQueriesData({ queryKey: ["leads"] });
       snapshots.forEach(([key, data]) => {
         if (!Array.isArray(data)) return;
-        qc.setQueryData(key, (data as KanbanLead[]).map((l) =>
-          l.id === id ? { ...l, status } : l
-        ));
+        qc.setQueryData(
+          key,
+          (data as KanbanLead[]).map((l) => (l.id === id ? { ...l, status } : l)),
+        );
       });
       return { snapshots };
     },
@@ -291,6 +349,44 @@ export function LidlarKanban({
 
   return (
     <>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Ism, telefon yoki viloyat bo'yicha qidirish..."
+            className="pl-8 h-9"
+          />
+        </div>
+        <Select
+          value={sourceFilter}
+          onValueChange={(v) => setSourceFilter(v as LeadSource | "all")}
+        >
+          <SelectTrigger className="h-9 w-full sm:w-44">
+            <SelectValue placeholder="Manba" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Barcha manbalar</SelectItem>
+            {SOURCE_LIST.map((s) => (
+              <SelectItem key={s} value={s}>
+                {SOURCE_LABEL[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={exportCsv}
+          disabled={filteredLeads.length === 0}
+          className="h-9 gap-1.5 shrink-0"
+        >
+          <Download className="h-4 w-4" />
+          CSV ({filteredLeads.length})
+        </Button>
+      </div>
+
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
@@ -302,7 +398,9 @@ export function LidlarKanban({
             const items = grouped.get(col.key) ?? [];
             return (
               <KanbanColumn key={col.key} colKey={col.key} accent={col.accent}>
-                <div className={`flex items-center justify-between px-2 py-2 border-b transition-opacity ${activeColKey === col.key ? "opacity-30" : ""}`}>
+                <div
+                  className={`flex items-center justify-between px-2 py-2 border-b transition-opacity ${activeColKey === col.key ? "opacity-30" : ""}`}
+                >
                   <div className="flex items-center gap-1 min-w-0">
                     {!col.locked && <ColGripHandle colKey={col.key} />}
                     {editingKey === col.key && !col.locked ? (
@@ -322,8 +420,12 @@ export function LidlarKanban({
                     ) : (
                       <span
                         className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none truncate"
-                        onDoubleClick={() => { if (!col.locked) setEditingKey(col.key); }}
-                        title={col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"}
+                        onDoubleClick={() => {
+                          if (!col.locked) setEditingKey(col.key);
+                        }}
+                        title={
+                          col.locked ? "Bu ustun qulflangan" : "Tahrirlash uchun ikki marta bosing"
+                        }
                       >
                         {col.title}
                       </span>
@@ -351,7 +453,7 @@ export function LidlarKanban({
                     <DraggableCard
                       key={l.id}
                       lead={l}
-                      opName={l.assigned_to ? opMap.get(l.assigned_to) ?? null : null}
+                      opName={l.assigned_to ? (opMap.get(l.assigned_to) ?? null) : null}
                       accent={col.accent}
                       dragging={activeId === l.id}
                       onDetail={setSelectedLead}
@@ -360,8 +462,8 @@ export function LidlarKanban({
                     />
                   ))}
 
-                  {col.key === "yangi" && (
-                    addOpenCol === "yangi" ? (
+                  {col.key === "yangi" &&
+                    (addOpenCol === "yangi" ? (
                       <AddLeadMini onClose={() => setAddOpenCol(null)} />
                     ) : (
                       <button
@@ -371,8 +473,7 @@ export function LidlarKanban({
                       >
                         <Plus className="h-3.5 w-3.5" /> Lid qo'shish
                       </button>
-                    )
-                  )}
+                    ))}
                 </div>
               </KanbanColumn>
             );
@@ -405,7 +506,7 @@ export function LidlarKanban({
           ) : activeLead ? (
             <CardBody
               lead={activeLead}
-              opName={activeLead.assigned_to ? opMap.get(activeLead.assigned_to) ?? null : null}
+              opName={activeLead.assigned_to ? (opMap.get(activeLead.assigned_to) ?? null) : null}
             />
           ) : null}
         </DragOverlay>
@@ -436,7 +537,12 @@ export function LidlarKanban({
           <Button
             size="sm"
             onClick={() => {
-              if (!window.confirm(`${selectedIds.size} ta lidni o'chirasizmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+              if (
+                !window.confirm(
+                  `${selectedIds.size} ta lidni o'chirasizmi? Bu amalni qaytarib bo'lmaydi.`,
+                )
+              )
+                return;
               deleteSelected.mutate();
             }}
             disabled={deleteSelected.isPending}
@@ -469,7 +575,9 @@ function ColGripHandle({ colKey }: { colKey: string }) {
 }
 
 function KanbanColumn({
-  colKey, children, accent,
+  colKey,
+  children,
+  accent,
 }: {
   colKey: string;
   children: React.ReactNode;
@@ -489,7 +597,13 @@ function KanbanColumn({
 }
 
 function DraggableCard({
-  lead, opName, accent, dragging, onDetail, isSelected, onToggle,
+  lead,
+  opName,
+  accent,
+  dragging,
+  onDetail,
+  isSelected,
+  onToggle,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -501,19 +615,26 @@ function DraggableCard({
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id: lead.id });
   return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className={dragging ? "opacity-30" : ""}
-    >
-      <CardBody lead={lead} opName={opName} accent={accent} onDetail={onDetail} isSelected={isSelected} onToggle={onToggle} />
+    <div ref={setNodeRef} {...attributes} {...listeners} className={dragging ? "opacity-30" : ""}>
+      <CardBody
+        lead={lead}
+        opName={opName}
+        accent={accent}
+        onDetail={onDetail}
+        isSelected={isSelected}
+        onToggle={onToggle}
+      />
     </div>
   );
 }
 
 function CardBody({
-  lead, opName, accent, onDetail, isSelected, onToggle,
+  lead,
+  opName,
+  accent,
+  onDetail,
+  isSelected,
+  onToggle,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -522,10 +643,11 @@ function CardBody({
   isSelected?: boolean;
   onToggle?: (id: string) => void;
 }) {
-  const borderClass =
-    isSelected ? "border-2 border-red-400" :
-    accent === "green" ? "border border-[#97C459]" :
-    "border border-slate-200";
+  const borderClass = isSelected
+    ? "border-2 border-red-400"
+    : accent === "green"
+      ? "border border-[#97C459]"
+      : "border border-slate-200";
   const opacityClass = accent === "muted" ? "opacity-70" : "";
 
   const today = new Date().toISOString().split("T")[0];
@@ -533,20 +655,26 @@ function CardBody({
   const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
 
   return (
-    <div className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}>
+    <div
+      className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}
+    >
       <div className="px-3 py-2 flex items-start gap-2">
         {onToggle && (
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => { e.stopPropagation(); onToggle(lead.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(lead.id);
+            }}
             className="mt-0.5 shrink-0 text-slate-300 hover:text-red-500 transition-colors"
             title="Tanlash"
           >
-            {isSelected
-              ? <CheckSquare className="h-4 w-4 text-red-500" />
-              : <Square className="h-4 w-4" />
-            }
+            {isSelected ? (
+              <CheckSquare className="h-4 w-4 text-red-500" />
+            ) : (
+              <Square className="h-4 w-4" />
+            )}
           </button>
         )}
         <div className="flex-1 min-w-0 space-y-0.5">
@@ -579,19 +707,27 @@ function CardBody({
           )}
           {/* Callback date */}
           {lead.next_followup_date && (
-            <div className={`text-[10px] font-medium flex items-center gap-0.5 ${
-              isCallbackOverdue ? "text-red-500" :
-              isCallbackToday ? "text-amber-600" :
-              "text-slate-400"
-            }`}>
+            <div
+              className={`text-[10px] font-medium flex items-center gap-0.5 ${
+                isCallbackOverdue
+                  ? "text-red-500"
+                  : isCallbackToday
+                    ? "text-amber-600"
+                    : "text-slate-400"
+              }`}
+            >
               <Calendar className="h-3 w-3" />
-              {isCallbackToday ? "Bugun qo'ng'iroq!" :
-               isCallbackOverdue ? `O'tib ketgan: ${formatDate(lead.next_followup_date)}` :
-               formatDate(lead.next_followup_date)}
+              {isCallbackToday
+                ? "Bugun qo'ng'iroq!"
+                : isCallbackOverdue
+                  ? `O'tib ketgan: ${formatDate(lead.next_followup_date)}`
+                  : formatDate(lead.next_followup_date)}
             </div>
           )}
           <div className="pt-1">
-            <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}>
+            <span
+              className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}
+            >
               {SOURCE_LABEL[lead.source]}
             </span>
           </div>
@@ -609,7 +745,10 @@ function CardBody({
             <button
               type="button"
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); onDetail(lead); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDetail(lead);
+              }}
               className="h-5 w-5 rounded flex items-center justify-center text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
               title="Batafsil / Tahrirlash"
             >
@@ -624,12 +763,7 @@ function CardBody({
 
 // ─── CallLogSection ───────────────────────────────────────────────────────────
 
-function CallLogSection({
-  leadId, operators,
-}: {
-  leadId: string;
-  operators: KanbanOperator[];
-}) {
+function CallLogSection({ leadId, operators }: { leadId: string; operators: KanbanOperator[] }) {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [opName, setOpName] = useState("");
@@ -651,7 +785,10 @@ function CallLogSection({
   });
 
   const save = async () => {
-    if (!opName.trim()) { toast.error("Operator nomi kiritilishi shart"); return; }
+    if (!opName.trim()) {
+      toast.error("Operator nomi kiritilishi shart");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("call_logs").insert({
       lead_id: leadId,
@@ -660,7 +797,10 @@ function CallLogSection({
       notes: notes.trim() || null,
     });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Qo'ng'iroq qo'shildi");
     qc.invalidateQueries({ queryKey: ["call_logs", leadId] });
     setShowForm(false);
@@ -672,7 +812,10 @@ function CallLogSection({
   const deleteLog = async (id: string) => {
     if (!window.confirm("Bu qo'ng'iroqni o'chirasizmi?")) return;
     const { error } = await supabase.from("call_logs").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["call_logs", leadId] });
     toast.success("O'chirildi");
   };
@@ -707,7 +850,9 @@ function CallLogSection({
               </SelectTrigger>
               <SelectContent>
                 {operators.map((o) => (
-                  <SelectItem key={o.id} value={o.full_name}>{o.full_name}</SelectItem>
+                  <SelectItem key={o.id} value={o.full_name}>
+                    {o.full_name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -720,7 +865,9 @@ function CallLogSection({
             />
           )}
           <Select value={result} onValueChange={(v) => setResult(v as CallLog["result"])}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="gaplashdi">✅ Gaplashdi</SelectItem>
               <SelectItem value="kotarmadi">📵 Ko'tarmadi</SelectItem>
@@ -743,7 +890,12 @@ function CallLogSection({
             >
               {saving ? "Saqlanmoqda…" : "Saqlash"}
             </Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowForm(false)}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+              onClick={() => setShowForm(false)}
+            >
               Bekor
             </Button>
           </div>
@@ -764,13 +916,13 @@ function CallLogSection({
             return (
               <div key={log.id} className="bg-white border rounded-md p-2.5 space-y-1">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${m.cls}`}>
+                  <span
+                    className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${m.cls}`}
+                  >
                     {m.icon} {m.label}
                   </span>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-slate-400">
-                      {formatDate(log.called_at)}
-                    </span>
+                    <span className="text-[10px] text-slate-400">{formatDate(log.called_at)}</span>
                     <button
                       type="button"
                       onClick={() => deleteLog(log.id)}
@@ -799,7 +951,10 @@ function CallLogSection({
 // ─── Lead Detail Dialog ────────────────────────────────────────────────────────
 
 function LeadDetailDialog({
-  lead, open, onClose, operators,
+  lead,
+  open,
+  onClose,
+  operators,
 }: {
   lead: KanbanLead;
   open: boolean;
@@ -812,11 +967,11 @@ function LeadDetailDialog({
   const [nomerAsosiy, setNomerAsosiy] = useState(lead.nomer_asosiy ?? "");
   const [notes, setNotes] = useState(lead.notes ?? "");
   const [nextFollowup, setNextFollowup] = useState(
-    lead.next_followup_date ? lead.next_followup_date.split("T")[0] : ""
+    lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "",
   );
   const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "__none__");
   const [appointmentDate, setAppointmentDate] = useState(
-    lead.appointment_date ? lead.appointment_date.split("T")[0] : ""
+    lead.appointment_date ? lead.appointment_date.split("T")[0] : "",
   );
 
   // Sync state when lead changes
@@ -835,15 +990,18 @@ function LeadDetailDialog({
   const save = useMutation({
     mutationFn: async () => {
       if (!fullName.trim()) throw new Error("Ism bo'sh bo'lishi mumkin emas");
-      const { error } = await supabase.from("leads").update({
-        full_name: fullName.trim(),
-        phone: phone.trim() || null,
-        nomer_asosiy: nomerAsosiy.trim() || null,
-        notes: notes.trim() || null,
-        next_followup_date: nextFollowup || null,
-        appointment_date: appointmentDate || null,
-        assigned_to: (assignedTo && assignedTo !== "__none__") ? assignedTo : null,
-      }).eq("id", lead.id);
+      const { error } = await supabase
+        .from("leads")
+        .update({
+          full_name: fullName.trim(),
+          phone: phone.trim() || null,
+          nomer_asosiy: nomerAsosiy.trim() || null,
+          notes: notes.trim() || null,
+          next_followup_date: nextFollowup || null,
+          appointment_date: appointmentDate || null,
+          assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
+        })
+        .eq("id", lead.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -855,7 +1013,12 @@ function LeadDetailDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base">Lid ma'lumotlari</DialogTitle>
@@ -924,7 +1087,9 @@ function LeadDetailDialog({
                 <SelectContent>
                   <SelectItem value="__none__">— Belgilanmagan —</SelectItem>
                   {operators.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
+                    <SelectItem key={o.id} value={o.id}>
+                      {o.full_name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -985,7 +1150,9 @@ function LeadDetailDialog({
         <CallLogSection leadId={lead.id} operators={operators} />
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={onClose}>Bekor</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Bekor
+          </Button>
           <Button
             size="sm"
             onClick={() => save.mutate()}
@@ -1010,7 +1177,10 @@ function AddLeadMini({ onClose }: { onClose: () => void }) {
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!fullName.trim()) { toast.error("Ism kiritilishi shart"); return; }
+    if (!fullName.trim()) {
+      toast.error("Ism kiritilishi shart");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
@@ -1019,7 +1189,10 @@ function AddLeadMini({ onClose }: { onClose: () => void }) {
       status: "yangi",
     });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Lid qo'shildi");
     qc.invalidateQueries({ queryKey: ["leads"] });
     onClose();
@@ -1028,28 +1201,42 @@ function AddLeadMini({ onClose }: { onClose: () => void }) {
   return (
     <div className="bg-white border rounded-md p-2 space-y-2">
       <Input
-        autoFocus placeholder="Ism familiya"
-        value={fullName} onChange={(e) => setFullName(e.target.value)}
+        autoFocus
+        placeholder="Ism familiya"
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
         className="h-8 text-xs"
       />
       <Input
-        placeholder="Telefon" value={phone}
+        placeholder="Telefon"
+        value={phone}
         onChange={(e) => setPhone(e.target.value)}
         className="h-8 text-xs"
       />
       <Select value={source} onValueChange={(v) => setSource(v as LeadSource)}>
-        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue />
+        </SelectTrigger>
         <SelectContent>
           {SOURCE_LIST.map((s) => (
-            <SelectItem key={s} value={s}>{SOURCE_LABEL[s]}</SelectItem>
+            <SelectItem key={s} value={s}>
+              {SOURCE_LABEL[s]}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
       <div className="flex gap-1">
-        <Button size="sm" className="h-7 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={save} disabled={saving}>
+        <Button
+          size="sm"
+          className="h-7 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700"
+          onClick={save}
+          disabled={saving}
+        >
           Saqlash
         </Button>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onClose}>Bekor</Button>
+        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onClose}>
+          Bekor
+        </Button>
       </div>
     </div>
   );
