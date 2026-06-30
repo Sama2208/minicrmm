@@ -11,6 +11,8 @@ import {
   X,
   Square,
   CheckSquare,
+  Search,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,11 +48,13 @@ import {
   SOURCE_LABEL,
   SOURCE_LIST,
   CAN_VISIT_LABEL,
+  STATUS_LABEL,
   formatDate,
   type LeadStatus,
   type LeadSource,
   type CanVisitClinic,
 } from "@/lib/crm";
+import { downloadCsv, toCsv, type CsvColumn } from "@/lib/csv";
 
 export type KanbanLead = {
   id: string;
@@ -175,6 +179,8 @@ export function LidlarKanban({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -288,15 +294,44 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
+  const filteredLeads = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return leads.filter((l) => {
+      if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
+      if (!q) return true;
+      const haystack = [l.full_name, l.phone, l.nomer_asosiy, l.region]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [leads, search, sourceFilter]);
+
   const grouped = useMemo(() => {
     const m = new Map<string, KanbanLead[]>();
     columns.forEach((c) => m.set(c.key, []));
-    leads.forEach((l) => {
+    filteredLeads.forEach((l) => {
       const col = columns.find((c) => c.status === l.status);
       if (col) m.get(col.key)!.push(l);
     });
     return m;
-  }, [leads, columns]);
+  }, [filteredLeads, columns]);
+
+  const exportCsv = () => {
+    const cols: CsvColumn<KanbanLead>[] = [
+      { header: "Ism", value: (l) => l.full_name },
+      { header: "Telefon", value: (l) => l.phone ?? l.nomer_asosiy },
+      { header: "Viloyat", value: (l) => l.region },
+      { header: "Manba", value: (l) => SOURCE_LABEL[l.source] ?? l.source },
+      { header: "Holat", value: (l) => STATUS_LABEL[l.status] ?? l.status },
+      { header: "Operator", value: (l) => (l.assigned_to ? (opMap.get(l.assigned_to) ?? "") : "") },
+      { header: "Muammo", value: (l) => l.problem_type },
+      { header: "Yaratilgan", value: (l) => formatDate(l.created_at) },
+    ];
+    const csv = toCsv(filteredLeads, cols);
+    const today = new Date().toISOString().slice(0, 10);
+    downloadCsv(`lidlar-${today}.csv`, csv);
+  };
 
   const activeLead = useMemo(() => leads.find((l) => l.id === activeId) ?? null, [leads, activeId]);
   const activeColKey = activeId?.startsWith("__col__") ? activeId.slice(7, -2) : null;
@@ -362,6 +397,44 @@ export function LidlarKanban({
 
   return (
     <>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Ism, telefon yoki viloyat bo'yicha qidirish..."
+            className="pl-8 h-9"
+          />
+        </div>
+        <Select
+          value={sourceFilter}
+          onValueChange={(v) => setSourceFilter(v as LeadSource | "all")}
+        >
+          <SelectTrigger className="h-9 w-full sm:w-44">
+            <SelectValue placeholder="Manba" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Barcha manbalar</SelectItem>
+            {SOURCE_LIST.map((s) => (
+              <SelectItem key={s} value={s}>
+                {SOURCE_LABEL[s]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={exportCsv}
+          disabled={filteredLeads.length === 0}
+          className="h-9 gap-1.5 shrink-0"
+        >
+          <Download className="h-4 w-4" />
+          CSV ({filteredLeads.length})
+        </Button>
+      </div>
+
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
