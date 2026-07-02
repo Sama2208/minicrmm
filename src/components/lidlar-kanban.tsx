@@ -66,6 +66,7 @@ import {
   LS_HIDDEN,
   type ColumnDef,
 } from "@/lib/kanban";
+import { useClinicId } from "@/lib/clinic";
 
 export type KanbanLead = {
   id: string;
@@ -765,6 +766,7 @@ function CardBody({
 
 function CallLogSection({ leadId, operators }: { leadId: string; operators: KanbanOperator[] }) {
   const qc = useQueryClient();
+  const clinicQ = useClinicId();
   const [showForm, setShowForm] = useState(false);
   const [opName, setOpName] = useState("");
   const [result, setResult] = useState<CallLog["result"]>("gaplashdi");
@@ -789,12 +791,17 @@ function CallLogSection({ leadId, operators }: { leadId: string; operators: Kanb
       toast.error("Operator nomi kiritilishi shart");
       return;
     }
+    if (!clinicQ.data) {
+      toast.error("Klinika aniqlanmadi");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("call_logs").insert({
       lead_id: leadId,
       operator_name: opName.trim(),
       result,
       notes: notes.trim() || null,
+      clinic_id: clinicQ.data,
     });
     setSaving(false);
     if (error) {
@@ -1171,6 +1178,7 @@ function LeadDetailDialog({
 
 function AddLeadMini({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
+  const clinicQ = useClinicId();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [source, setSource] = useState<LeadSource>("boshqa");
@@ -1181,12 +1189,17 @@ function AddLeadMini({ onClose }: { onClose: () => void }) {
       toast.error("Ism kiritilishi shart");
       return;
     }
+    if (!clinicQ.data) {
+      toast.error("Klinika aniqlanmadi");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("leads").insert({
       full_name: fullName.trim(),
       phone: phone || null,
       source,
       status: "yangi",
+      clinic_id: clinicQ.data,
     });
     setSaving(false);
     if (error) {

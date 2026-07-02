@@ -22,9 +22,17 @@ export const submitPublicLead = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Round-robin operator assignment (same logic as n8n flow)
+    const { data: clinic } = await supabaseAdmin
+      .from("clinics")
+      .select("id")
+      .eq("slug", "default")
+      .single();
+    if (!clinic) throw new Error("Klinika topilmadi");
+
     let assignedTo: string | null = null;
-    const { data: opId, error: opErr } = await supabaseAdmin.rpc("get_next_operator");
+    const { data: opId, error: opErr } = await supabaseAdmin.rpc("get_next_operator", {
+      p_clinic_id: clinic.id,
+    });
     if (!opErr && opId) assignedTo = opId as unknown as string;
 
     const { error } = await supabaseAdmin.from("leads").insert({
@@ -37,6 +45,7 @@ export const submitPublicLead = createServerFn({ method: "POST" })
       source_detail: "Ariza forma",
       status: "yangi",
       assigned_to: assignedTo,
+      clinic_id: clinic.id,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
