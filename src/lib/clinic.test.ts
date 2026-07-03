@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSubscriptionBlocked, slugify, type ClinicStatus } from "./clinic";
+import { clinicInitial, isSubscriptionBlocked, slugify, type ClinicStatus } from "./clinic";
 
 function makeStatus(overrides: Partial<ClinicStatus> = {}): ClinicStatus {
   return {
@@ -9,6 +9,8 @@ function makeStatus(overrides: Partial<ClinicStatus> = {}): ClinicStatus {
     subscription_status: "active",
     subscription_current_period_end: null,
     plan_name: "Pro",
+    logo_url: null,
+    primary_color: "#059669",
     ...overrides,
   };
 }
@@ -61,5 +63,20 @@ describe("isSubscriptionBlocked", () => {
     expect(isSubscriptionBlocked(makeStatus({ subscription_current_period_end: future }))).toBe(
       false,
     );
+  });
+});
+
+describe("clinicInitial", () => {
+  it("returns the uppercased first letter", () => {
+    expect(clinicInitial("shaxzod medical")).toBe("S");
+  });
+
+  it("trims leading whitespace before taking the first letter", () => {
+    expect(clinicInitial("  Shifo")).toBe("S");
+  });
+
+  it("returns a fallback for an empty name", () => {
+    expect(clinicInitial("")).toBe("?");
+    expect(clinicInitial("   ")).toBe("?");
   });
 });

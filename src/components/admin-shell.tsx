@@ -2,7 +2,12 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Users, BarChart3, UserCog, LogOut, ArrowLeft, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useIsPlatformAdmin } from "@/lib/clinic";
+import {
+  useIsPlatformAdmin,
+  useClinicStatus,
+  clinicInitial,
+  DEFAULT_BRAND_COLOR,
+} from "@/lib/clinic";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -17,6 +22,9 @@ export function AdminShell({ title, children }: { title: string; children: React
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const isPlatformAdminQ = useIsPlatformAdmin();
+  const clinicStatusQ = useClinicStatus();
+  const clinic = clinicStatusQ.data;
+  const brandColor = clinic?.primary_color ?? DEFAULT_BRAND_COLOR;
   const nav = isPlatformAdminQ.data ? [...NAV, PLATFORM_NAV] : NAV;
 
   async function signOut() {
@@ -28,10 +36,21 @@ export function AdminShell({ title, children }: { title: string; children: React
     <div className="min-h-screen flex bg-slate-50">
       <aside className="w-60 bg-slate-900 text-slate-100 flex flex-col">
         <div className="px-4 py-4 border-b border-slate-800 flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center font-bold">
-            A
-          </div>
-          <span className="font-semibold">Admin Panel</span>
+          {clinic?.logo_url ? (
+            <img
+              src={clinic.logo_url}
+              alt={clinic.clinic_name}
+              className="h-8 w-8 rounded-md object-cover shrink-0"
+            />
+          ) : (
+            <div
+              className="h-8 w-8 rounded-md flex items-center justify-center font-bold shrink-0"
+              style={{ backgroundColor: brandColor }}
+            >
+              {clinicInitial(clinic?.clinic_name ?? "A")}
+            </div>
+          )}
+          <span className="font-semibold truncate">{clinic?.clinic_name ?? "Admin Panel"}</span>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {nav.map((n) => {
@@ -40,9 +59,8 @@ export function AdminShell({ title, children }: { title: string; children: React
               <Link
                 key={n.to}
                 to={n.to}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition ${
-                  active ? "bg-emerald-600 text-white" : "hover:bg-slate-800"
-                }`}
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition hover:bg-slate-800"
+                style={active ? { backgroundColor: brandColor, color: "white" } : undefined}
               >
                 <n.icon className="h-4 w-4" />
                 {n.label}
