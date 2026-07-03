@@ -77,6 +77,7 @@ import {
   getFacebookConnectionStatus,
   toggleFacebookFormSync,
   disconnectFacebook,
+  syncFacebookForms,
 } from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/platforma")({
@@ -305,7 +306,13 @@ function FacebookPagePickerDialog({
   const confirmPage = useMutation({
     mutationFn: (pageId: string) => confirmFacebookPage({ data: { state, pageId } }),
     onSuccess: (result) => {
-      toast.success(`"${result.pageName}" ulandi`);
+      if (result.subscribeError) {
+        toast.error(
+          `"${result.pageName}" ulandi, lekin webhook obunasi xato: ${result.subscribeError}`,
+        );
+      } else {
+        toast.success(`"${result.pageName}" ulandi`);
+      }
       qc.invalidateQueries({ queryKey: ["platform-facebook-status"] });
       onClose();
     },
@@ -850,6 +857,15 @@ function ClinicFacebookDialog({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const syncForms = useMutation({
+    mutationFn: () => syncFacebookForms({ data: { clinicId: clinic.id } }),
+    onSuccess: (res) => {
+      toast.success(`Formalar yangilandi (${res.count} ta)`);
+      qc.invalidateQueries({ queryKey: ["platform-facebook-status", clinic.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
@@ -869,15 +885,25 @@ function ClinicFacebookDialog({
                 <div className="font-medium">{statusQ.data.pageName}</div>
                 <div className="text-xs text-slate-500">Ulangan</div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 hover:text-red-700"
-                onClick={() => disconnect.mutate()}
-                disabled={disconnect.isPending}
-              >
-                Uzish
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => syncForms.mutate()}
+                  disabled={syncForms.isPending}
+                >
+                  {syncForms.isPending ? "Yuklanmoqda..." : "Formalarni yangilash"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700"
+                  onClick={() => disconnect.mutate()}
+                  disabled={disconnect.isPending}
+                >
+                  Uzish
+                </Button>
+              </div>
             </div>
             {statusQ.data.forms.length > 0 && (
               <div className="space-y-2">

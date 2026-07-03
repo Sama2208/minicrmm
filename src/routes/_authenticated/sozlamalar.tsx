@@ -314,7 +314,13 @@ function FacebookConnectionCard() {
   const confirmPage = useMutation({
     mutationFn: (pageId: string) => confirmFacebookPage({ data: { state: pendingState!, pageId } }),
     onSuccess: (result) => {
-      toast.success(`"${result.pageName}" ulandi`);
+      if (result.subscribeError) {
+        toast.error(
+          `"${result.pageName}" ulandi, lekin webhook obunasi xato: ${result.subscribeError}`,
+        );
+      } else {
+        toast.success(`"${result.pageName}" ulandi`);
+      }
       setPendingState(null);
       qc.invalidateQueries({ queryKey: ["facebook-connection"] });
     },

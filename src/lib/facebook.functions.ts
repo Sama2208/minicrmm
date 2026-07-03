@@ -156,7 +156,8 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
       .single();
     if (connErr) throw new Error(connErr.message);
 
-    const { listLeadFormsForPage, subscribePageToLeadgen } = await import("./facebook-graph.server");
+    const { listLeadFormsForPage, subscribePageToLeadgen } =
+      await import("./facebook-graph.server");
     const forms = await listLeadFormsForPage(page.id, page.access_token);
     if (forms.length > 0) {
       await supabaseAdmin.from("facebook_lead_forms").upsert(
@@ -170,16 +171,19 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
       );
     }
 
+    let subscribeError: string | null = null;
     try {
       await subscribePageToLeadgen(page.id, page.access_token);
     } catch (err) {
-      // Obuna xatosi — ulanish saqlanadi, lekin logga tushadi.
+      // Ulanish va formalar baribir saqlanadi — xatoni foydalanuvchiga
+      // ko'rsatamiz, "Formalarni yangilash" bilan keyinroq qayta urinish mumkin.
+      subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
       console.error("Facebook leadgen obuna xatosi:", err);
     }
 
     await supabaseAdmin.from("facebook_oauth_sessions").delete().eq("state", data.state);
 
-    return { ok: true, pageName: page.name };
+    return { ok: true, pageName: page.name, subscribeError };
   });
 
 export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
@@ -259,7 +263,8 @@ export const syncFacebookForms = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!connection) throw new Error("Faol Facebook ulanish topilmadi");
 
-    const { listLeadFormsForPage, subscribePageToLeadgen } = await import("./facebook-graph.server");
+    const { listLeadFormsForPage, subscribePageToLeadgen } =
+      await import("./facebook-graph.server");
     const forms = await listLeadFormsForPage(connection.page_id, connection.page_access_token);
     if (forms.length > 0) {
       await supabaseAdmin.from("facebook_lead_forms").upsert(
