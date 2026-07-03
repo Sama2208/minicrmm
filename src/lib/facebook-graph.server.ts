@@ -91,6 +91,7 @@ export async function listLeadFormsForPage(
 ): Promise<FacebookLeadForm[]> {
   const data = await graphFetch<{ data: FacebookLeadForm[] }>(`/${pageId}/leadgen_forms`, {
     access_token: pageAccessToken,
+    limit: "100",
   });
   return data.data;
 }
