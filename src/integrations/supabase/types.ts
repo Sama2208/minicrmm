@@ -314,6 +314,21 @@ export type Database = {
         };
         Relationships: [];
       };
+      platform_admins: {
+        Row: {
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       v_daily_leads: {
@@ -352,6 +367,7 @@ export type Database = {
     Functions: {
       current_clinic_id: { Args: Record<PropertyKey, never>; Returns: string };
       current_operator_id: { Args: Record<PropertyKey, never>; Returns: string };
+      is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       get_next_operator:
         | { Args: Record<PropertyKey, never>; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string };

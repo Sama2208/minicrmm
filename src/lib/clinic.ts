@@ -12,3 +12,23 @@ export function useClinicId() {
     staleTime: Infinity,
   });
 }
+
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function useIsPlatformAdmin() {
+  return useQuery({
+    queryKey: ["is-platform-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("is_platform_admin");
+      if (error) throw error;
+      return data as boolean;
+    },
+    staleTime: Infinity,
+  });
+}
