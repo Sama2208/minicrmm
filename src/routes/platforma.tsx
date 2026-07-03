@@ -204,7 +204,7 @@ function CreateClinicCard() {
             />
           </div>
           <div>
-            <Label>Slug (ariza havolasi uchun)</Label>
+            <Label>Slug (klinika identifikatori)</Label>
             <Input
               value={effectiveSlug}
               onChange={(e) => {
