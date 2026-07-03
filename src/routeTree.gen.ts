@@ -18,6 +18,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminOperatorlarRouteImport } from './routes/admin.operatorlar'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as AdminKlinikalarRouteImport } from './routes/admin.klinikalar'
 import { Route as AdminHisobotlarRouteImport } from './routes/admin.hisobotlar'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
@@ -68,6 +69,11 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/admin/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminKlinikalarRoute = AdminKlinikalarRouteImport.update({
+  id: '/admin/klinikalar',
+  path: '/admin/klinikalar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminHisobotlarRoute = AdminHisobotlarRouteImport.update({
   id: '/admin/hisobotlar',
   path: '/admin/hisobotlar',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/klinikalar': typeof AdminKlinikalarRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/klinikalar': typeof AdminKlinikalarRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/admin/hisobotlar': typeof AdminHisobotlarRoute
+  '/admin/klinikalar': typeof AdminKlinikalarRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/operatorlar': typeof AdminOperatorlarRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/mening-lidlarim'
     | '/sozlamalar'
     | '/admin/hisobotlar'
+    | '/admin/klinikalar'
     | '/admin/leads'
     | '/admin/login'
     | '/admin/operatorlar'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/mening-lidlarim'
     | '/sozlamalar'
     | '/admin/hisobotlar'
+    | '/admin/klinikalar'
     | '/admin/leads'
     | '/admin/login'
     | '/admin/operatorlar'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mening-lidlarim'
     | '/_authenticated/sozlamalar'
     | '/admin/hisobotlar'
+    | '/admin/klinikalar'
     | '/admin/leads'
     | '/admin/login'
     | '/admin/operatorlar'
@@ -198,6 +210,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LoginRoute: typeof LoginRoute
   AdminHisobotlarRoute: typeof AdminHisobotlarRoute
+  AdminKlinikalarRoute: typeof AdminKlinikalarRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOperatorlarRoute: typeof AdminOperatorlarRoute
@@ -269,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/klinikalar': {
+      id: '/admin/klinikalar'
+      path: '/admin/klinikalar'
+      fullPath: '/admin/klinikalar'
+      preLoaderRoute: typeof AdminKlinikalarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/hisobotlar': {
       id: '/admin/hisobotlar'
       path: '/admin/hisobotlar'
@@ -331,6 +351,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LoginRoute: LoginRoute,
   AdminHisobotlarRoute: AdminHisobotlarRoute,
+  AdminKlinikalarRoute: AdminKlinikalarRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminOperatorlarRoute: AdminOperatorlarRoute,

@@ -1,7 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, UserCog, LogOut, ArrowLeft } from "lucide-react";
+import { Users, BarChart3, UserCog, LogOut, ArrowLeft, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useIsPlatformAdmin } from "@/lib/clinic";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -10,9 +11,13 @@ const NAV = [
   { to: "/admin/operatorlar", label: "Operatorlar", icon: UserCog },
 ];
 
+const PLATFORM_NAV = { to: "/admin/klinikalar", label: "Klinikalar", icon: Building2 };
+
 export function AdminShell({ title, children }: { title: string; children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const isPlatformAdminQ = useIsPlatformAdmin();
+  const nav = isPlatformAdminQ.data ? [...NAV, PLATFORM_NAV] : NAV;
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -29,7 +34,7 @@ export function AdminShell({ title, children }: { title: string; children: React
           <span className="font-semibold">Admin Panel</span>
         </div>
         <nav className="flex-1 p-2 space-y-1">
-          {NAV.map((n) => {
+          {nav.map((n) => {
             const active = pathname === n.to || pathname.startsWith(n.to + "/");
             return (
               <Link
