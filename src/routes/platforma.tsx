@@ -860,7 +860,13 @@ function ClinicFacebookDialog({
   const syncForms = useMutation({
     mutationFn: () => syncFacebookForms({ data: { clinicId: clinic.id } }),
     onSuccess: (res) => {
-      toast.success(`Formalar yangilandi (${res.count} ta)`);
+      if (res.subscribeError) {
+        toast.error(
+          `Formalar yangilandi (${res.count} ta), lekin webhook obunasi xato: ${res.subscribeError}`,
+        );
+      } else {
+        toast.success(`Formalar yangilandi (${res.count} ta), webhook obunasi tasdiqlandi`);
+      }
       qc.invalidateQueries({ queryKey: ["platform-facebook-status", clinic.id] });
     },
     onError: (e: Error) => toast.error(e.message),

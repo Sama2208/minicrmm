@@ -346,7 +346,13 @@ function FacebookConnectionCard() {
   const syncForms = useMutation({
     mutationFn: () => syncFacebookForms(),
     onSuccess: (res) => {
-      toast.success(`Formalar yangilandi (${res.count} ta)`);
+      if (res.subscribeError) {
+        toast.error(
+          `Formalar yangilandi (${res.count} ta), lekin webhook obunasi xato: ${res.subscribeError}`,
+        );
+      } else {
+        toast.success(`Formalar yangilandi (${res.count} ta), webhook obunasi tasdiqlandi`);
+      }
       qc.invalidateQueries({ queryKey: ["facebook-connection"] });
     },
     onError: (e: Error) => toast.error(e.message),
