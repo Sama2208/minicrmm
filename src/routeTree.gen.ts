@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlatformaRouteImport } from './routes/platforma'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as ArizaRouteImport } from './routes/ariza'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
@@ -34,11 +33,6 @@ const LoginRoute = LoginRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArizaRoute = ArizaRouteImport.update({
-  id: '/ariza',
-  path: '/ariza',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -79,7 +73,6 @@ const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/platforma': typeof PlatformaRoute
@@ -91,7 +84,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/platforma': typeof PlatformaRoute
@@ -105,7 +97,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/ariza': typeof ArizaRoute
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/platforma': typeof PlatformaRoute
@@ -119,7 +110,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/ariza'
     | '/auth'
     | '/login'
     | '/platforma'
@@ -131,7 +121,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/ariza'
     | '/auth'
     | '/login'
     | '/platforma'
@@ -144,7 +133,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/ariza'
     | '/auth'
     | '/login'
     | '/platforma'
@@ -158,7 +146,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  ArizaRoute: typeof ArizaRoute
   AuthRoute: typeof AuthRoute
   LoginRoute: typeof LoginRoute
   PlatformaRoute: typeof PlatformaRoute
@@ -185,13 +172,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ariza': {
-      id: '/ariza'
-      path: '/ariza'
-      fullPath: '/ariza'
-      preLoaderRoute: typeof ArizaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -268,7 +248,6 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  ArizaRoute: ArizaRoute,
   AuthRoute: AuthRoute,
   LoginRoute: LoginRoute,
   PlatformaRoute: PlatformaRoute,

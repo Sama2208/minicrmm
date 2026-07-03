@@ -158,7 +158,6 @@ function Shell() {
   if (
     pathname === "/auth" ||
     pathname === "/login" ||
-    pathname === "/ariza" ||
     pathname === "/platforma"
   ) {
     return <Outlet />;

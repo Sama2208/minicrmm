@@ -4,7 +4,6 @@ import {
   Users,
   BarChart3,
   Settings,
-  ClipboardList,
   LogOut,
   CalendarDays,
   Building2,
@@ -32,7 +31,7 @@ import {
 const ITEMS = [
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Qabul jadvali", url: "/kalendar", icon: CalendarDays },
-  { title: "Ariza qoldirish", url: "/ariza", icon: ClipboardList },
+  
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
 ];
