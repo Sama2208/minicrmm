@@ -15,13 +15,61 @@ async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
   if (!isAdmin) throw new Error("Faqat admin Facebook ulanishini boshqara oladi");
 }
 
+// `clinicId` berilsa — bu platforma admin boshqa klinika uchun ulanishni
+// boshqarmoqchi (masalan klinika yangi yaratilgandan keyin darhol Facebook
+// ulash uchun). Bu holda faqat platforma egasiga ruxsat beriladi. Berilmasa —
+// odatiy holat: klinikaning o'z admini o'zining klinikasini boshqaradi.
+async function resolveWriteClinicId(
+  supabase: SupabaseClient<Database>,
+  explicitClinicId?: string,
+): Promise<string> {
+  if (explicitClinicId) {
+    const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+    if (!isPlatformAdmin) {
+      throw new Error("Ruxsat yo'q: faqat platforma egasi boshqa klinika uchun amal bajara oladi");
+    }
+    return explicitClinicId;
+  }
+  await requireClinicAdmin(supabase);
+  const { data: clinicId } = await supabase.rpc("current_clinic_id");
+  if (!clinicId) throw new Error("Klinika aniqlanmadi");
+  return clinicId;
+}
+
+async function resolveReadClinicId(
+  supabase: SupabaseClient<Database>,
+  explicitClinicId?: string,
+): Promise<string> {
+  if (explicitClinicId) {
+    const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+    if (!isPlatformAdmin) throw new Error("Ruxsat yo'q");
+    return explicitClinicId;
+  }
+  const { data: clinicId } = await supabase.rpc("current_clinic_id");
+  if (!clinicId) throw new Error("Klinika aniqlanmadi");
+  return clinicId;
+}
+
+// OAuth sessiyasi allaqachon aniq klinikaga bog'langan (yaratilgan paytda
+// yozilgan). Shuning uchun bu yerda faqat: chaqiruvchi o'sha klinikaning o'zi
+// (current_clinic_id mos keladi) yoki platforma admin ekanini tekshiramiz.
+async function authorizeClinicAccess(
+  supabase: SupabaseClient<Database>,
+  targetClinicId: string,
+): Promise<void> {
+  const { data: clinicId } = await supabase.rpc("current_clinic_id");
+  if (clinicId === targetClinicId) return;
+  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+  if (!isPlatformAdmin) throw new Error("Ruxsat yo'q");
+}
+
+const ClinicIdInput = z.object({ clinicId: z.string().uuid().optional() });
+
 export const createFacebookOAuthState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await requireClinicAdmin(context.supabase);
-
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
+  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
 
     const appId = process.env.FACEBOOK_APP_ID;
     if (!appId) throw new Error("FACEBOOK_APP_ID sozlanmagan");
@@ -30,7 +78,9 @@ export const createFacebookOAuthState = createServerFn({ method: "POST" })
     const origin = new URL(request.url).origin;
     const redirectUri = `${origin}/api/facebook/oauth-callback`;
 
-    const state = crypto.randomUUID();
+    // Platforma admin (clinicId ko'rsatib) ulanishni boshlasa, callback
+    // qaytishi kerak bo'lgan sahifani bilishi uchun state'ga belgi qo'shamiz.
+    const state = data.clinicId ? `${crypto.randomUUID()}::platforma` : crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("facebook_oauth_sessions")
@@ -52,16 +102,14 @@ export const listPendingFacebookPages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => StateInput.parse(input))
   .handler(async ({ data, context }) => {
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: session, error } = await supabaseAdmin
       .from("facebook_oauth_sessions")
       .select("clinic_id, pages, expires_at")
       .eq("state", data.state)
       .single();
-    if (error || !session || session.clinic_id !== clinicId) throw new Error("Sessiya topilmadi");
+    if (error || !session) throw new Error("Sessiya topilmadi");
+    await authorizeClinicAccess(context.supabase, session.clinic_id);
     if (new Date(session.expires_at) < new Date()) throw new Error("Sessiya muddati tugagan");
 
     const pages =
@@ -75,22 +123,17 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ConfirmInput.parse(input))
   .handler(async ({ data, context }) => {
-    await requireClinicAdmin(context.supabase);
-
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: session, error: sessionErr } = await supabaseAdmin
       .from("facebook_oauth_sessions")
       .select("clinic_id, pages, expires_at")
       .eq("state", data.state)
       .single();
-    if (sessionErr || !session || session.clinic_id !== clinicId) {
-      throw new Error("Sessiya topilmadi");
-    }
+    if (sessionErr || !session) throw new Error("Sessiya topilmadi");
+    await authorizeClinicAccess(context.supabase, session.clinic_id);
     if (new Date(session.expires_at) < new Date()) throw new Error("Sessiya muddati tugagan");
 
+    const clinicId = session.clinic_id;
     const pages =
       (session.pages as { id: string; name: string; access_token: string }[] | null) ?? [];
     const page = pages.find((p) => p.id === data.pageId);
@@ -144,9 +187,9 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
 
 export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
+  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveReadClinicId(context.supabase, data.clinicId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: connection } = await supabaseAdmin
@@ -167,16 +210,17 @@ export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
     return { connected: true as const, pageName: connection.page_name, forms: forms ?? [] };
   });
 
-const ToggleInput = z.object({ formRowId: z.string().uuid(), enabled: z.boolean() });
+const ToggleInput = z.object({
+  formRowId: z.string().uuid(),
+  enabled: z.boolean(),
+  clinicId: z.string().uuid().optional(),
+});
 
 export const toggleFacebookFormSync = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ToggleInput.parse(input))
   .handler(async ({ data, context }) => {
-    await requireClinicAdmin(context.supabase);
-
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
@@ -190,11 +234,9 @@ export const toggleFacebookFormSync = createServerFn({ method: "POST" })
 
 export const disconnectFacebook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await requireClinicAdmin(context.supabase);
-
-    const { data: clinicId } = await context.supabase.rpc("current_clinic_id");
-    if (!clinicId) throw new Error("Klinika aniqlanmadi");
+  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin

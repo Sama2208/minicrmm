@@ -155,3 +155,88 @@ export const updateClinicSubscription = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+const UpdateClinicInfoInput = z.object({
+  clinicId: z.string().uuid(),
+  name: z.string().trim().min(2).max(120),
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(2)
+    .max(60)
+    .regex(/^[a-z0-9-]+$/, "Faqat kichik lotin harflari, raqamlar va tire (-)"),
+});
+
+export const updateClinicInfo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateClinicInfoInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.supabase);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("clinics")
+      .update({ name: data.name, slug: data.slug })
+      .eq("id", data.clinicId);
+    if (error) {
+      throw new Error(
+        error.message.includes("duplicate") ? "Bu slug band — boshqasini tanlang" : error.message,
+      );
+    }
+    return { ok: true };
+  });
+
+const DeleteClinicInput = z.object({ clinicId: z.string().uuid() });
+
+export const deleteClinic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => DeleteClinicInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await requirePlatformAdmin(context.supabase);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("clinics").delete().eq("id", data.clinicId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// Faqat jamlangan (aggregate) sonlar — individual lid nomi/telefoni hech
+// qachon qaytarilmaydi, chunki bu bemor ma'lumoti va platforma admin buni
+// ko'rmasligi kerak.
+const CONVERTED_STATUS = "yotdi";
+
+export const getClinicsOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requirePlatformAdmin(context.supabase);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [clinicsRes, leadsRes, opsRes] = await Promise.all([
+      supabaseAdmin.from("clinics").select("id, name, slug").order("name"),
+      supabaseAdmin.from("leads").select("clinic_id, status"),
+      supabaseAdmin.from("operators").select("clinic_id, is_active"),
+    ]);
+    if (clinicsRes.error) throw new Error(clinicsRes.error.message);
+    if (leadsRes.error) throw new Error(leadsRes.error.message);
+    if (opsRes.error) throw new Error(opsRes.error.message);
+
+    const leads = leadsRes.data ?? [];
+    const operators = opsRes.data ?? [];
+
+    return (clinicsRes.data ?? []).map((c) => {
+      const clinicLeads = leads.filter((l) => l.clinic_id === c.id);
+      const converted = clinicLeads.filter((l) => l.status === CONVERTED_STATUS).length;
+      const activeOperators = operators.filter((o) => o.clinic_id === c.id && o.is_active).length;
+      return {
+        clinicId: c.id,
+        name: c.name,
+        slug: c.slug,
+        totalLeads: clinicLeads.length,
+        convertedLeads: converted,
+        conversionRate:
+          clinicLeads.length > 0 ? Math.round((converted / clinicLeads.length) * 1000) / 10 : 0,
+        activeOperators,
+      };
+    });
+  });
