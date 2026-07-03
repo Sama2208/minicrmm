@@ -54,6 +54,7 @@ type Lead = {
   assigned_to: string | null;
   notes: string | null;
   appointment_date: string | null;
+  appointment_time: string | null;
   next_followup_date: string | null;
   last_contact_at: string | null;
   created_at: string;

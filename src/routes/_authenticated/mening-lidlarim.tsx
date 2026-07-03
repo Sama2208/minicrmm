@@ -36,6 +36,7 @@ import {
   STATUS_ORDER,
   SOURCE_LABEL,
   formatDate,
+  formatTime,
   type LeadStatus,
   type LeadSource,
 } from "@/lib/crm";
@@ -55,6 +56,7 @@ type Lead = {
   status: LeadStatus;
   notes: string | null;
   appointment_date: string | null;
+  appointment_time: string | null;
   created_at: string;
 };
 
@@ -208,10 +210,12 @@ function DetailSheet({ lead, onClose }: { lead: Lead | null; onClose: () => void
   const qc = useQueryClient();
   const [notes, setNotes] = useState("");
   const [appt, setAppt] = useState("");
+  const [apptTime, setApptTime] = useState("");
 
   useMemo(() => {
     setNotes(lead?.notes ?? "");
     setAppt(lead?.appointment_date ?? "");
+    setApptTime(formatTime(lead?.appointment_time));
   }, [lead?.id]); // eslint-disable-line
 
   const save = useMutation({
@@ -219,7 +223,11 @@ function DetailSheet({ lead, onClose }: { lead: Lead | null; onClose: () => void
       if (!lead) return;
       const { error } = await supabase
         .from("leads")
-        .update({ notes: notes || null, appointment_date: appt || null })
+        .update({
+          notes: notes || null,
+          appointment_date: appt || null,
+          appointment_time: appt ? apptTime || null : null,
+        })
         .eq("id", lead.id);
       if (error) throw error;
     },
@@ -254,12 +262,15 @@ function DetailSheet({ lead, onClose }: { lead: Lead | null; onClose: () => void
               <Row label="Yaratilgan" value={formatDate(lead.created_at)} />
               <div>
                 <Label>Konsultatsiya sanasi</Label>
-                <Input
-                  type="date"
-                  value={appt}
-                  onChange={(e) => setAppt(e.target.value)}
-                  className="mt-1"
-                />
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Input type="date" value={appt} onChange={(e) => setAppt(e.target.value)} />
+                  <Input
+                    type="time"
+                    value={apptTime}
+                    onChange={(e) => setApptTime(e.target.value)}
+                    disabled={!appt}
+                  />
+                </div>
               </div>
               <div>
                 <Label>Izoh</Label>

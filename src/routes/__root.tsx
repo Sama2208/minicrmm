@@ -145,6 +145,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 const TITLES: Record<string, string> = {
   "/lidlar": "Umumiy lidlar",
+  "/kalendar": "Qabul jadvali",
   "/hisobotlar": "Hisobotlar",
   "/sozlamalar": "Sozlamalar",
   "/mening-lidlarim": "Mening lidlarim",
