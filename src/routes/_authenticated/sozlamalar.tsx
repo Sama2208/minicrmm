@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useClinicId } from "@/lib/clinic";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
 
@@ -39,6 +40,7 @@ type Operator = {
 
 function SozlamalarPage() {
   const qc = useQueryClient();
+  const clinicQ = useClinicId();
   const [newName, setNewName] = useState("");
   const [newTg, setNewTg] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -90,9 +92,11 @@ function SozlamalarPage() {
   const create = useMutation({
     mutationFn: async () => {
       if (!newName.trim()) throw new Error("Ism kiritilishi shart");
+      if (!clinicQ.data) throw new Error("Klinika aniqlanmadi");
       const { error } = await supabase.from("operators").insert({
         full_name: newName.trim(),
         telegram_chat_id: newTg || null,
+        clinic_id: clinicQ.data,
       });
       if (error) throw error;
     },

@@ -35,6 +35,7 @@ import {
   type CanVisitClinic,
 } from "@/lib/crm";
 import { LidlarKanban } from "@/components/lidlar-kanban";
+import { useClinicId } from "@/lib/clinic";
 
 export const Route = createFileRoute("/_authenticated/lidlar")({ component: LidlarPage });
 
@@ -260,6 +261,7 @@ function CreateLeadDialog({
   operators: Operator[];
 }) {
   const qc = useQueryClient();
+  const clinicQ = useClinicId();
   const [fullName, setFullName] = useState("");
   const [nomerAsosiy, setNomerAsosiy] = useState("");
   const [phone, setPhone] = useState("");
@@ -273,6 +275,7 @@ function CreateLeadDialog({
   const create = useMutation({
     mutationFn: async () => {
       if (!fullName.trim()) throw new Error("Ism kiritilishi shart");
+      if (!clinicQ.data) throw new Error("Klinika aniqlanmadi");
       const { error } = await supabase.from("leads").insert({
         full_name: fullName.trim(),
         nomer_asosiy: nomerAsosiy || null,
@@ -283,6 +286,7 @@ function CreateLeadDialog({
         source,
         campaign_name: campaign || null,
         notes: notes || null,
+        clinic_id: clinicQ.data,
       });
       if (error) throw error;
     },

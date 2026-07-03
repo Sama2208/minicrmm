@@ -11,6 +11,7 @@ export type Database = {
       call_logs: {
         Row: {
           called_at: string;
+          clinic_id: string;
           id: string;
           lead_id: string;
           notes: string | null;
@@ -19,6 +20,7 @@ export type Database = {
         };
         Insert: {
           called_at?: string;
+          clinic_id: string;
           id?: string;
           lead_id: string;
           notes?: string | null;
@@ -27,6 +29,7 @@ export type Database = {
         };
         Update: {
           called_at?: string;
+          clinic_id?: string;
           id?: string;
           lead_id?: string;
           notes?: string | null;
@@ -41,11 +44,43 @@ export type Database = {
             referencedRelation: "leads";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "call_logs_clinic_id_fkey";
+            columns: ["clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinics";
+            referencedColumns: ["id"];
+          },
         ];
+      };
+      clinics: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
       };
       lead_assignment_history: {
         Row: {
           changed_at: string;
+          clinic_id: string;
           id: string;
           lead_id: string;
           new_assigned_to: string | null;
@@ -53,6 +88,7 @@ export type Database = {
         };
         Insert: {
           changed_at?: string;
+          clinic_id: string;
           id?: string;
           lead_id: string;
           new_assigned_to?: string | null;
@@ -60,6 +96,7 @@ export type Database = {
         };
         Update: {
           changed_at?: string;
+          clinic_id?: string;
           id?: string;
           lead_id?: string;
           new_assigned_to?: string | null;
@@ -93,6 +130,7 @@ export type Database = {
         Row: {
           changed_at: string | null;
           changed_by: string | null;
+          clinic_id: string;
           id: string;
           lead_id: string | null;
           new_status: Database["public"]["Enums"]["lead_status"];
@@ -101,6 +139,7 @@ export type Database = {
         Insert: {
           changed_at?: string | null;
           changed_by?: string | null;
+          clinic_id: string;
           id?: string;
           lead_id?: string | null;
           new_status: Database["public"]["Enums"]["lead_status"];
@@ -109,6 +148,7 @@ export type Database = {
         Update: {
           changed_at?: string | null;
           changed_by?: string | null;
+          clinic_id?: string;
           id?: string;
           lead_id?: string | null;
           new_status?: Database["public"]["Enums"]["lead_status"];
@@ -137,6 +177,7 @@ export type Database = {
           assigned_to: string | null;
           campaign_name: string | null;
           can_visit_clinic: Database["public"]["Enums"]["clinic_visit"] | null;
+          clinic_id: string;
           created_at: string | null;
           full_name: string;
           id: string;
@@ -157,6 +198,7 @@ export type Database = {
           assigned_to?: string | null;
           campaign_name?: string | null;
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null;
+          clinic_id: string;
           created_at?: string | null;
           full_name: string;
           id?: string;
@@ -177,6 +219,7 @@ export type Database = {
           assigned_to?: string | null;
           campaign_name?: string | null;
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null;
+          clinic_id?: string;
           created_at?: string | null;
           full_name?: string;
           id?: string;
@@ -204,14 +247,17 @@ export type Database = {
       };
       operator_rr_counter: {
         Row: {
+          clinic_id: string;
           counter: number;
           id: number;
         };
         Insert: {
+          clinic_id: string;
           counter?: number;
           id?: number;
         };
         Update: {
+          clinic_id?: string;
           counter?: number;
           id?: number;
         };
@@ -219,6 +265,7 @@ export type Database = {
       };
       operators: {
         Row: {
+          clinic_id: string;
           created_at: string | null;
           full_name: string;
           id: string;
@@ -227,6 +274,7 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
+          clinic_id: string;
           created_at?: string | null;
           full_name: string;
           id?: string;
@@ -235,6 +283,7 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
+          clinic_id?: string;
           created_at?: string | null;
           full_name?: string;
           id?: string;
@@ -246,16 +295,19 @@ export type Database = {
       };
       user_roles: {
         Row: {
+          clinic_id: string;
           id: string;
           role: Database["public"]["Enums"]["app_role"];
           user_id: string | null;
         };
         Insert: {
+          clinic_id: string;
           id?: string;
           role: Database["public"]["Enums"]["app_role"];
           user_id?: string | null;
         };
         Update: {
+          clinic_id?: string;
           id?: string;
           role?: Database["public"]["Enums"]["app_role"];
           user_id?: string | null;
@@ -298,8 +350,11 @@ export type Database = {
       };
     };
     Functions: {
-      current_operator_id: { Args: never; Returns: string };
-      get_next_operator: { Args: never; Returns: string };
+      current_clinic_id: { Args: Record<PropertyKey, never>; Returns: string };
+      current_operator_id: { Args: Record<PropertyKey, never>; Returns: string };
+      get_next_operator:
+        | { Args: Record<PropertyKey, never>; Returns: string }
+        | { Args: { p_clinic_id: string }; Returns: string };
       has_role:
         | { Args: { _role: string }; Returns: boolean }
         | {
