@@ -279,11 +279,13 @@ export const syncFacebookForms = createServerFn({ method: "POST" })
     }
 
     // Webhook obunasini ham yangilash
+    let subscribeError: string | null = null;
     try {
       await subscribePageToLeadgen(connection.page_id, connection.page_access_token);
     } catch (err) {
+      subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
       console.error("Facebook leadgen obuna yangilash xatosi:", err);
     }
 
-    return { ok: true, count: forms.length };
+    return { ok: true, count: forms.length, subscribeError };
   });
