@@ -25,10 +25,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Facebook } from "lucide-react";
 import { toast } from "sonner";
 import { useClinicId, useClinicStatus, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
 import { updateClinicBranding } from "@/lib/branding.functions";
+import {
+  createFacebookOAuthState,
+  listPendingFacebookPages,
+  confirmFacebookPage,
+  getFacebookConnectionStatus,
+  toggleFacebookFormSync,
+  disconnectFacebook,
+} from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
 
@@ -114,6 +122,7 @@ function SozlamalarPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <BrandingCard />
+      <FacebookConnectionCard />
 
       <Card>
         <CardHeader>
@@ -259,6 +268,166 @@ function BrandingCard() {
         >
           {save.isPending ? "Saqlanmoqda..." : "Saqlash"}
         </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FacebookConnectionCard() {
+  const qc = useQueryClient();
+  const [pendingState, setPendingState] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fbError = params.get("fb_error");
+    const fbSession = params.get("fb_session");
+    if (fbError) toast.error(decodeURIComponent(fbError));
+    if (fbSession) setPendingState(fbSession);
+    if (fbError || fbSession) {
+      params.delete("fb_error");
+      params.delete("fb_session");
+      const rest = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : ""));
+    }
+  }, []);
+
+  const statusQ = useQuery({
+    queryKey: ["facebook-connection"],
+    queryFn: () => getFacebookConnectionStatus(),
+  });
+
+  const pendingPagesQ = useQuery({
+    queryKey: ["facebook-pending-pages", pendingState],
+    queryFn: () => listPendingFacebookPages({ data: { state: pendingState! } }),
+    enabled: !!pendingState,
+  });
+
+  const connect = useMutation({
+    mutationFn: () => createFacebookOAuthState(),
+    onSuccess: (result) => {
+      window.location.href = result.authorizeUrl;
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const confirmPage = useMutation({
+    mutationFn: (pageId: string) => confirmFacebookPage({ data: { state: pendingState!, pageId } }),
+    onSuccess: (result) => {
+      toast.success(`"${result.pageName}" ulandi`);
+      setPendingState(null);
+      qc.invalidateQueries({ queryKey: ["facebook-connection"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleForm = useMutation({
+    mutationFn: (vars: { formRowId: string; enabled: boolean }) =>
+      toggleFacebookFormSync({ data: vars }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["facebook-connection"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const disconnect = useMutation({
+    mutationFn: () => disconnectFacebook(),
+    onSuccess: () => {
+      toast.success("Facebook ulanishi uzildi");
+      qc.invalidateQueries({ queryKey: ["facebook-connection"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Facebook className="h-4 w-4" />
+          Facebook Lead Ads
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {pendingState && (
+          <div className="border rounded-md p-3 bg-slate-50 space-y-2">
+            <p className="text-sm font-medium text-slate-700">Qaysi Page'ni ulaymiz?</p>
+            {pendingPagesQ.isLoading ? (
+              <p className="text-sm text-slate-500">Yuklanmoqda...</p>
+            ) : (pendingPagesQ.data ?? []).length === 0 ? (
+              <p className="text-sm text-slate-500">Page topilmadi</p>
+            ) : (
+              <div className="space-y-1.5">
+                {(pendingPagesQ.data ?? []).map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between bg-white border rounded px-3 py-2"
+                  >
+                    <span className="text-sm">{p.name}</span>
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => confirmPage.mutate(p.id)}
+                      disabled={confirmPage.isPending}
+                    >
+                      Ulash
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {statusQ.isLoading ? (
+          <p className="text-sm text-slate-500">Yuklanmoqda...</p>
+        ) : statusQ.data?.connected ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm">
+                Ulangan: <span className="font-medium">{statusQ.data.pageName}</span>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs text-red-600 hover:text-red-700"
+                onClick={() => disconnect.mutate()}
+                disabled={disconnect.isPending}
+              >
+                Uzish
+              </Button>
+            </div>
+            {statusQ.data.forms.length === 0 ? (
+              <p className="text-sm text-slate-400">Reklama lid formalari topilmadi</p>
+            ) : (
+              <div className="space-y-1.5">
+                {statusQ.data.forms.map((f) => (
+                  <div
+                    key={f.id}
+                    className="flex items-center justify-between border rounded-md px-3 py-2"
+                  >
+                    <span className="text-sm">{f.form_name}</span>
+                    <Switch
+                      checked={f.is_syncing}
+                      onCheckedChange={(v) => toggleForm.mutate({ formRowId: f.id, enabled: v })}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-sm text-slate-500">
+              Facebook/Instagram reklama lid formalaringizni ulab, mijozlar to'ldirgan zahoti CRM'ga
+              avtomatik tushishini yoqing.
+            </p>
+            <Button
+              onClick={() => connect.mutate()}
+              disabled={connect.isPending}
+              className="bg-[#1877F2] hover:bg-[#1461cc]"
+            >
+              <Facebook className="h-4 w-4" />
+              {connect.isPending ? "Ulanmoqda..." : "Facebook orqali ulash"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -39,6 +39,20 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    // Meta (Facebook/Instagram) tashqaridan chaqiradigan xom HTTP
+    // endpointlar — createServerFn ichki RPC bo'lgani uchun bularga mos
+    // kelmaydi, TanStack router'iga yetib bormasdan shu yerda ushlanadi.
+    if (url.pathname === "/api/facebook/webhook") {
+      const { handleFacebookWebhook } = await import("./lib/facebook-webhook.server");
+      return handleFacebookWebhook(request);
+    }
+    if (url.pathname === "/api/facebook/oauth-callback") {
+      const { handleFacebookOAuthCallback } = await import("./lib/facebook-oauth.server");
+      return handleFacebookOAuthCallback(request);
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

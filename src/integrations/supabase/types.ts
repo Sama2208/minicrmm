@@ -391,6 +391,142 @@ export type Database = {
         };
         Relationships: [];
       };
+      facebook_oauth_sessions: {
+        Row: {
+          state: string;
+          clinic_id: string;
+          user_id: string;
+          pages: Json | null;
+          created_at: string;
+          expires_at: string;
+        };
+        Insert: {
+          state: string;
+          clinic_id: string;
+          user_id: string;
+          pages?: Json | null;
+          created_at?: string;
+          expires_at?: string;
+        };
+        Update: {
+          state?: string;
+          clinic_id?: string;
+          user_id?: string;
+          pages?: Json | null;
+          created_at?: string;
+          expires_at?: string;
+        };
+        Relationships: [];
+      };
+      facebook_connections: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          page_id: string;
+          page_name: string;
+          page_access_token: string;
+          connected_by: string | null;
+          connected_at: string;
+          is_active: boolean;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          page_id: string;
+          page_name: string;
+          page_access_token: string;
+          connected_by?: string | null;
+          connected_at?: string;
+          is_active?: boolean;
+        };
+        Update: {
+          id?: string;
+          clinic_id?: string;
+          page_id?: string;
+          page_name?: string;
+          page_access_token?: string;
+          connected_by?: string | null;
+          connected_at?: string;
+          is_active?: boolean;
+        };
+        Relationships: [];
+      };
+      facebook_lead_forms: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          connection_id: string;
+          form_id: string;
+          form_name: string;
+          is_syncing: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          connection_id: string;
+          form_id: string;
+          form_name: string;
+          is_syncing?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          clinic_id?: string;
+          connection_id?: string;
+          form_id?: string;
+          form_name?: string;
+          is_syncing?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "facebook_lead_forms_connection_id_fkey";
+            columns: ["connection_id"];
+            isOneToOne: false;
+            referencedRelation: "facebook_connections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      facebook_lead_events: {
+        Row: {
+          id: string;
+          clinic_id: string;
+          leadgen_id: string;
+          form_id: string | null;
+          lead_id: string | null;
+          raw_payload: Json | null;
+          processed_at: string;
+        };
+        Insert: {
+          id?: string;
+          clinic_id: string;
+          leadgen_id: string;
+          form_id?: string | null;
+          lead_id?: string | null;
+          raw_payload?: Json | null;
+          processed_at?: string;
+        };
+        Update: {
+          id?: string;
+          clinic_id?: string;
+          leadgen_id?: string;
+          form_id?: string | null;
+          lead_id?: string | null;
+          raw_payload?: Json | null;
+          processed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "facebook_lead_events_lead_id_fkey";
+            columns: ["lead_id"];
+            isOneToOne: false;
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       v_daily_leads: {
