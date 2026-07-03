@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AdminShell } from "@/components/admin-shell";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, RefreshCw, Pencil } from "lucide-react";
+import { ArrowLeft, LogOut, Plus, RefreshCw, Pencil } from "lucide-react";
 import {
   useIsPlatformAdmin,
   slugify,
@@ -47,9 +47,9 @@ import {
   updateClinicSubscription,
 } from "@/lib/platform.functions";
 
-export const Route = createFileRoute("/admin/klinikalar")({
+export const Route = createFileRoute("/platforma")({
   ssr: false,
-  component: () => <KlinikalarPage />,
+  component: () => <PlatformaPage />,
 });
 
 function randomPassword() {
@@ -64,10 +64,49 @@ function usePlansQuery() {
   return useQuery({ queryKey: ["platform-plans"], queryFn: () => listPlans() });
 }
 
-function KlinikalarPage() {
+function PlatformaShell({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="bg-white border-b px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            to="/lidlar"
+            className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Ilovaga qaytish
+          </Link>
+          <h1 className="text-lg font-semibold text-slate-800 truncate">Platforma boshqaruvi</h1>
+        </div>
+        <Button variant="ghost" size="sm" onClick={signOut} className="shrink-0">
+          <LogOut className="h-4 w-4" /> Chiqish
+        </Button>
+      </header>
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto">{children}</div>
+    </div>
+  );
+}
+
+function PlatformaPage() {
+  const navigate = useNavigate();
+  const [checkingSession, setCheckingSession] = useState(true);
   const isPlatformAdminQ = useIsPlatformAdmin();
 
-  if (isPlatformAdminQ.isLoading) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) navigate({ to: "/login" });
+      setCheckingSession(false);
+    });
+  }, [navigate]);
+
+  if (checkingSession || isPlatformAdminQ.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-500 text-sm">
         Tekshirilmoqda...
@@ -83,16 +122,19 @@ function KlinikalarPage() {
           <p className="text-sm text-slate-500">
             Bu sahifa faqat platforma egasi uchun. Sizda klinika qo'shish huquqi yo'q.
           </p>
+          <Link to="/lidlar" className="text-sm text-emerald-600 hover:underline">
+            Ilovaga qaytish
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <AdminShell title="Klinikalar">
+    <PlatformaShell>
       <CreateClinicCard />
       <ClinicsList />
-    </AdminShell>
+    </PlatformaShell>
   );
 }
 

@@ -159,7 +159,7 @@ function Shell() {
     pathname === "/auth" ||
     pathname === "/login" ||
     pathname === "/ariza" ||
-    pathname.startsWith("/admin")
+    pathname === "/platforma"
   ) {
     return <Outlet />;
   }
