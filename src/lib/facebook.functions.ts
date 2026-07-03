@@ -8,7 +8,7 @@ import { z } from "zod";
 // Talab qilinadigan Meta ruxsatlari — real Meta App yaratilganda App
 // Review'da aynan shu ro'yxat so'raladi.
 const OAUTH_SCOPE =
-  "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management";
+  "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement";
 
 async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
   const { data: isAdmin } = await supabase.rpc("has_role", { _role: "admin" });
