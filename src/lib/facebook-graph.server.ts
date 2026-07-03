@@ -2,8 +2,38 @@
 // FACEBOOK_APP_SECRET kabi maxfiy qiymatlar shu yerdan tashqariga chiqmaydi.
 const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
 
+// Facebook server-side API chaqiruvlari uchun appsecret_proof hisoblash.
+// Cloudflare Workers Web Crypto API (SubtleCrypto) orqali HMAC-SHA256.
+async function computeAppSecretProof(appSecret: string, accessToken: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(appSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(accessToken));
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 async function graphFetch<T>(path: string, params: Record<string, string>): Promise<T> {
   const url = new URL(`${GRAPH_API_BASE}${path}`);
+
+  // access_token mavjud bo'lsa va /oauth/ bo'lmasa — appsecret_proof avtomatik qo'shamiz.
+  // /oauth/access_token chaqiruvlari client_secret orqali ishlaydi, proof shart emas.
+  if (params.access_token && !path.startsWith("/oauth/")) {
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    if (appSecret) {
+      params = {
+        ...params,
+        appsecret_proof: await computeAppSecretProof(appSecret, params.access_token),
+      };
+    }
+  }
+
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
 
   const res = await fetch(url.toString());
