@@ -50,6 +50,7 @@ import {
   CAN_VISIT_LABEL,
   STATUS_LABEL,
   formatDate,
+  formatTime,
   type LeadStatus,
   type LeadSource,
   type CanVisitClinic,
@@ -82,6 +83,7 @@ export type KanbanLead = {
   assigned_to: string | null;
   notes: string | null;
   appointment_date: string | null;
+  appointment_time: string | null;
   next_followup_date: string | null;
   created_at: string;
 };
@@ -704,6 +706,7 @@ function CardBody({
             <div className="text-[10px] font-medium flex items-center gap-0.5 text-emerald-600">
               <Calendar className="h-3 w-3" />
               Konsultatsiya: {formatDate(lead.appointment_date)}
+              {lead.appointment_time && ` ${formatTime(lead.appointment_time)}`}
             </div>
           )}
           {/* Callback date */}
@@ -980,6 +983,7 @@ function LeadDetailDialog({
   const [appointmentDate, setAppointmentDate] = useState(
     lead.appointment_date ? lead.appointment_date.split("T")[0] : "",
   );
+  const [appointmentTime, setAppointmentTime] = useState(formatTime(lead.appointment_time));
 
   // Sync state when lead changes
   const [prevId, setPrevId] = useState(lead.id);
@@ -992,6 +996,7 @@ function LeadDetailDialog({
     setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
     setAssignedTo(lead.assigned_to ?? "__none__");
     setAppointmentDate(lead.appointment_date ? lead.appointment_date.split("T")[0] : "");
+    setAppointmentTime(formatTime(lead.appointment_time));
   }
 
   const save = useMutation({
@@ -1006,6 +1011,7 @@ function LeadDetailDialog({
           notes: notes.trim() || null,
           next_followup_date: nextFollowup || null,
           appointment_date: appointmentDate || null,
+          appointment_time: appointmentDate ? appointmentTime || null : null,
           assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
         })
         .eq("id", lead.id);
@@ -1109,16 +1115,28 @@ function LeadDetailDialog({
               <Calendar className="h-3.5 w-3.5" />
               Konsultatsiya sanasi
             </Label>
-            <Input
-              type="date"
-              value={appointmentDate}
-              onChange={(e) => setAppointmentDate(e.target.value)}
-              className="mt-1 h-9"
-            />
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <Input
+                type="date"
+                value={appointmentDate}
+                onChange={(e) => setAppointmentDate(e.target.value)}
+                className="h-9"
+              />
+              <Input
+                type="time"
+                value={appointmentTime}
+                onChange={(e) => setAppointmentTime(e.target.value)}
+                className="h-9"
+                disabled={!appointmentDate}
+              />
+            </div>
             {appointmentDate && (
               <button
                 type="button"
-                onClick={() => setAppointmentDate("")}
+                onClick={() => {
+                  setAppointmentDate("");
+                  setAppointmentTime("");
+                }}
                 className="text-[11px] text-slate-400 hover:text-red-500 mt-1"
               >
                 × Sanani o'chirish

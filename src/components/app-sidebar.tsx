@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Users, BarChart3, Settings, ClipboardList, LogOut } from "lucide-react";
+import { Users, BarChart3, Settings, ClipboardList, LogOut, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
 
 const ITEMS = [
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
+  { title: "Qabul jadvali", url: "/kalendar", icon: CalendarDays },
   { title: "Ariza qoldirish", url: "/ariza", icon: ClipboardList },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },

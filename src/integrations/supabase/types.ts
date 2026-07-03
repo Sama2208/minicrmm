@@ -194,6 +194,7 @@ export type Database = {
       leads: {
         Row: {
           appointment_date: string | null;
+          appointment_time: string | null;
           assigned_to: string | null;
           campaign_name: string | null;
           can_visit_clinic: Database["public"]["Enums"]["clinic_visit"] | null;
@@ -215,6 +216,7 @@ export type Database = {
         };
         Insert: {
           appointment_date?: string | null;
+          appointment_time?: string | null;
           assigned_to?: string | null;
           campaign_name?: string | null;
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null;
@@ -236,6 +238,7 @@ export type Database = {
         };
         Update: {
           appointment_date?: string | null;
+          appointment_time?: string | null;
           assigned_to?: string | null;
           campaign_name?: string | null;
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null;

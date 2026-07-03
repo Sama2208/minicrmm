@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDate,
+  formatTime,
   SOURCE_LABEL,
   SOURCE_LIST,
   STATUS_BADGE,
@@ -23,6 +24,21 @@ describe("formatDate", () => {
   });
   it("returns a dash for an invalid date string", () => {
     expect(formatDate("not-a-date")).toBe("—");
+  });
+});
+
+describe("formatTime", () => {
+  it("trims seconds from a HH:MM:SS time string", () => {
+    expect(formatTime("14:30:00")).toBe("14:30");
+  });
+  it("returns an empty string for null", () => {
+    expect(formatTime(null)).toBe("");
+  });
+  it("returns an empty string for undefined", () => {
+    expect(formatTime(undefined)).toBe("");
+  });
+  it("returns an empty string for an empty string", () => {
+    expect(formatTime("")).toBe("");
   });
 });
 

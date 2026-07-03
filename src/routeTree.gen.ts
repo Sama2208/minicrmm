@@ -23,6 +23,7 @@ import { Route as AdminHisobotlarRouteImport } from './routes/admin.hisobotlar'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
+import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 
 const LoginRoute = LoginRouteImport.update({
@@ -95,6 +96,11 @@ const AuthenticatedLidlarRoute = AuthenticatedLidlarRouteImport.update({
   path: '/lidlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKalendarRoute = AuthenticatedKalendarRouteImport.update({
+  id: '/kalendar',
+  path: '/kalendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   id: '/hisobotlar',
   path: '/hisobotlar',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
+  '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/hisobotlar'
+    | '/kalendar'
     | '/lidlar'
     | '/mening-lidlarim'
     | '/sozlamalar'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/hisobotlar'
+    | '/kalendar'
     | '/lidlar'
     | '/mening-lidlarim'
     | '/sozlamalar'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/login'
     | '/_authenticated/hisobotlar'
+    | '/_authenticated/kalendar'
     | '/_authenticated/lidlar'
     | '/_authenticated/mening-lidlarim'
     | '/_authenticated/sozlamalar'
@@ -317,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLidlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/kalendar': {
+      id: '/_authenticated/kalendar'
+      path: '/kalendar'
+      fullPath: '/kalendar'
+      preLoaderRoute: typeof AuthenticatedKalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hisobotlar': {
       id: '/_authenticated/hisobotlar'
       path: '/hisobotlar'
@@ -329,6 +348,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
+  AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
   AuthenticatedMeningLidlarimRoute: typeof AuthenticatedMeningLidlarimRoute
   AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
@@ -336,6 +356,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
+  AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedMeningLidlarimRoute: AuthenticatedMeningLidlarimRoute,
   AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,

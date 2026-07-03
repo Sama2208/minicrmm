@@ -104,3 +104,9 @@ export function formatDate(iso: string | null | undefined): string {
   const yy = d.getFullYear();
   return `${dd}.${mm}.${yy}`;
 }
+
+// Postgres `time` ustuni "HH:MM:SS" ko'rinishida qaytadi — UI uchun "HH:MM".
+export function formatTime(time: string | null | undefined): string {
+  if (!time) return "";
+  return time.slice(0, 5);
+}
