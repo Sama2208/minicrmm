@@ -1,14 +1,9 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Users, BarChart3, Settings, LogOut, CalendarDays, Building2 } from "lucide-react";
+import { Users, BarChart3, Settings, LogOut, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  useClinicStatus,
-  useIsPlatformAdmin,
-  clinicInitial,
-  DEFAULT_BRAND_COLOR,
-} from "@/lib/clinic";
+import { useClinicStatus, clinicInitial, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
 import {
   Sidebar,
   SidebarContent,
@@ -28,15 +23,12 @@ const ITEMS = [
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
 ];
 
-const PLATFORM_ITEM = { title: "Platforma", url: "/platforma", icon: Building2 };
-
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
   const clinicStatusQ = useClinicStatus();
-  const isPlatformAdminQ = useIsPlatformAdmin();
   const clinic = clinicStatusQ.data;
-  const items = isPlatformAdminQ.data ? [...ITEMS, PLATFORM_ITEM] : ITEMS;
+  const items = ITEMS;
 
   useEffect(() => {
     if (clinic?.clinic_name) document.title = clinic.clinic_name;

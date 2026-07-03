@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -25,6 +26,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,7 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, LogOut, Plus, RefreshCw, Pencil } from "lucide-react";
+import { ArrowLeft, LogOut, Plus, RefreshCw, Pencil, Trash2, Facebook } from "lucide-react";
 import {
   useIsPlatformAdmin,
   slugify,
@@ -45,7 +56,18 @@ import {
   listClinicsForPlatform,
   listPlans,
   updateClinicSubscription,
+  updateClinicInfo,
+  deleteClinic,
+  getClinicsOverview,
 } from "@/lib/platform.functions";
+import {
+  createFacebookOAuthState,
+  listPendingFacebookPages,
+  confirmFacebookPage,
+  getFacebookConnectionStatus,
+  toggleFacebookFormSync,
+  disconnectFacebook,
+} from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/platforma")({
   ssr: false,
@@ -98,6 +120,7 @@ function PlatformaPage() {
   const navigate = useNavigate();
   const [checkingSession, setCheckingSession] = useState(true);
   const isPlatformAdminQ = useIsPlatformAdmin();
+  const [pendingState, setPendingState] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -105,6 +128,20 @@ function PlatformaPage() {
       setCheckingSession(false);
     });
   }, [navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fbError = params.get("fb_error");
+    const fbSession = params.get("fb_session");
+    if (fbError) toast.error(decodeURIComponent(fbError));
+    if (fbSession) setPendingState(fbSession);
+    if (fbError || fbSession) {
+      params.delete("fb_error");
+      params.delete("fb_session");
+      const rest = params.toString();
+      window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : ""));
+    }
+  }, []);
 
   if (checkingSession || isPlatformAdminQ.isLoading) {
     return (
@@ -134,7 +171,74 @@ function PlatformaPage() {
     <PlatformaShell>
       <CreateClinicCard />
       <ClinicsList />
+      <ClinicsOverviewCard />
+      {pendingState && (
+        <FacebookPagePickerDialog
+          state={pendingState}
+          open={!!pendingState}
+          onClose={() => setPendingState(null)}
+        />
+      )}
     </PlatformaShell>
+  );
+}
+
+function FacebookPagePickerDialog({
+  state,
+  open,
+  onClose,
+}: {
+  state: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+
+  const pendingPagesQ = useQuery({
+    queryKey: ["platform-facebook-pending-pages", state],
+    queryFn: () => listPendingFacebookPages({ data: { state } }),
+  });
+
+  const confirmPage = useMutation({
+    mutationFn: (pageId: string) => confirmFacebookPage({ data: { state, pageId } }),
+    onSuccess: (result) => {
+      toast.success(`"${result.pageName}" ulandi`);
+      qc.invalidateQueries({ queryKey: ["platform-facebook-status"] });
+      onClose();
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      onClose();
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Qaysi Facebook sahifasi ulanadi?</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2">
+          {pendingPagesQ.isLoading ? (
+            <p className="text-sm text-slate-500">Yuklanmoqda...</p>
+          ) : (pendingPagesQ.data ?? []).length === 0 ? (
+            <p className="text-sm text-slate-500">Sahifalar topilmadi</p>
+          ) : (
+            (pendingPagesQ.data ?? []).map((p) => (
+              <Button
+                key={p.id}
+                variant="outline"
+                className="w-full justify-start"
+                disabled={confirmPage.isPending}
+                onClick={() => confirmPage.mutate(p.id)}
+              >
+                {p.name}
+              </Button>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -297,12 +401,15 @@ type ClinicRow = {
 };
 
 function ClinicsList() {
+  const qc = useQueryClient();
   const clinicsQ = useQuery({
     queryKey: ["platform-clinics"],
     queryFn: () => listClinicsForPlatform(),
   });
   const plansQ = usePlansQuery();
   const [editing, setEditing] = useState<ClinicRow | null>(null);
+  const [facebookFor, setFacebookFor] = useState<ClinicRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ClinicRow | null>(null);
 
   const rows = useMemo(() => clinicsQ.data ?? [], [clinicsQ.data]);
   const planNameById = useMemo(() => {
@@ -310,6 +417,17 @@ function ClinicsList() {
     (plansQ.data ?? []).forEach((p) => m.set(p.id, p.name));
     return m;
   }, [plansQ.data]);
+
+  const remove = useMutation({
+    mutationFn: (clinicId: string) => deleteClinic({ data: { clinicId } }),
+    onSuccess: () => {
+      toast.success("Klinika o'chirildi");
+      qc.invalidateQueries({ queryKey: ["platform-clinics"] });
+      qc.invalidateQueries({ queryKey: ["platform-clinics-overview"] });
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   return (
     <Card>
@@ -324,7 +442,7 @@ function ClinicsList() {
               <TableHead>Tarif</TableHead>
               <TableHead>Holat</TableHead>
               <TableHead>Amal muddati</TableHead>
-              <TableHead className="w-[60px]"></TableHead>
+              <TableHead className="w-[110px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -366,9 +484,33 @@ function ClinicsList() {
                         : "Muddatsiz"}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => setEditing(c)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Facebook ulanishi"
+                          onClick={() => setFacebookFor(c)}
+                        >
+                          <Facebook className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Tahrirlash"
+                          onClick={() => setEditing(c)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="O'chirish"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setDeleteTarget(c)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -385,6 +527,36 @@ function ClinicsList() {
           onClose={() => setEditing(null)}
         />
       )}
+
+      {facebookFor && (
+        <ClinicFacebookDialog
+          clinic={facebookFor}
+          open={!!facebookFor}
+          onClose={() => setFacebookFor(null)}
+        />
+      )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>"{deleteTarget?.name}" o'chirilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu amalni qaytarib bo'lmaydi — klinikaning barcha lidlari, operatorlari va boshqa
+              ma'lumotlari butunlay o'chiriladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={remove.isPending}
+              onClick={() => deleteTarget && remove.mutate(deleteTarget.id)}
+            >
+              O'chirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -405,6 +577,8 @@ function EditSubscriptionDialog({
     [plansQ.data, clinic.plan_id],
   );
 
+  const [name, setName] = useState(clinic.name);
+  const [slug, setSlug] = useState(clinic.slug);
   const [planSlug, setPlanSlug] = useState(currentPlanSlug);
   const [status, setStatus] = useState(clinic.subscription_status);
   const [periodEnd, setPeriodEnd] = useState(
@@ -415,19 +589,29 @@ function EditSubscriptionDialog({
   const [notes, setNotes] = useState(clinic.subscription_notes ?? "");
 
   const save = useMutation({
-    mutationFn: () =>
-      updateClinicSubscription({
-        data: {
-          clinicId: clinic.id,
-          planSlug: planSlug as "basic" | "pro" | "premium",
-          subscriptionStatus: status as "trialing" | "active" | "past_due" | "canceled",
-          periodEnd: periodEnd || null,
-          notes: notes.trim() || null,
-        },
-      }),
+    mutationFn: async () => {
+      if (!name.trim()) throw new Error("Klinika nomi kiritilishi shart");
+      if (!slug.trim()) throw new Error("Slug kiritilishi shart");
+
+      await Promise.all([
+        updateClinicInfo({
+          data: { clinicId: clinic.id, name: name.trim(), slug: slug.trim() },
+        }),
+        updateClinicSubscription({
+          data: {
+            clinicId: clinic.id,
+            planSlug: planSlug as "basic" | "pro" | "premium",
+            subscriptionStatus: status as "trialing" | "active" | "past_due" | "canceled",
+            periodEnd: periodEnd || null,
+            notes: notes.trim() || null,
+          },
+        }),
+      ]);
+    },
     onSuccess: () => {
-      toast.success("Obuna yangilandi");
+      toast.success("Klinika yangilandi");
       qc.invalidateQueries({ queryKey: ["platform-clinics"] });
+      qc.invalidateQueries({ queryKey: ["platform-clinics-overview"] });
       onClose();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -437,12 +621,26 @@ function EditSubscriptionDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{clinic.name} — obunani boshqarish</DialogTitle>
+          <DialogTitle>{clinic.name} — tahrirlash</DialogTitle>
           <DialogDescription>
             To'lov qo'lda tasdiqlanadi (Payme/Click/Uzum orqali mijoz to'lovi qabul qilingach).
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Klinika nomi</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label>Slug</Label>
+              <Input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                className="mt-1 font-mono text-sm"
+              />
+            </div>
+          </div>
           <div>
             <Label>Tarif</Label>
             <Select value={planSlug} onValueChange={setPlanSlug}>
@@ -506,5 +704,179 @@ function EditSubscriptionDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ClinicFacebookDialog({
+  clinic,
+  open,
+  onClose,
+}: {
+  clinic: ClinicRow;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+
+  const statusQ = useQuery({
+    queryKey: ["platform-facebook-status", clinic.id],
+    queryFn: () => getFacebookConnectionStatus({ data: { clinicId: clinic.id } }),
+  });
+
+  const connect = useMutation({
+    mutationFn: () => createFacebookOAuthState({ data: { clinicId: clinic.id } }),
+    onSuccess: (result) => {
+      window.location.href = result.authorizeUrl;
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleForm = useMutation({
+    mutationFn: (vars: { formRowId: string; enabled: boolean }) =>
+      toggleFacebookFormSync({ data: { ...vars, clinicId: clinic.id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["platform-facebook-status", clinic.id] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const disconnect = useMutation({
+    mutationFn: () => disconnectFacebook({ data: { clinicId: clinic.id } }),
+    onSuccess: () => {
+      toast.success("Facebook ulanishi uzildi");
+      qc.invalidateQueries({ queryKey: ["platform-facebook-status", clinic.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{clinic.name} — Facebook ulanishi</DialogTitle>
+          <DialogDescription>
+            Klinikaning Facebook sahifasini ulab, lidlar avtomatik CRM'ga tushishini ta'minlang.
+          </DialogDescription>
+        </DialogHeader>
+
+        {statusQ.isLoading ? (
+          <p className="text-sm text-slate-500">Yuklanmoqda...</p>
+        ) : statusQ.data?.connected ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div>
+                <div className="font-medium">{statusQ.data.pageName}</div>
+                <div className="text-xs text-slate-500">Ulangan</div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => disconnect.mutate()}
+                disabled={disconnect.isPending}
+              >
+                Uzish
+              </Button>
+            </div>
+            {statusQ.data.forms.length > 0 && (
+              <div className="space-y-2">
+                <Label>Formalar</Label>
+                {statusQ.data.forms.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between text-sm">
+                    <span>{f.form_name}</span>
+                    <Switch
+                      checked={f.is_syncing}
+                      onCheckedChange={(checked) =>
+                        toggleForm.mutate({ formRowId: f.id, enabled: checked })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <Button
+            onClick={() => connect.mutate()}
+            disabled={connect.isPending}
+            className="bg-[#1877F2] hover:bg-[#1465d1]"
+          >
+            <Facebook className="h-4 w-4" />
+            {connect.isPending ? "Yo'naltirilmoqda..." : "Facebook bilan ulash"}
+          </Button>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Yopish
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type ClinicOverviewRow = {
+  clinicId: string;
+  name: string;
+  slug: string;
+  totalLeads: number;
+  convertedLeads: number;
+  conversionRate: number;
+  activeOperators: number;
+};
+
+function ClinicsOverviewCard() {
+  const overviewQ = useQuery({
+    queryKey: ["platform-clinics-overview"],
+    queryFn: () => getClinicsOverview() as Promise<ClinicOverviewRow[]>,
+  });
+  const rows = overviewQ.data ?? [];
+
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Hisobotlar</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Klinika</TableHead>
+              <TableHead>Jami lidlar</TableHead>
+              <TableHead>Konversiya</TableHead>
+              <TableHead>Faol operatorlar</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {overviewQ.isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                  Yuklanmoqda...
+                </TableCell>
+              </TableRow>
+            ) : rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                  Klinikalar topilmadi
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((r) => (
+                <TableRow key={r.clinicId}>
+                  <TableCell>
+                    <div className="font-medium">{r.name}</div>
+                    <div className="font-mono text-xs text-slate-500">{r.slug}</div>
+                  </TableCell>
+                  <TableCell>{r.totalLeads}</TableCell>
+                  <TableCell>
+                    {r.conversionRate}% ({r.convertedLeads})
+                  </TableCell>
+                  <TableCell>{r.activeOperators}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

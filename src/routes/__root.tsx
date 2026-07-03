@@ -172,7 +172,6 @@ function Shell() {
     return <Outlet />;
   }
 
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

@@ -10,14 +10,18 @@ import {
 // chaqiriladi.
 export async function handleFacebookOAuthCallback(request: Request): Promise<Response> {
   const url = new URL(request.url);
+  const state = url.searchParams.get("state");
+  // Platforma admin boshqa klinika uchun ulanishni boshlagan bo'lsa, state
+  // "::platforma" bilan tugaydi — shunda foydalanuvchi /platforma'ga
+  // qaytariladi, aks holda klinikaning o'z /sozlamalar sahifasiga.
+  const returnBase = state?.endsWith("::platforma") ? "/platforma" : "/sozlamalar";
   const redirectTo = (params: string) =>
-    Response.redirect(`${url.origin}/sozlamalar?${params}`, 302);
+    Response.redirect(`${url.origin}${returnBase}?${params}`, 302);
 
   const error = url.searchParams.get("error_description") ?? url.searchParams.get("error");
   if (error) return redirectTo(`fb_error=${encodeURIComponent(error)}`);
 
   const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
   if (!code || !state) return redirectTo("fb_error=invalid_request");
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
