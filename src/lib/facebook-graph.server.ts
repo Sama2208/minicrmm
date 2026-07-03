@@ -117,7 +117,10 @@ export async function subscribePageToLeadgen(
   url.searchParams.set("subscribed_fields", "leadgen");
   url.searchParams.set("access_token", pageAccessToken);
   if (appSecret) {
-    url.searchParams.set("appsecret_proof", await computeAppSecretProof(appSecret, pageAccessToken));
+    url.searchParams.set(
+      "appsecret_proof",
+      await computeAppSecretProof(appSecret, pageAccessToken),
+    );
   }
   const res = await fetch(url.toString(), { method: "POST" });
   const body = await res.json();
