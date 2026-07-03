@@ -21,7 +21,7 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function useIsPlatformAdmin() {
+export function useIsPlatformAdmin(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["is-platform-admin"],
     queryFn: async () => {
@@ -30,6 +30,7 @@ export function useIsPlatformAdmin() {
       return data as boolean;
     },
     staleTime: Infinity,
+    enabled: options?.enabled ?? true,
   });
 }
 

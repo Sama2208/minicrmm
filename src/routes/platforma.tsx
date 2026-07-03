@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -43,7 +43,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, LogOut, Plus, RefreshCw, Pencil, Trash2, Facebook } from "lucide-react";
+import {
+  LogOut,
+  Plus,
+  RefreshCw,
+  Pencil,
+  Trash2,
+  Facebook,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
 import {
   useIsPlatformAdmin,
   slugify,
@@ -87,24 +97,15 @@ function usePlansQuery() {
 }
 
 function PlatformaShell({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
-
   async function signOut() {
     await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <Link
-            to="/lidlar"
-            className="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Ilovaga qaytish
-          </Link>
+          <ShieldCheck className="h-5 w-5 text-slate-700 shrink-0" />
           <h1 className="text-lg font-semibold text-slate-800 truncate">Platforma boshqaruvi</h1>
         </div>
         <Button variant="ghost" size="sm" onClick={signOut} className="shrink-0">
@@ -116,18 +117,110 @@ function PlatformaShell({ children }: { children: ReactNode }) {
   );
 }
 
+function PlatformaLoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Email va parol kiritilishi shart");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        throw new Error(
+          error.message === "Invalid login credentials"
+            ? "Email yoki parol noto'g'ri"
+            : error.message,
+        );
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Xatolik yuz berdi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+      <div className="w-full max-w-sm bg-slate-900 rounded-xl border border-slate-800 p-8 space-y-6">
+        <div className="text-center space-y-1">
+          <ShieldCheck className="h-8 w-8 text-emerald-500 mx-auto" />
+          <h1 className="text-xl font-semibold text-slate-100">Platforma boshqaruvi</h1>
+          <p className="text-sm text-slate-500">Faqat platforma egasi uchun</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="platform-email" className="text-slate-300">
+              Email
+            </Label>
+            <Input
+              id="platform-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              className="bg-slate-800 border-slate-700 text-slate-100"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="platform-password" className="text-slate-300">
+              Parol
+            </Label>
+            <div className="relative">
+              <Input
+                id="platform-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="bg-slate-800 border-slate-700 text-slate-100 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            disabled={loading}
+          >
+            {loading ? "Yuklanmoqda..." : "Kirish"}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function PlatformaPage() {
-  const navigate = useNavigate();
   const [checkingSession, setCheckingSession] = useState(true);
-  const isPlatformAdminQ = useIsPlatformAdmin();
+  const [hasSession, setHasSession] = useState(false);
+  const isPlatformAdminQ = useIsPlatformAdmin({ enabled: hasSession });
   const [pendingState, setPendingState] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
+      setHasSession(!!data.session);
       setCheckingSession(false);
     });
-  }, [navigate]);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setHasSession(!!session);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -143,7 +236,19 @@ function PlatformaPage() {
     }
   }, []);
 
-  if (checkingSession || isPlatformAdminQ.isLoading) {
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-500 text-sm">
+        Tekshirilmoqda...
+      </div>
+    );
+  }
+
+  if (!hasSession) {
+    return <PlatformaLoginForm />;
+  }
+
+  if (isPlatformAdminQ.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-500 text-sm">
         Tekshirilmoqda...
@@ -156,12 +261,10 @@ function PlatformaPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
         <div className="max-w-sm text-center space-y-2">
           <h1 className="text-lg font-semibold text-slate-800">Ruxsat yo'q</h1>
-          <p className="text-sm text-slate-500">
-            Bu sahifa faqat platforma egasi uchun. Sizda klinika qo'shish huquqi yo'q.
-          </p>
-          <Link to="/lidlar" className="text-sm text-emerald-600 hover:underline">
-            Ilovaga qaytish
-          </Link>
+          <p className="text-sm text-slate-500">Bu tizim faqat platforma egasi uchun.</p>
+          <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
+            <LogOut className="h-4 w-4" /> Chiqish
+          </Button>
         </div>
       </div>
     );
