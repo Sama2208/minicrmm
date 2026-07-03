@@ -155,9 +155,23 @@ function Shell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = TITLES[pathname] ?? "CRM";
 
+  // Barcha leaf route'lar `ssr: false` — SSR paytida faqat <Outlet /> chiqadi.
+  // Sidebar layout'ni faqat client'da mount qilamiz, aks holda SSR va client
+  // DOM'lari mos kelmay React #418 (hydration failed) xatosi chiqadi va root
+  // errorComponent "Something went wrong on our end" ni ko'rsatadi.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <Outlet />;
+  }
+
   if (pathname === "/auth" || pathname === "/login" || pathname === "/platforma") {
     return <Outlet />;
   }
+
 
   return (
     <SidebarProvider>
