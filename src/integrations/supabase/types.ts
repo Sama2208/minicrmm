@@ -60,6 +60,10 @@ export type Database = {
           slug: string;
           is_active: boolean;
           created_at: string;
+          plan_id: string;
+          subscription_status: string;
+          subscription_current_period_end: string | null;
+          subscription_notes: string | null;
         };
         Insert: {
           id?: string;
@@ -67,6 +71,10 @@ export type Database = {
           slug: string;
           is_active?: boolean;
           created_at?: string;
+          plan_id: string;
+          subscription_status?: string;
+          subscription_current_period_end?: string | null;
+          subscription_notes?: string | null;
         };
         Update: {
           id?: string;
@@ -74,8 +82,20 @@ export type Database = {
           slug?: string;
           is_active?: boolean;
           created_at?: string;
+          plan_id?: string;
+          subscription_status?: string;
+          subscription_current_period_end?: string | null;
+          subscription_notes?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "clinics_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "plans";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lead_assignment_history: {
         Row: {
@@ -314,6 +334,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      plans: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          price_monthly: number;
+          max_operators: number | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          price_monthly?: number;
+          max_operators?: number | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          name?: string;
+          price_monthly?: number;
+          max_operators?: number | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       platform_admins: {
         Row: {
           user_id: string;
@@ -368,6 +421,17 @@ export type Database = {
       current_clinic_id: { Args: Record<PropertyKey, never>; Returns: string };
       current_operator_id: { Args: Record<PropertyKey, never>; Returns: string };
       is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      my_clinic_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          clinic_id: string;
+          clinic_name: string;
+          is_active: boolean;
+          subscription_status: string;
+          subscription_current_period_end: string | null;
+          plan_name: string | null;
+        }[];
+      };
       get_next_operator:
         | { Args: Record<PropertyKey, never>; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string };

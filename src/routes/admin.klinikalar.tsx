@@ -6,8 +6,24 @@ import { AdminShell } from "@/components/admin-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -16,9 +32,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, RefreshCw } from "lucide-react";
-import { useIsPlatformAdmin, slugify } from "@/lib/clinic";
-import { createClinic, listClinicsForPlatform } from "@/lib/platform.functions";
+import { Plus, RefreshCw, Pencil } from "lucide-react";
+import {
+  useIsPlatformAdmin,
+  slugify,
+  SUBSCRIPTION_STATUS_LABEL,
+  SUBSCRIPTION_STATUS_BADGE,
+  type SubscriptionStatus,
+} from "@/lib/clinic";
+import {
+  createClinic,
+  listClinicsForPlatform,
+  listPlans,
+  updateClinicSubscription,
+} from "@/lib/platform.functions";
 
 export const Route = createFileRoute("/admin/klinikalar")({
   ssr: false,
@@ -27,6 +54,14 @@ export const Route = createFileRoute("/admin/klinikalar")({
 
 function randomPassword() {
   return Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+}
+
+function formatSom(n: number) {
+  return `${n.toLocaleString("uz-UZ")} so'm`;
+}
+
+function usePlansQuery() {
+  return useQuery({ queryKey: ["platform-plans"], queryFn: () => listPlans() });
 }
 
 function KlinikalarPage() {
@@ -63,9 +98,11 @@ function KlinikalarPage() {
 
 function CreateClinicCard() {
   const qc = useQueryClient();
+  const plansQ = usePlansQuery();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [planSlug, setPlanSlug] = useState("basic");
   const [adminFullName, setAdminFullName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState(randomPassword());
@@ -85,6 +122,7 @@ function CreateClinicCard() {
         data: {
           clinicName: name.trim(),
           clinicSlug: effectiveSlug,
+          planSlug: planSlug as "basic" | "pro" | "premium",
           adminFullName: adminFullName.trim(),
           adminEmail: adminEmail.trim(),
           adminPassword,
@@ -99,6 +137,7 @@ function CreateClinicCard() {
       setName("");
       setSlug("");
       setSlugTouched(false);
+      setPlanSlug("basic");
       setAdminFullName("");
       setAdminEmail("");
       setAdminPassword(randomPassword());
@@ -134,6 +173,22 @@ function CreateClinicCard() {
               placeholder="shifo-klinikasi"
             />
           </div>
+        </div>
+        <div>
+          <Label>Tarif (14 kunlik bepul sinov bilan boshlanadi)</Label>
+          <Select value={planSlug} onValueChange={setPlanSlug}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(plansQ.data ?? []).map((p) => (
+                <SelectItem key={p.slug} value={p.slug}>
+                  {p.name} — {formatSom(p.price_monthly)}/oy (
+                  {p.max_operators ? `${p.max_operators} operator` : "cheksiz operator"})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -187,13 +242,32 @@ function CreateClinicCard() {
   );
 }
 
+type ClinicRow = {
+  id: string;
+  name: string;
+  slug: string;
+  is_active: boolean;
+  created_at: string;
+  plan_id: string;
+  subscription_status: string;
+  subscription_current_period_end: string | null;
+  subscription_notes: string | null;
+};
+
 function ClinicsList() {
   const clinicsQ = useQuery({
     queryKey: ["platform-clinics"],
     queryFn: () => listClinicsForPlatform(),
   });
+  const plansQ = usePlansQuery();
+  const [editing, setEditing] = useState<ClinicRow | null>(null);
 
   const rows = useMemo(() => clinicsQ.data ?? [], [clinicsQ.data]);
+  const planNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    (plansQ.data ?? []).forEach((p) => m.set(p.id, p.name));
+    return m;
+  }, [plansQ.data]);
 
   return (
     <Card>
@@ -205,43 +279,190 @@ function ClinicsList() {
           <TableHeader>
             <TableRow>
               <TableHead>Nomi</TableHead>
-              <TableHead>Slug</TableHead>
+              <TableHead>Tarif</TableHead>
               <TableHead>Holat</TableHead>
-              <TableHead>Yaratilgan</TableHead>
+              <TableHead>Amal muddati</TableHead>
+              <TableHead className="w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {clinicsQ.isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                <TableCell colSpan={5} className="text-center text-slate-500 py-8">
                   Yuklanmoqda...
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                <TableCell colSpan={5} className="text-center text-slate-500 py-8">
                   Klinikalar topilmadi
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="font-mono text-xs text-slate-500">{c.slug}</TableCell>
-                  <TableCell>
-                    {c.is_active ? (
-                      <Badge className="bg-emerald-600">Faol</Badge>
-                    ) : (
-                      <Badge variant="outline">Nofaol</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{new Date(c.created_at).toLocaleDateString("uz-UZ")}</TableCell>
-                </TableRow>
-              ))
+              rows.map((c) => {
+                const status = c.subscription_status as SubscriptionStatus;
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell>
+                      <div className="font-medium">{c.name}</div>
+                      <div className="font-mono text-xs text-slate-500">{c.slug}</div>
+                    </TableCell>
+                    <TableCell>{planNameById.get(c.plan_id) ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge className={SUBSCRIPTION_STATUS_BADGE[status] ?? ""}>
+                        {SUBSCRIPTION_STATUS_LABEL[status] ?? c.subscription_status}
+                      </Badge>
+                      {!c.is_active && (
+                        <Badge variant="outline" className="ml-1 text-slate-500">
+                          Nofaol
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {c.subscription_current_period_end
+                        ? new Date(c.subscription_current_period_end).toLocaleDateString("uz-UZ")
+                        : "Muddatsiz"}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => setEditing(c)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </CardContent>
+
+      {editing && (
+        <EditSubscriptionDialog
+          clinic={editing}
+          open={!!editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </Card>
+  );
+}
+
+function EditSubscriptionDialog({
+  clinic,
+  open,
+  onClose,
+}: {
+  clinic: ClinicRow;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const plansQ = usePlansQuery();
+  const currentPlanSlug = useMemo(
+    () => (plansQ.data ?? []).find((p) => p.id === clinic.plan_id)?.slug ?? "basic",
+    [plansQ.data, clinic.plan_id],
+  );
+
+  const [planSlug, setPlanSlug] = useState(currentPlanSlug);
+  const [status, setStatus] = useState(clinic.subscription_status);
+  const [periodEnd, setPeriodEnd] = useState(
+    clinic.subscription_current_period_end
+      ? clinic.subscription_current_period_end.slice(0, 10)
+      : "",
+  );
+  const [notes, setNotes] = useState(clinic.subscription_notes ?? "");
+
+  const save = useMutation({
+    mutationFn: () =>
+      updateClinicSubscription({
+        data: {
+          clinicId: clinic.id,
+          planSlug: planSlug as "basic" | "pro" | "premium",
+          subscriptionStatus: status as "trialing" | "active" | "past_due" | "canceled",
+          periodEnd: periodEnd || null,
+          notes: notes.trim() || null,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Obuna yangilandi");
+      qc.invalidateQueries({ queryKey: ["platform-clinics"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{clinic.name} — obunani boshqarish</DialogTitle>
+          <DialogDescription>
+            To'lov qo'lda tasdiqlanadi (Payme/Click/Uzum orqali mijoz to'lovi qabul qilingach).
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Tarif</Label>
+            <Select value={planSlug} onValueChange={setPlanSlug}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(plansQ.data ?? []).map((p) => (
+                  <SelectItem key={p.slug} value={p.slug}>
+                    {p.name} — {formatSom(p.price_monthly)}/oy
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Holat</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(SUBSCRIPTION_STATUS_LABEL) as SubscriptionStatus[]).map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {SUBSCRIPTION_STATUS_LABEL[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Amal muddati (bo'sh — muddatsiz)</Label>
+            <Input
+              type="date"
+              value={periodEnd}
+              onChange={(e) => setPeriodEnd(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Izoh (masalan: "Payme orqali 2026-07-10 da to'landi")</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="mt-1"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Bekor qilish
+          </Button>
+          <Button
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            {save.isPending ? "Saqlanmoqda..." : "Saqlash"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
