@@ -104,3 +104,25 @@ export async function getLeadData(
 ): Promise<FacebookLeadData> {
   return graphFetch<FacebookLeadData>(`/${leadgenId}`, { access_token: pageAccessToken });
 }
+
+// Sahifani leadgen webhook voqealariga obuna qiladi.
+// POST /{page_id}/subscribed_apps?subscribed_fields=leadgen
+// Server-side chaqiruv — appsecret_proof shart.
+export async function subscribePageToLeadgen(
+  pageId: string,
+  pageAccessToken: string,
+): Promise<boolean> {
+  const appSecret = process.env.FACEBOOK_APP_SECRET;
+  const url = new URL(`${GRAPH_API_BASE}/${pageId}/subscribed_apps`);
+  url.searchParams.set("subscribed_fields", "leadgen");
+  url.searchParams.set("access_token", pageAccessToken);
+  if (appSecret) {
+    url.searchParams.set("appsecret_proof", await computeAppSecretProof(appSecret, pageAccessToken));
+  }
+  const res = await fetch(url.toString(), { method: "POST" });
+  const body = await res.json();
+  if (!res.ok || body.error) {
+    throw new Error(body?.error?.message ?? `Facebook obuna xatosi (${res.status})`);
+  }
+  return body.success === true;
+}

@@ -36,6 +36,7 @@ import {
   getFacebookConnectionStatus,
   toggleFacebookFormSync,
   disconnectFacebook,
+  syncFacebookForms,
 } from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
@@ -336,6 +337,15 @@ function FacebookConnectionCard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const syncForms = useMutation({
+    mutationFn: () => syncFacebookForms(),
+    onSuccess: (res) => {
+      toast.success(`Formalar yangilandi (${res.count} ta)`);
+      qc.invalidateQueries({ queryKey: ["facebook-connection"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -383,15 +393,26 @@ function FacebookConnectionCard() {
               <p className="text-sm">
                 Ulangan: <span className="font-medium">{statusQ.data.pageName}</span>
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs text-red-600 hover:text-red-700"
-                onClick={() => disconnect.mutate()}
-                disabled={disconnect.isPending}
-              >
-                Uzish
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => syncForms.mutate()}
+                  disabled={syncForms.isPending}
+                >
+                  {syncForms.isPending ? "Yuklanmoqda..." : "Formalarni yangilash"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs text-red-600 hover:text-red-700"
+                  onClick={() => disconnect.mutate()}
+                  disabled={disconnect.isPending}
+                >
+                  Uzish
+                </Button>
+              </div>
             </div>
             {statusQ.data.forms.length === 0 ? (
               <p className="text-sm text-slate-400">Reklama lid formalari topilmadi</p>

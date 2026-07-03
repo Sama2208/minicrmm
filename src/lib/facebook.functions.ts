@@ -156,7 +156,7 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
       .single();
     if (connErr) throw new Error(connErr.message);
 
-    const { listLeadFormsForPage } = await import("./facebook-graph.server");
+    const { listLeadFormsForPage, subscribePageToLeadgen } = await import("./facebook-graph.server");
     const forms = await listLeadFormsForPage(page.id, page.access_token);
     if (forms.length > 0) {
       await supabaseAdmin.from("facebook_lead_forms").upsert(
@@ -171,13 +171,10 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
     }
 
     try {
-      await fetch(
-        `https://graph.facebook.com/v21.0/${page.id}/subscribed_apps?subscribed_fields=leadgen&access_token=${encodeURIComponent(page.access_token)}`,
-        { method: "POST" },
-      );
-    } catch {
-      // Obuna so'rovi muvaffaqiyatsiz bo'lsa ham ulanish saqlanadi;
-      // "Yangilash" bilan keyinroq qayta urinish mumkin.
+      await subscribePageToLeadgen(page.id, page.access_token);
+    } catch (err) {
+      // Obuna xatosi — ulanish saqlanadi, lekin logga tushadi.
+      console.error("Facebook leadgen obuna xatosi:", err);
     }
 
     await supabaseAdmin.from("facebook_oauth_sessions").delete().eq("state", data.state);
@@ -245,4 +242,43 @@ export const disconnectFacebook = createServerFn({ method: "POST" })
       .eq("clinic_id", clinicId);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const syncFacebookForms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: connection } = await supabaseAdmin
+      .from("facebook_connections")
+      .select("id, page_id, page_access_token")
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (!connection) throw new Error("Faol Facebook ulanish topilmadi");
+
+    const { listLeadFormsForPage, subscribePageToLeadgen } = await import("./facebook-graph.server");
+    const forms = await listLeadFormsForPage(connection.page_id, connection.page_access_token);
+    if (forms.length > 0) {
+      await supabaseAdmin.from("facebook_lead_forms").upsert(
+        forms.map((f) => ({
+          clinic_id: clinicId,
+          connection_id: connection.id,
+          form_id: f.id,
+          form_name: f.name,
+        })),
+        { onConflict: "connection_id,form_id", ignoreDuplicates: true },
+      );
+    }
+
+    // Webhook obunasini ham yangilash
+    try {
+      await subscribePageToLeadgen(connection.page_id, connection.page_access_token);
+    } catch (err) {
+      console.error("Facebook leadgen obuna yangilash xatosi:", err);
+    }
+
+    return { ok: true, count: forms.length };
   });
