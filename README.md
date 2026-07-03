@@ -1,14 +1,11 @@
 # miniCRM
 
-Klinika uchun lidlarni (mijozlarni) boshqarish CRM tizimi. Ommaviy ariza
-formasidan kelgan lidlar avtomatik ravishda operatorlarga taqsimlanadi,
-ular kanban doskasida holatlari bo'yicha kuzatiladi va hisobotlar shaklida
-tahlil qilinadi.
+Klinika uchun lidlarni (mijozlarni) boshqarish CRM tizimi. Lidlar
+avtomatik ravishda operatorlarga taqsimlanadi, ular kanban doskasida
+holatlari bo'yicha kuzatiladi va hisobotlar shaklida tahlil qilinadi.
 
 ## Imkoniyatlar
 
-- **Ariza formasi** (`/ariza`) — ommaviy lid qabul qilish sahifasi. UTM
-  kampaniya nomi URL'dan avtomatik o'qiladi.
 - **Lidlar kanban doskasi** (`/lidlar`) — lidlarni holat bo'yicha drag & drop
   bilan boshqarish.
 - **Mening lidlarim** (`/mening-lidlarim`) — operatorga biriktirilgan lidlar.
@@ -74,14 +71,12 @@ foydalaning, `service_role` kalitini hech qachon client tomoniga qo'ymang.
 ```
 src/
   routes/              # Fayl asosidagi marshrutlar (TanStack Router)
-    ariza.tsx          # Ommaviy ariza formasi
     _authenticated/    # Login talab qiladigan sahifalar
   components/
     ui/                # shadcn/ui komponentlari
     lidlar-kanban.tsx  # Kanban doskasi
   lib/
     crm.ts             # Lid holatlari, manbalar, yorliqlar, formatlash
-    leads.functions.ts # Server funksiya: ommaviy lid qabul qilish
     users.functions.ts # Server funksiya: operator yaratish (admin)
   integrations/
     supabase/          # Supabase client va auth middleware

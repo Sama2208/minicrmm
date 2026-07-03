@@ -155,11 +155,7 @@ function Shell() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = TITLES[pathname] ?? "CRM";
 
-  if (
-    pathname === "/auth" ||
-    pathname === "/login" ||
-    pathname === "/platforma"
-  ) {
+  if (pathname === "/auth" || pathname === "/login" || pathname === "/platforma") {
     return <Outlet />;
   }
 

@@ -1,13 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import {
-  Users,
-  BarChart3,
-  Settings,
-  LogOut,
-  CalendarDays,
-  Building2,
-} from "lucide-react";
+import { Users, BarChart3, Settings, LogOut, CalendarDays, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +24,6 @@ import {
 const ITEMS = [
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Qabul jadvali", url: "/kalendar", icon: CalendarDays },
-  
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
 ];

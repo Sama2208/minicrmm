@@ -62,11 +62,6 @@ clinics (tenant)
 
 Migratsiya qo'llanib, turlar qayta generatsiya qilingach:
 
-- **`src/lib/leads.functions.ts`** — ommaviy ariza qaysi klinikaga
-  tegishli ekanini bilishi kerak. Formaga `clinic` (slug) parametri qo'shiladi
-  (`/ariza?clinic=<slug>`), server funksiya slug bo'yicha `clinic_id` ni
-  topadi, `get_next_operator(clinic_id)` ni chaqiradi va `leads` ga
-  `clinic_id` bilan yozadi.
 - **`src/lib/users.functions.ts`** — admin operator yaratganda yangi
   `operators` va `user_roles` yozuvlariga adminning `clinic_id` si qo'yiladi.
 - **Klikent so'rovlari** (lidlar, hisobotlar) — RLS avtomatik filtrlaganligi
