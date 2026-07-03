@@ -42,7 +42,16 @@ export type ClinicStatus = {
   subscription_status: string;
   subscription_current_period_end: string | null;
   plan_name: string | null;
+  logo_url: string | null;
+  primary_color: string;
 };
+
+export const DEFAULT_BRAND_COLOR = "#059669";
+
+export function clinicInitial(name: string): string {
+  const trimmed = name.trim();
+  return trimmed ? trimmed[0].toUpperCase() : "?";
+}
 
 export const SUBSCRIPTION_STATUS_LABEL: Record<SubscriptionStatus, string> = {
   trialing: "Sinov muddati",

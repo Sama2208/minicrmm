@@ -64,6 +64,8 @@ export type Database = {
           subscription_status: string;
           subscription_current_period_end: string | null;
           subscription_notes: string | null;
+          logo_url: string | null;
+          primary_color: string;
         };
         Insert: {
           id?: string;
@@ -75,6 +77,8 @@ export type Database = {
           subscription_status?: string;
           subscription_current_period_end?: string | null;
           subscription_notes?: string | null;
+          logo_url?: string | null;
+          primary_color?: string;
         };
         Update: {
           id?: string;
@@ -86,6 +90,8 @@ export type Database = {
           subscription_status?: string;
           subscription_current_period_end?: string | null;
           subscription_notes?: string | null;
+          logo_url?: string | null;
+          primary_color?: string;
         };
         Relationships: [
           {
@@ -433,6 +439,8 @@ export type Database = {
           subscription_status: string;
           subscription_current_period_end: string | null;
           plan_name: string | null;
+          logo_url: string | null;
+          primary_color: string;
         }[];
       };
       get_next_operator:
