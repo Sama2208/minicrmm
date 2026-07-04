@@ -19,7 +19,11 @@ export async function ingestFacebookLead(params: {
     clinic_id: params.clinicId,
     leadgen_id: params.leadgenId,
     form_id: params.formId,
-    raw_payload: { leadgen_id: params.leadgenId, form_id: params.formId },
+    raw_payload: {
+      leadgen_id: params.leadgenId,
+      form_id: params.formId,
+      field_data: params.fieldData,
+    },
   });
   if (insertEventErr) return { inserted: false };
 
