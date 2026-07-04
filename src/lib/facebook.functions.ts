@@ -233,6 +233,54 @@ export const toggleFacebookFormSync = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const ImportHistoricalInput = z.object({
+  formRowId: z.string().uuid(),
+  clinicId: z.string().uuid().optional(),
+});
+
+// Forma ulanishidan OLDIN Meta'da to'plangan lidlarni bir martalik import
+// qiladi — webhook faqat kelajakdagi hodisalarni yetkazadi, eskilarini emas.
+export const importHistoricalLeads = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ImportHistoricalInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: form, error: formErr } = await supabaseAdmin
+      .from("facebook_lead_forms")
+      .select("form_id, connection_id")
+      .eq("id", data.formRowId)
+      .eq("clinic_id", clinicId)
+      .single();
+    if (formErr || !form) throw new Error("Forma topilmadi");
+
+    const { data: connection, error: connErr } = await supabaseAdmin
+      .from("facebook_connections")
+      .select("page_access_token")
+      .eq("id", form.connection_id)
+      .single();
+    if (connErr || !connection) throw new Error("Ulanish topilmadi");
+
+    const { listLeadsForForm } = await import("./facebook-graph.server");
+    const { ingestFacebookLead } = await import("./facebook-lead-ingest.server");
+
+    const historicalLeads = await listLeadsForForm(form.form_id, connection.page_access_token);
+
+    let imported = 0;
+    for (const lead of historicalLeads) {
+      const { inserted } = await ingestFacebookLead({
+        clinicId,
+        formId: form.form_id,
+        leadgenId: lead.id,
+        fieldData: lead.field_data,
+      });
+      if (inserted) imported++;
+    }
+
+    return { ok: true, total: historicalLeads.length, imported };
+  });
+
 export const disconnectFacebook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
