@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Facebook } from "lucide-react";
+import { Plus, Trash2, Facebook, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useClinicId, useClinicStatus, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
 import { updateClinicBranding } from "@/lib/branding.functions";
@@ -37,6 +37,7 @@ import {
   toggleFacebookFormSync,
   disconnectFacebook,
   syncFacebookForms,
+  importHistoricalLeads,
 } from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
@@ -358,6 +359,14 @@ function FacebookConnectionCard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const importLeads = useMutation({
+    mutationFn: (formRowId: string) => importHistoricalLeads({ data: { formRowId } }),
+    onSuccess: (res) => {
+      toast.success(`${res.total} ta lid topildi, ${res.imported} tasi yangi qo'shildi`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -436,10 +445,22 @@ function FacebookConnectionCard() {
                     className="flex items-center justify-between border rounded-md px-3 py-2"
                   >
                     <span className="text-sm">{f.form_name}</span>
-                    <Switch
-                      checked={f.is_syncing}
-                      onCheckedChange={(v) => toggleForm.mutate({ formRowId: f.id, enabled: v })}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        title="Eski lidlarni import qilish"
+                        onClick={() => importLeads.mutate(f.id)}
+                        disabled={importLeads.isPending}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                      <Switch
+                        checked={f.is_syncing}
+                        onCheckedChange={(v) => toggleForm.mutate({ formRowId: f.id, enabled: v })}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

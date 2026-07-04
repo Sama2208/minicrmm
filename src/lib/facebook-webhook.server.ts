@@ -1,6 +1,5 @@
 import { getLeadData } from "./facebook-graph.server";
-import { extractFacebookLeadFields } from "./facebook";
-import { normalizeUzPhone } from "./phone";
+import { ingestFacebookLead } from "./facebook-lead-ingest.server";
 
 type LeadgenChange = {
   field: string;
@@ -58,45 +57,13 @@ async function processLeadgenEvent(value: LeadgenChange["value"]) {
     .maybeSingle();
   if (!form || !form.is_syncing) return;
 
-  // Idempotentlik: bitta leadgen_id uchun faqat bir marta ishlov beriladi.
-  // UNIQUE cheklov ikkinchi urinishni rad etadi — Meta webhookni qayta
-  // yuborishi normal holat.
-  const { error: insertEventErr } = await supabaseAdmin.from("facebook_lead_events").insert({
-    clinic_id: connection.clinic_id,
-    leadgen_id: value.leadgen_id,
-    form_id: value.form_id,
-    raw_payload: value,
-  });
-  if (insertEventErr) return;
-
   const leadData = await getLeadData(value.leadgen_id, connection.page_access_token);
-  const { fullName, phone } = extractFacebookLeadFields(leadData.field_data);
-  if (!fullName && !phone) return;
-
-  const normalizedPhone = phone ? (normalizeUzPhone(phone) ?? phone) : null;
-
-  // .maybeSingle(): prevent_duplicate_phone trigger'i takroriy raqamda
-  // NULL qaytaradi (yozuv qo'shilmaydi, mavjud lidga izoh qo'shiladi) —
-  // bu xatolik emas, shuning uchun bu holatda ham jim yakunlanadi.
-  const { data: lead } = await supabaseAdmin
-    .from("leads")
-    .insert({
-      full_name: fullName || "Facebook lid",
-      phone: normalizedPhone,
-      source: "facebook",
-      source_detail: "Lead Ads",
-      status: "yangi",
-      clinic_id: connection.clinic_id,
-    })
-    .select("id")
-    .maybeSingle();
-
-  if (lead) {
-    await supabaseAdmin
-      .from("facebook_lead_events")
-      .update({ lead_id: lead.id })
-      .eq("leadgen_id", value.leadgen_id);
-  }
+  await ingestFacebookLead({
+    clinicId: connection.clinic_id,
+    formId: value.form_id,
+    leadgenId: value.leadgen_id,
+    fieldData: leadData.field_data,
+  });
 }
 
 // Meta bu manzilga GET (obuna tasdiqlash) va POST (voqea) so'rovlarini

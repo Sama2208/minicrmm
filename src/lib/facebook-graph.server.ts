@@ -105,6 +105,43 @@ export async function getLeadData(
   return graphFetch<FacebookLeadData>(`/${leadgenId}`, { access_token: pageAccessToken });
 }
 
+export type FacebookHistoricalLead = {
+  id: string;
+  field_data: { name: string; values: string[] }[];
+};
+
+// Formada avvaldan mavjud (webhook ulanishidan oldingi) lidlarni sahifalab
+// o'qiydi — bir martalik "eski lidlarni import qilish" uchun.
+export async function listLeadsForForm(
+  formId: string,
+  pageAccessToken: string,
+): Promise<FacebookHistoricalLead[]> {
+  const leads: FacebookHistoricalLead[] = [];
+
+  let data = await graphFetch<{
+    data: FacebookHistoricalLead[];
+    paging?: { next?: string };
+  }>(`/${formId}/leads`, { access_token: pageAccessToken, fields: "field_data", limit: "100" });
+  leads.push(...data.data);
+
+  // paging.next allaqachon to'liq URL (access_token va appsecret_proof bilan
+  // qayta hisoblash shart emas — Meta o'zi keyingi sahifa uchun tayyor manzil
+  // beradi), shuning uchun graphFetch emas, oddiy fetch bilan davom etamiz.
+  let guard = 0;
+  while (data.paging?.next && guard < 20) {
+    const res = await fetch(data.paging.next);
+    const body = await res.json();
+    if (!res.ok || body.error) {
+      throw new Error(body?.error?.message ?? `Facebook API xatosi (${res.status})`);
+    }
+    data = body;
+    leads.push(...data.data);
+    guard++;
+  }
+
+  return leads;
+}
+
 // Sahifani leadgen webhook voqealariga obuna qiladi.
 // POST /{page_id}/subscribed_apps?subscribed_fields=leadgen
 // Server-side chaqiruv — appsecret_proof shart.
