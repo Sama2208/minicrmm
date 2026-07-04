@@ -31,14 +31,23 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
     [get("first_name"), get("last_name")].filter(Boolean).join(" ").trim() ||
     null;
 
-  // Asosiy telefon: foydalanuvchi o'zi kiritgan raqam ustunlik qiladi
+  // Foydalanuvchi kiritgan telefon (ba'zan noto'g'ri formatda kelishi mumkin)
+  const rawCustomPhone = get("telefon_raqamingizni_kiriting!");
+  // Facebook profilidan avtomatik to'ldirilgan telefon (odatda to'g'ri format)
+  const fbAutoPhone = get("номер_телефона");
+
+  // Agar custom phone faqat raqam/+ dan iborat bo'lsa (yaroqli) — uni ishlat,
+  // aks holda Facebook'ning avtomatik raqamini asosiy sifatida ol
+  const isValidPhoneChars = (s: string) => /^[0-9+\s\-()]+$/.test(s);
   const phone =
-    get("telefon_raqamingizni_kiriting!") ||
+    (rawCustomPhone && isValidPhoneChars(rawCustomPhone) ? rawCustomPhone : null) ||
+    fbAutoPhone ||
     get("phone_number") ||
+    rawCustomPhone || // oxirgi chora: noto'g'ri formatda bo'lsa ham saqla
     null;
 
-  // Ikkinchi telefon: Facebook profilidan avtomatik to'ldirilgan
-  const nomerAsosiy = get("номер_телефона") || null;
+  // nomer_asosiy: Facebook profilidan avtomatik raqam (agar phone dan farq qilsa)
+  const nomerAsosiy = fbAutoPhone !== phone ? fbAutoPhone : null;
 
   // Kasallik turi — leads.problem_type ga saqlanadi
   const problemType = get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") || null;
