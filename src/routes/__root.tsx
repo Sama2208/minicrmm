@@ -172,7 +172,8 @@ function Shell() {
     pathname === "/auth" ||
     pathname === "/login" ||
     pathname === "/platforma" ||
-    pathname === "/privacy-policy"
+    pathname === "/privacy-policy" ||
+    pathname.startsWith("/.lovable/")
   ) {
     return <Outlet />;
   }
