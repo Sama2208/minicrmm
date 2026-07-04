@@ -168,7 +168,12 @@ function Shell() {
     return <Outlet />;
   }
 
-  if (pathname === "/auth" || pathname === "/login" || pathname === "/platforma") {
+  if (
+    pathname === "/auth" ||
+    pathname === "/login" ||
+    pathname === "/platforma" ||
+    pathname === "/privacy-policy"
+  ) {
     return <Outlet />;
   }
 
