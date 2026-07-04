@@ -27,10 +27,11 @@ export async function ingestFacebookLead(params: {
   });
   if (insertEventErr) return { inserted: false };
 
-  const { fullName, phone } = extractFacebookLeadFields(params.fieldData);
+  const { fullName, phone, nomerAsosiy, problemType } = extractFacebookLeadFields(params.fieldData);
   if (!fullName && !phone) return { inserted: false };
 
   const normalizedPhone = phone ? (normalizeUzPhone(phone) ?? phone) : null;
+  const normalizedNomerAsosiy = nomerAsosiy ? (normalizeUzPhone(nomerAsosiy) ?? nomerAsosiy) : null;
 
   // .maybeSingle(): prevent_duplicate_phone trigger'i takroriy raqamda
   // NULL qaytaradi (yozuv qo'shilmaydi, mavjud lidga izoh qo'shiladi) —
@@ -40,6 +41,8 @@ export async function ingestFacebookLead(params: {
     .insert({
       full_name: fullName || "Facebook lid",
       phone: normalizedPhone,
+      nomer_asosiy: normalizedNomerAsosiy,
+      problem_type: problemType,
       source: "facebook",
       source_detail: "Lead Ads",
       status: "yangi",
