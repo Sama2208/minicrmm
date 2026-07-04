@@ -46,8 +46,8 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
     rawCustomPhone || // oxirgi chora: noto'g'ri formatda bo'lsa ham saqla
     null;
 
-  // nomer_asosiy: Facebook profilidan avtomatik raqam (agar phone dan farq qilsa)
-  const nomerAsosiy = fbAutoPhone !== phone ? fbAutoPhone : null;
+  // nomer_asosiy: Facebook profilidan avtomatik to'ldirilgan raqam
+  const nomerAsosiy = fbAutoPhone;
 
   // Kasallik turi — leads.problem_type ga saqlanadi
   const problemType = get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") || null;
