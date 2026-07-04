@@ -9,21 +9,36 @@ import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : "",
+  }),
   component: LoginPage,
 });
 
+function safeNext(next: string): string | null {
+  // Faqat bir xil origin ichidagi absolyut yo'lni qabul qilamiz.
+  if (!next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
 function LoginPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const target = safeNext(next);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/lidlar" });
+      if (data.session) {
+        if (target) window.location.replace(target);
+        else navigate({ to: "/lidlar" });
+      }
     });
-  }, [navigate]);
+  }, [navigate, target]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +55,8 @@ function LoginPage() {
         }
         throw error;
       }
-      navigate({ to: "/lidlar" });
+      if (target) window.location.replace(target);
+      else navigate({ to: "/lidlar" });
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : "Xatolik yuz berdi";
       const isNetwork =
