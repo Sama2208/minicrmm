@@ -117,6 +117,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       {
         rel: "stylesheet",
         href: appCss,
@@ -172,7 +173,8 @@ function Shell() {
     pathname === "/auth" ||
     pathname === "/login" ||
     pathname === "/platforma" ||
-    pathname === "/privacy-policy"
+    pathname === "/privacy-policy" ||
+    pathname.startsWith("/.lovable/")
   ) {
     return <Outlet />;
   }

@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://pmvkqooykubneuiwzyqt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "shaxzod-crm-mcp",
+      "version": "0.1.0",
+      "title": "Shaxzod CRM MCP"
+    },
+    "tools": [
+      {
+        "name": "list_leads",
+        "title": "Lidlar ro'yxati",
+        "description": "Klinikadagi lidlarni oxirgi yaratilganidan boshlab qaytaradi. Ixtiyoriy 'status' filtri va limit (default 20, max 100).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "Lead status kodi, masalan 'yangi', 'konsultatsiyaga_yozildi'"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_leads",
+        "title": "Lidlarni qidirish",
+        "description": "Ism yoki telefon raqami bo'yicha lidlarni qidiradi (case-insensitive).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Ism yoki telefon fragmenti"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_lead",
+        "title": "Lid tafsilotlari",
+        "description": "Bitta lidning to'liq ma'lumotlarini id bo'yicha qaytaradi.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "lead_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Lid UUID"
+            }
+          },
+          "required": [
+            "lead_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_lead",
+        "title": "Yangi lid yaratish",
+        "description": "Yangi lidni CRM'ga qo'shadi. Telefon avtomatik +998 formatiga keltiriladi. Takror raqam bo'lsa mavjud lidga izoh qo'shiladi.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "full_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "phone": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "facebook",
+                "instagram",
+                "website",
+                "telegram",
+                "friends",
+                "boshqa"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "full_name"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_lead_status",
+        "title": "Lid statusini o'zgartirish",
+        "description": "Lidning statusini yangi qiymatga o'zgartiradi.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "lead_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "yangi",
+                "kotarmadi",
+                "qayta_qongiroq",
+                "konsultatsiyaga_yozildi",
+                "konsultatsiyada_boldi",
+                "yotishga_yozildi",
+                "sifatsiz_lid",
+                "qatnovchi",
+                "maslahat",
+                "qatnashga_yozildi",
+                "yotdi",
+                "qatnadi"
+              ]
+            }
+          },
+          "required": [
+            "lead_id",
+            "status"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_lead_note",
+        "title": "Lidga izoh qo'shish",
+        "description": "Mavjud lidning izohlar (notes) maydoniga yangi qatorni qo'shadi.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "lead_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "lead_id",
+            "note"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
