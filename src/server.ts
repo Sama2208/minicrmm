@@ -52,6 +52,10 @@ export default {
       const { handleFacebookOAuthCallback } = await import("./lib/facebook-oauth.server");
       return handleFacebookOAuthCallback(request);
     }
+    if (url.pathname === "/api/ingest-lead") {
+      const { handleWebLeadWebhook } = await import("./lib/web-lead-ingest.server");
+      return handleWebLeadWebhook(request);
+    }
 
     try {
       const handler = await getServerEntry();
