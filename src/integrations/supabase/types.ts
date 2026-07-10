@@ -62,6 +62,8 @@ export type Database = {
       clinics: {
         Row: {
           created_at: string
+          currency: string
+          deleted_at: string | null
           id: string
           is_active: boolean
           logo_url: string | null
@@ -72,9 +74,13 @@ export type Database = {
           subscription_current_period_end: string | null
           subscription_notes: string | null
           subscription_status: string
+          timezone: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
+          currency?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -85,9 +91,13 @@ export type Database = {
           subscription_current_period_end?: string | null
           subscription_notes?: string | null
           subscription_status?: string
+          timezone?: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
+          currency?: string
+          deleted_at?: string | null
           id?: string
           is_active?: boolean
           logo_url?: string | null
@@ -98,6 +108,8 @@ export type Database = {
           subscription_current_period_end?: string | null
           subscription_notes?: string | null
           subscription_status?: string
+          timezone?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -579,6 +591,236 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          id: string
+          clinic_id: string | null
+          actor_user_id: string | null
+          action: string
+          entity_type: string
+          entity_id: string | null
+          before_json: Json | null
+          after_json: Json | null
+          ip_address: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id?: string | null
+          actor_user_id?: string | null
+          action: string
+          entity_type: string
+          entity_id?: string | null
+          before_json?: Json | null
+          after_json?: Json | null
+          ip_address?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string | null
+          actor_user_id?: string | null
+          action?: string
+          entity_type?: string
+          entity_id?: string | null
+          before_json?: Json | null
+          after_json?: Json | null
+          ip_address?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      permissions: {
+        Row: {
+          id: string
+          code: string
+          module: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          module: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          module?: string
+          description?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          id: string
+          role_id: string
+          permission_id: string
+        }
+        Insert: {
+          id?: string
+          role_id: string
+          permission_id: string
+        }
+        Update: {
+          id?: string
+          role_id?: string
+          permission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          id: string
+          clinic_id: string | null
+          name: string
+          is_system: boolean
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id?: string | null
+          name: string
+          is_system?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string | null
+          name?: string
+          is_system?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roles_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles_v2: {
+        Row: {
+          id: string
+          clinic_id: string
+          user_id: string
+          role_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          user_id: string
+          role_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          user_id?: string
+          role_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_v2_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_v2_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_v2_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          id: string
+          clinic_id: string
+          email: string
+          full_name: string
+          avatar_url: string | null
+          phone: string | null
+          status: string
+          last_login_at: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id: string
+          clinic_id: string
+          email: string
+          full_name: string
+          avatar_url?: string | null
+          phone?: string | null
+          status?: string
+          last_login_at?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          email?: string
+          full_name?: string
+          avatar_url?: string | null
+          phone?: string | null
+          status?: string
+          last_login_at?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           clinic_id: string
@@ -646,6 +888,8 @@ export type Database = {
     Functions: {
       current_clinic_id: { Args: never; Returns: string }
       current_operator_id: { Args: never; Returns: string }
+      current_user_is_admin: { Args: never; Returns: boolean }
+      has_permission: { Args: { p_code: string }; Returns: boolean }
       get_next_operator:
         | { Args: never; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string }
