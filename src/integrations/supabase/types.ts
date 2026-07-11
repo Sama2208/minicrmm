@@ -1095,6 +1095,315 @@ export type Database = {
           },
         ]
       }
+      services: {
+        Row: {
+          id: string
+          clinic_id: string
+          name: string
+          code: string | null
+          category: string
+          price: number
+          duration_min: number | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          name: string
+          code?: string | null
+          category?: string
+          price?: number
+          duration_min?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          name?: string
+          code?: string | null
+          category?: string
+          price?: number
+          duration_min?: number | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          id: string
+          clinic_id: string
+          invoice_number: string
+          patient_id: string
+          doctor_id: string | null
+          appointment_id: string | null
+          status: string
+          subtotal: number
+          discount: number
+          tax: number
+          total: number
+          paid_amount: number
+          notes: string | null
+          due_date: string | null
+          issued_at: string
+          created_by: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          invoice_number: string
+          patient_id: string
+          doctor_id?: string | null
+          appointment_id?: string | null
+          status?: string
+          subtotal?: number
+          discount?: number
+          tax?: number
+          total?: number
+          paid_amount?: number
+          notes?: string | null
+          due_date?: string | null
+          issued_at?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          invoice_number?: string
+          patient_id?: string
+          doctor_id?: string | null
+          appointment_id?: string | null
+          status?: string
+          subtotal?: number
+          discount?: number
+          tax?: number
+          total?: number
+          paid_amount?: number
+          notes?: string | null
+          due_date?: string | null
+          issued_at?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_items: {
+        Row: {
+          id: string
+          invoice_id: string
+          service_id: string | null
+          description: string
+          quantity: number
+          unit_price: number
+          discount: number
+          total: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          invoice_id: string
+          service_id?: string | null
+          description: string
+          quantity?: number
+          unit_price?: number
+          discount?: number
+          total?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          invoice_id?: string
+          service_id?: string | null
+          description?: string
+          quantity?: number
+          unit_price?: number
+          discount?: number
+          total?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          id: string
+          clinic_id: string
+          invoice_id: string
+          patient_id: string
+          amount: number
+          payment_method: string
+          reference: string | null
+          notes: string | null
+          received_by: string | null
+          paid_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          invoice_id: string
+          patient_id: string
+          amount: number
+          payment_method?: string
+          reference?: string | null
+          notes?: string | null
+          received_by?: string | null
+          paid_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          invoice_id?: string
+          patient_id?: string
+          amount?: number
+          payment_method?: string
+          reference?: string | null
+          notes?: string | null
+          received_by?: string | null
+          paid_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          id: string
+          clinic_id: string
+          category: string
+          description: string
+          amount: number
+          expense_date: string
+          vendor: string | null
+          receipt_url: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          category?: string
+          description: string
+          amount: number
+          expense_date?: string
+          vendor?: string | null
+          receipt_url?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          category?: string
+          description?: string
+          amount?: number
+          expense_date?: string
+          vendor?: string | null
+          receipt_url?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           id: string
@@ -1411,6 +1720,7 @@ export type Database = {
         Returns: string
       }
       do_check_in: { Args: { p_appointment_id: string }; Returns: undefined }
+      generate_invoice_number: { Args: { p_clinic_id: string }; Returns: string }
       get_next_operator:
         | { Args: never; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string }

@@ -18,6 +18,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedShifokorlarRouteImport } from './routes/_authenticated/shifokorlar'
+import { Route as AuthenticatedMoliyaRouteImport } from './routes/_authenticated/moliya'
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
@@ -74,6 +75,11 @@ const AuthenticatedShifokorlarRoute =
     path: '/shifokorlar',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMoliyaRoute = AuthenticatedMoliyaRouteImport.update({
+  id: '/moliya',
+  path: '/moliya',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMeningLidlarimRoute =
   AuthenticatedMeningLidlarimRouteImport.update({
     id: '/mening-lidlarim',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
+  '/moliya': typeof AuthenticatedMoliyaRoute
   '/shifokorlar': typeof AuthenticatedShifokorlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
+  '/moliya': typeof AuthenticatedMoliyaRoute
   '/shifokorlar': typeof AuthenticatedShifokorlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
+  '/_authenticated/moliya': typeof AuthenticatedMoliyaRoute
   '/_authenticated/shifokorlar': typeof AuthenticatedShifokorlarRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/kalendar'
     | '/lidlar'
     | '/mening-lidlarim'
+    | '/moliya'
     | '/shifokorlar'
     | '/sozlamalar'
     | '/.lovable/oauth/consent'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/kalendar'
     | '/lidlar'
     | '/mening-lidlarim'
+    | '/moliya'
     | '/shifokorlar'
     | '/sozlamalar'
     | '/.lovable/oauth/consent'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kalendar'
     | '/_authenticated/lidlar'
     | '/_authenticated/mening-lidlarim'
+    | '/_authenticated/moliya'
     | '/_authenticated/shifokorlar'
     | '/_authenticated/sozlamalar'
     | '/.lovable/oauth/consent'
@@ -335,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShifokorlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/moliya': {
+      id: '/_authenticated/moliya'
+      path: '/moliya'
+      fullPath: '/moliya'
+      preLoaderRoute: typeof AuthenticatedMoliyaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mening-lidlarim': {
       id: '/_authenticated/mening-lidlarim'
       path: '/mening-lidlarim'
@@ -415,6 +434,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
   AuthenticatedMeningLidlarimRoute: typeof AuthenticatedMeningLidlarimRoute
+  AuthenticatedMoliyaRoute: typeof AuthenticatedMoliyaRoute
   AuthenticatedShifokorlarRoute: typeof AuthenticatedShifokorlarRoute
   AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
 }
@@ -426,6 +446,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedMeningLidlarimRoute: AuthenticatedMeningLidlarimRoute,
+  AuthenticatedMoliyaRoute: AuthenticatedMoliyaRoute,
   AuthenticatedShifokorlarRoute: AuthenticatedShifokorlarRoute,
   AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,
 }
