@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Users, BarChart3, Settings, LogOut, CalendarDays } from "lucide-react";
+import { Users, BarChart3, Settings, LogOut, CalendarDays, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useClinicStatus, clinicInitial, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
@@ -20,6 +20,7 @@ const ITEMS = [
   { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
   { title: "Qabul jadvali", url: "/kalendar", icon: CalendarDays },
   { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
+  { title: "Foydalanuvchilar", url: "/foydalanuvchilar", icon: UserCog },
   { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
 ];
 
