@@ -21,8 +21,10 @@ import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authe
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
+import { Route as AuthenticatedBemorlarRouteImport } from './routes/_authenticated/bemorlar'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedBemorlarIdRouteImport } from './routes/_authenticated/bemorlar.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
@@ -86,6 +88,11 @@ const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   path: '/hisobotlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBemorlarRoute = AuthenticatedBemorlarRouteImport.update({
+  id: '/bemorlar',
+  path: '/bemorlar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -98,6 +105,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedBemorlarIdRoute = AuthenticatedBemorlarIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedBemorlarRoute,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -119,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -126,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/bemorlar/$id': typeof AuthenticatedBemorlarIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -136,6 +150,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -143,6 +158,7 @@ export interface FileRoutesByTo {
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/bemorlar/$id': typeof AuthenticatedBemorlarIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -155,6 +171,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
@@ -162,6 +179,7 @@ export interface FileRoutesById {
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/bemorlar/$id': typeof AuthenticatedBemorlarIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -174,6 +192,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/bemorlar'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -181,6 +200,7 @@ export interface FileRouteTypes {
     | '/sozlamalar'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/bemorlar/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -191,6 +211,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/bemorlar'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -198,6 +219,7 @@ export interface FileRouteTypes {
     | '/sozlamalar'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/bemorlar/$id'
   id:
     | '__root__'
     | '/'
@@ -209,6 +231,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/bemorlar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/kalendar'
     | '/_authenticated/lidlar'
@@ -216,6 +239,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sozlamalar'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/bemorlar/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -318,6 +342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHisobotlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bemorlar': {
+      id: '/_authenticated/bemorlar'
+      path: '/bemorlar'
+      fullPath: '/bemorlar'
+      preLoaderRoute: typeof AuthenticatedBemorlarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -331,6 +362,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/bemorlar/$id': {
+      id: '/_authenticated/bemorlar/$id'
+      path: '/$id'
+      fullPath: '/bemorlar/$id'
+      preLoaderRoute: typeof AuthenticatedBemorlarIdRouteImport
+      parentRoute: typeof AuthenticatedBemorlarRoute
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -349,7 +387,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedBemorlarRouteChildren {
+  AuthenticatedBemorlarIdRoute: typeof AuthenticatedBemorlarIdRoute
+}
+
+const AuthenticatedBemorlarRouteChildren: AuthenticatedBemorlarRouteChildren = {
+  AuthenticatedBemorlarIdRoute: AuthenticatedBemorlarIdRoute,
+}
+
+const AuthenticatedBemorlarRouteWithChildren =
+  AuthenticatedBemorlarRoute._addFileChildren(
+    AuthenticatedBemorlarRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBemorlarRoute: typeof AuthenticatedBemorlarRouteWithChildren
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
@@ -358,6 +410,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBemorlarRoute: AuthenticatedBemorlarRouteWithChildren,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
