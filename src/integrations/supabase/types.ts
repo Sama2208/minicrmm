@@ -410,6 +410,7 @@ export type Database = {
           next_followup_date: string | null
           nomer_asosiy: string | null
           notes: string | null
+          patient_id: string | null
           phone: string | null
           problem_type: string | null
           region: string | null
@@ -432,6 +433,7 @@ export type Database = {
           next_followup_date?: string | null
           nomer_asosiy?: string | null
           notes?: string | null
+          patient_id?: string | null
           phone?: string | null
           problem_type?: string | null
           region?: string | null
@@ -454,6 +456,7 @@ export type Database = {
           next_followup_date?: string | null
           nomer_asosiy?: string | null
           notes?: string | null
+          patient_id?: string | null
           phone?: string | null
           problem_type?: string | null
           region?: string | null
@@ -590,6 +593,316 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      patients: {
+        Row: {
+          id: string
+          clinic_id: string
+          mrn: string
+          full_name: string
+          birth_date: string | null
+          gender: string | null
+          phone: string | null
+          phone2: string | null
+          email: string | null
+          address: string | null
+          region: string | null
+          blood_type: string | null
+          allergies: string | null
+          notes: string | null
+          source: string | null
+          lead_id: string | null
+          status: string
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          mrn: string
+          full_name: string
+          birth_date?: string | null
+          gender?: string | null
+          phone?: string | null
+          phone2?: string | null
+          email?: string | null
+          address?: string | null
+          region?: string | null
+          blood_type?: string | null
+          allergies?: string | null
+          notes?: string | null
+          source?: string | null
+          lead_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          mrn?: string
+          full_name?: string
+          birth_date?: string | null
+          gender?: string | null
+          phone?: string | null
+          phone2?: string | null
+          email?: string | null
+          address?: string | null
+          region?: string | null
+          blood_type?: string | null
+          allergies?: string | null
+          notes?: string | null
+          source?: string | null
+          lead_id?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string | null
+          room_id: string | null
+          scheduled_at: string
+          duration_min: number
+          end_at: string
+          status: string
+          visit_type: string
+          reason: string | null
+          notes: string | null
+          source: string | null
+          lead_id: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          doctor_id?: string | null
+          room_id?: string | null
+          scheduled_at: string
+          duration_min?: number
+          status?: string
+          visit_type?: string
+          reason?: string | null
+          notes?: string | null
+          source?: string | null
+          lead_id?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          doctor_id?: string | null
+          room_id?: string | null
+          scheduled_at?: string
+          duration_min?: number
+          status?: string
+          visit_type?: string
+          reason?: string | null
+          notes?: string | null
+          source?: string | null
+          lead_id?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          id: string
+          clinic_id: string
+          name: string
+          type: string
+          floor: string | null
+          capacity: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          name: string
+          type?: string
+          floor?: string | null
+          capacity?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          name?: string
+          type?: string
+          floor?: string | null
+          capacity?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      check_ins: {
+        Row: {
+          id: string
+          clinic_id: string
+          appointment_id: string | null
+          patient_id: string
+          checked_in_at: string
+          checked_in_by: string | null
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          appointment_id?: string | null
+          patient_id: string
+          checked_in_at?: string
+          checked_in_by?: string | null
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          appointment_id?: string | null
+          patient_id?: string
+          checked_in_at?: string
+          checked_in_by?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "check_ins_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "check_ins_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string | null
+          priority: number
+          reason: string | null
+          status: string
+          added_at: string
+          called_at: string | null
+          seen_at: string | null
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          doctor_id?: string | null
+          priority?: number
+          reason?: string | null
+          status?: string
+          added_at?: string
+          called_at?: string | null
+          seen_at?: string | null
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          doctor_id?: string | null
+          priority?: number
+          reason?: string | null
+          status?: string
+          added_at?: string
+          called_at?: string | null
+          seen_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_log: {
         Row: {
@@ -890,6 +1203,23 @@ export type Database = {
       current_operator_id: { Args: never; Returns: string }
       current_user_is_admin: { Args: never; Returns: boolean }
       has_permission: { Args: { p_code: string }; Returns: boolean }
+      generate_mrn: { Args: { p_clinic_id: string }; Returns: string }
+      book_appointment: {
+        Args: {
+          p_clinic_id: string
+          p_patient_id: string
+          p_doctor_id?: string
+          p_room_id?: string
+          p_scheduled_at?: string
+          p_duration_min?: number
+          p_visit_type?: string
+          p_reason?: string
+          p_source?: string
+          p_lead_id?: string
+        }
+        Returns: string
+      }
+      do_check_in: { Args: { p_appointment_id: string }; Returns: undefined }
       get_next_operator:
         | { Args: never; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string }
@@ -941,6 +1271,10 @@ export type Database = {
         | "yotdi"
         | "qatnadi"
         | "new"
+        | "no_answer"
+        | "unqualified"
+        | "converted"
+        | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1092,6 +1426,10 @@ export const Constants = {
         "yotdi",
         "qatnadi",
         "new",
+        "no_answer",
+        "unqualified",
+        "converted",
+        "lost",
       ],
     },
   },

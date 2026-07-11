@@ -22,6 +22,7 @@ import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_authenticated/foydalanuvchilar'
+import { Route as AuthenticatedBemorlarRouteImport } from './routes/_authenticated/bemorlar'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -93,6 +94,11 @@ const AuthenticatedFoydalanuvchilarRoute =
     path: '/foydalanuvchilar',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBemorlarRoute = AuthenticatedBemorlarRouteImport.update({
+  id: '/bemorlar',
+  path: '/bemorlar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRoute
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/bemorlar': typeof AuthenticatedBemorlarRoute
   '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/bemorlar'
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/kalendar'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/bemorlar'
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/kalendar'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/bemorlar'
     | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/kalendar'
@@ -338,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFoydalanuvchilarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bemorlar': {
+      id: '/_authenticated/bemorlar'
+      path: '/bemorlar'
+      fullPath: '/bemorlar'
+      preLoaderRoute: typeof AuthenticatedBemorlarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -370,6 +389,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBemorlarRoute: typeof AuthenticatedBemorlarRoute
   AuthenticatedFoydalanuvchilarRoute: typeof AuthenticatedFoydalanuvchilarRoute
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
@@ -379,6 +399,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBemorlarRoute: AuthenticatedBemorlarRoute,
   AuthenticatedFoydalanuvchilarRoute: AuthenticatedFoydalanuvchilarRoute,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
