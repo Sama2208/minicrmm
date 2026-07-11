@@ -21,6 +21,7 @@ import { Route as AuthenticatedShifokorlarRouteImport } from './routes/_authenti
 import { Route as AuthenticatedMoliyaRouteImport } from './routes/_authenticated/moliya'
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
+import { Route as AuthenticatedKlinikaRouteImport } from './routes/_authenticated/klinika'
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 import { Route as AuthenticatedFoydalanuvchilarRouteImport } from './routes/_authenticated/foydalanuvchilar'
@@ -91,6 +92,11 @@ const AuthenticatedLidlarRoute = AuthenticatedLidlarRouteImport.update({
   path: '/lidlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedKlinikaRoute = AuthenticatedKlinikaRouteImport.update({
+  id: '/klinika',
+  path: '/klinika',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedKalendarRoute = AuthenticatedKalendarRouteImport.update({
   id: '/kalendar',
   path: '/kalendar',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
+  '/klinika': typeof AuthenticatedKlinikaRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/moliya': typeof AuthenticatedMoliyaRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
+  '/klinika': typeof AuthenticatedKlinikaRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/moliya': typeof AuthenticatedMoliyaRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/_authenticated/foydalanuvchilar': typeof AuthenticatedFoydalanuvchilarRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
+  '/_authenticated/klinika': typeof AuthenticatedKlinikaRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/mening-lidlarim': typeof AuthenticatedMeningLidlarimRoute
   '/_authenticated/moliya': typeof AuthenticatedMoliyaRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/kalendar'
+    | '/klinika'
     | '/lidlar'
     | '/mening-lidlarim'
     | '/moliya'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/foydalanuvchilar'
     | '/hisobotlar'
     | '/kalendar'
+    | '/klinika'
     | '/lidlar'
     | '/mening-lidlarim'
     | '/moliya'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/_authenticated/foydalanuvchilar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/kalendar'
+    | '/_authenticated/klinika'
     | '/_authenticated/lidlar'
     | '/_authenticated/mening-lidlarim'
     | '/_authenticated/moliya'
@@ -368,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLidlarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/klinika': {
+      id: '/_authenticated/klinika'
+      path: '/klinika'
+      fullPath: '/klinika'
+      preLoaderRoute: typeof AuthenticatedKlinikaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/kalendar': {
       id: '/_authenticated/kalendar'
       path: '/kalendar'
@@ -432,6 +451,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFoydalanuvchilarRoute: typeof AuthenticatedFoydalanuvchilarRoute
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
+  AuthenticatedKlinikaRoute: typeof AuthenticatedKlinikaRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
   AuthenticatedMeningLidlarimRoute: typeof AuthenticatedMeningLidlarimRoute
   AuthenticatedMoliyaRoute: typeof AuthenticatedMoliyaRoute
@@ -444,6 +464,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFoydalanuvchilarRoute: AuthenticatedFoydalanuvchilarRoute,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
+  AuthenticatedKlinikaRoute: AuthenticatedKlinikaRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedMeningLidlarimRoute: AuthenticatedMeningLidlarimRoute,
   AuthenticatedMoliyaRoute: AuthenticatedMoliyaRoute,

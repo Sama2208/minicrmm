@@ -1404,6 +1404,402 @@ export type Database = {
           },
         ]
       }
+      lab_tests: {
+        Row: {
+          id: string
+          clinic_id: string
+          name: string
+          code: string | null
+          category: string
+          price: number
+          turnaround_hours: number | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          name: string
+          code?: string | null
+          category?: string
+          price?: number
+          turnaround_hours?: number | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          name?: string
+          code?: string | null
+          category?: string
+          price?: number
+          turnaround_hours?: number | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_tests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_orders: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string | null
+          appointment_id: string | null
+          order_number: string
+          status: string
+          priority: string
+          notes: string | null
+          ordered_at: string
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          doctor_id?: string | null
+          appointment_id?: string | null
+          order_number: string
+          status?: string
+          priority?: string
+          notes?: string | null
+          ordered_at?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          doctor_id?: string | null
+          appointment_id?: string | null
+          order_number?: string
+          status?: string
+          priority?: string
+          notes?: string | null
+          ordered_at?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_results: {
+        Row: {
+          id: string
+          order_id: string
+          test_id: string | null
+          test_name: string
+          result_value: string | null
+          unit: string | null
+          ref_range: string | null
+          is_abnormal: boolean | null
+          notes: string | null
+          performed_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          test_id?: string | null
+          test_name: string
+          result_value?: string | null
+          unit?: string | null
+          ref_range?: string | null
+          is_abnormal?: boolean | null
+          notes?: string | null
+          performed_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          test_id?: string | null
+          test_name?: string
+          result_value?: string | null
+          unit?: string | null
+          ref_range?: string | null
+          is_abnormal?: boolean | null
+          notes?: string | null
+          performed_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_results_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "lab_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      radiology_orders: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string | null
+          order_number: string
+          modality: string
+          body_part: string
+          status: string
+          priority: string
+          findings: string | null
+          impression: string | null
+          performed_by: string | null
+          reported_by: string | null
+          notes: string | null
+          ordered_at: string
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          doctor_id?: string | null
+          order_number: string
+          modality: string
+          body_part: string
+          status?: string
+          priority?: string
+          findings?: string | null
+          impression?: string | null
+          performed_by?: string | null
+          reported_by?: string | null
+          notes?: string | null
+          ordered_at?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          doctor_id?: string | null
+          order_number?: string
+          modality?: string
+          body_part?: string
+          status?: string
+          priority?: string
+          findings?: string | null
+          impression?: string | null
+          performed_by?: string | null
+          reported_by?: string | null
+          notes?: string | null
+          ordered_at?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radiology_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "radiology_orders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medications: {
+        Row: {
+          id: string
+          clinic_id: string
+          name: string
+          generic_name: string | null
+          form: string
+          strength: string | null
+          unit: string | null
+          price: number
+          stock_qty: number
+          min_stock: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          name: string
+          generic_name?: string | null
+          form?: string
+          strength?: string | null
+          unit?: string | null
+          price?: number
+          stock_qty?: number
+          min_stock?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          name?: string
+          generic_name?: string | null
+          form?: string
+          strength?: string | null
+          unit?: string | null
+          price?: number
+          stock_qty?: number
+          min_stock?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medications_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescriptions: {
+        Row: {
+          id: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string
+          appointment_id: string | null
+          status: string
+          notes: string | null
+          prescribed_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          clinic_id: string
+          patient_id: string
+          doctor_id: string
+          appointment_id?: string | null
+          status?: string
+          notes?: string | null
+          prescribed_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          clinic_id?: string
+          patient_id?: string
+          doctor_id?: string
+          appointment_id?: string | null
+          status?: string
+          notes?: string | null
+          prescribed_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescription_items: {
+        Row: {
+          id: string
+          prescription_id: string
+          medication_id: string | null
+          medication_name: string
+          dosage: string
+          frequency: string
+          duration: string | null
+          quantity: number
+          instructions: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          prescription_id: string
+          medication_id?: string | null
+          medication_name: string
+          dosage: string
+          frequency: string
+          duration?: string | null
+          quantity?: number
+          instructions?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          prescription_id?: string
+          medication_id?: string | null
+          medication_name?: string
+          dosage?: string
+          frequency?: string
+          duration?: string | null
+          quantity?: number
+          instructions?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescription_items_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           id: string
@@ -1721,6 +2117,8 @@ export type Database = {
       }
       do_check_in: { Args: { p_appointment_id: string }; Returns: undefined }
       generate_invoice_number: { Args: { p_clinic_id: string }; Returns: string }
+      generate_lab_order_number: { Args: { p_clinic_id: string }; Returns: string }
+      generate_rad_order_number: { Args: { p_clinic_id: string }; Returns: string }
       get_next_operator:
         | { Args: never; Returns: string }
         | { Args: { p_clinic_id: string }; Returns: string }
