@@ -367,9 +367,109 @@ function HisobotlarPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AttributionSection />
     </div>
   );
 }
+
+type AttributionRow = {
+  meta_campaign_id: string | null;
+  meta_adset_id: string | null;
+  meta_ad_id: string | null;
+  total_leads: number | null;
+  qualified_leads: number | null;
+  converted_leads: number | null;
+  invalid_leads: number | null;
+};
+
+function AttributionSection() {
+  const q = useQuery({
+    queryKey: ["v_campaign_attribution"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_campaign_attribution" as never)
+        .select(
+          "meta_campaign_id, meta_adset_id, meta_ad_id, total_leads, qualified_leads, converted_leads, invalid_leads",
+        )
+        .order("total_leads", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as AttributionRow[];
+    },
+  });
+
+  const rows = q.data ?? [];
+  const sum = (k: keyof AttributionRow) =>
+    rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
+  const totalLeads = sum("total_leads");
+  const qualified = sum("qualified_leads");
+  const converted = sum("converted_leads");
+  const invalid = sum("invalid_leads");
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-base font-semibold text-slate-700">Reklama Attribution</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Jami lidlar" value={totalLeads} color="text-blue-600" />
+        <KpiCard title="Sifatli lidlar" value={qualified} color="text-emerald-600" />
+        <KpiCard title="Konvertatsiya" value={converted} color="text-violet-600" />
+        <KpiCard title="Sifatsiz" value={invalid} color="text-red-600" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Kampaniyalar bo'yicha</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {rows.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-8 text-center">
+              Hali reklama ma'lumotlari yo'q
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Campaign ID</TableHead>
+                  <TableHead>Adset ID</TableHead>
+                  <TableHead>Ad ID</TableHead>
+                  <TableHead className="text-right">Jami</TableHead>
+                  <TableHead className="text-right">Sifatli</TableHead>
+                  <TableHead className="text-right">Konvertatsiya</TableHead>
+                  <TableHead className="text-right">Sifatsiz</TableHead>
+                  <TableHead className="text-right">CVR%</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r, i) => {
+                  const total = Number(r.total_leads) || 0;
+                  const conv = Number(r.converted_leads) || 0;
+                  const cvr = total ? (conv / total) * 100 : 0;
+                  return (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium">
+                        {r.meta_campaign_id ?? "Noaniq"}
+                      </TableCell>
+                      <TableCell>{r.meta_adset_id ?? "—"}</TableCell>
+                      <TableCell>{r.meta_ad_id ?? "—"}</TableCell>
+                      <TableCell className="text-right">{total}</TableCell>
+                      <TableCell className="text-right">{r.qualified_leads ?? 0}</TableCell>
+                      <TableCell className="text-right">{conv}</TableCell>
+                      <TableCell className="text-right">{r.invalid_leads ?? 0}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {cvr.toFixed(1)}%
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
 function KpiCard({
   title,
