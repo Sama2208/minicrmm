@@ -1,1 +1,3 @@
 project_id = "pmvkqooykubneuiwzyqt"
+[functions.capi-event-sender]
+verify_jwt = false
