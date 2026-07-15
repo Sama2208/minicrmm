@@ -20,6 +20,7 @@ import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
+import { Route as AuthenticatedAttributionRouteImport } from './routes/_authenticated/attribution'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 import { Route as AuthenticatedBemorlarRouteImport } from './routes/_authenticated/bemorlar'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -83,6 +84,11 @@ const AuthenticatedKalendarRoute = AuthenticatedKalendarRouteImport.update({
   path: '/kalendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAttributionRoute = AuthenticatedAttributionRouteImport.update({
+  id: '/attribution',
+  path: '/attribution',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   id: '/hisobotlar',
   path: '/hisobotlar',
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
+  '/attribution': typeof AuthenticatedAttributionRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
+  '/attribution': typeof AuthenticatedAttributionRoute
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
+  '/_authenticated/attribution': typeof AuthenticatedAttributionRoute
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
@@ -193,6 +202,8 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/bemorlar'
+    | '/attribution'
+    | '/attribution'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -212,6 +223,8 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/bemorlar'
+    | '/attribution'
+    | '/attribution'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -335,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/attribution': {
+      id: '/_authenticated/attribution'
+      path: '/attribution'
+      fullPath: '/attribution'
+      preLoaderRoute: typeof AuthenticatedAttributionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hisobotlar': {
       id: '/_authenticated/hisobotlar'
       path: '/hisobotlar'
@@ -402,6 +422,7 @@ const AuthenticatedBemorlarRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBemorlarRoute: typeof AuthenticatedBemorlarRouteWithChildren
+  AuthenticatedAttributionRoute: typeof AuthenticatedAttributionRoute
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
@@ -411,6 +432,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBemorlarRoute: AuthenticatedBemorlarRouteWithChildren,
+  AuthenticatedAttributionRoute: AuthenticatedAttributionRoute,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
