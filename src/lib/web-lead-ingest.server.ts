@@ -35,6 +35,12 @@ export async function handleWebLeadWebhook(request: Request): Promise<Response> 
   const problemType = (body.problem_type || body.kasallik || "").trim() || null;
   const canVisit = (body.can_visit_clinic || body.keladi || "").trim() || null;
   const sourceDetail = (body.source_detail || "Landing Page").trim();
+  const fbclid = (body.fbclid || "").trim() || null;
+  const fbc = (body.fbc || "").trim() || null;
+  const fbp = (body.fbp || "").trim() || null;
+  const metaCampaignId = (body.meta_campaign_id || "").trim() || null;
+  const metaAdsetId = (body.meta_adset_id || "").trim() || null;
+  const metaAdId = (body.meta_ad_id || "").trim() || null;
 
   if (!fullName || !rawPhone) {
     return new Response(JSON.stringify({ error: "full_name va phone majburiy" }), {
@@ -71,6 +77,12 @@ export async function handleWebLeadWebhook(request: Request): Promise<Response> 
       source_detail: sourceDetail,
       status: "yangi",
       clinic_id: CLINIC_ID,
+      fbclid,
+      fbc,
+      fbp,
+      meta_campaign_id: metaCampaignId,
+      meta_adset_id: metaAdsetId,
+      meta_ad_id: metaAdId,
     })
     .select("id")
     .maybeSingle();
