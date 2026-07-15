@@ -91,7 +91,6 @@ function HisobotlarPage() {
     });
   }, [leadsQ.data, dateFrom, dateTo]);
 
-  // Callback bannerlar — faqat operator tanlanganda
   const todayCallbacks = useMemo(() => {
     if (operatorFilter === "all") return [];
     const today = new Date().toISOString().split("T")[0];
@@ -129,11 +128,7 @@ function HisobotlarPage() {
   const sourceData = SOURCE_LIST.map((s) => {
     const list = leads.filter((l) => l.source === s);
     const conv = list.filter((l) => l.status === CONVERSION_STATUS).length;
-    return {
-      source: SOURCE_LABEL[s],
-      total: list.length,
-      converted: conv,
-    };
+    return { source: SOURCE_LABEL[s], total: list.length, converted: conv };
   });
 
   const operatorData = (opsQ.data ?? []).map((o) => {
@@ -169,21 +164,11 @@ function HisobotlarPage() {
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <Label className="text-xs">Boshlanish sanasi</Label>
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="w-[160px] mt-1"
-          />
+          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px] mt-1" />
         </div>
         <div>
           <Label className="text-xs">Tugash sanasi</Label>
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="w-[160px] mt-1"
-          />
+          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px] mt-1" />
         </div>
         <div>
           <Label className="text-xs">Operator</Label>
@@ -194,26 +179,19 @@ function HisobotlarPage() {
             <SelectContent>
               <SelectItem value="all">Barcha operatorlar</SelectItem>
               {(opsQ.data ?? []).map((o) => (
-                <SelectItem key={o.id} value={o.id}>
-                  {o.full_name}
-                </SelectItem>
+                <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Callback bannerlar — faqat operator tanlanganda */}
       {overdueCallbacks.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
           <Phone className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
           <div>
-            <div className="text-sm font-semibold text-red-700">
-              O'tib ketgan qo'ng'iroqlar: {overdueCallbacks.length} ta
-            </div>
-            <div className="text-xs text-red-500 mt-0.5 line-clamp-1">
-              {overdueCallbacks.map((l) => l.full_name).join(", ")}
-            </div>
+            <div className="text-sm font-semibold text-red-700">O'tib ketgan qo'ng'iroqlar: {overdueCallbacks.length} ta</div>
+            <div className="text-xs text-red-500 mt-0.5 line-clamp-1">{overdueCallbacks.map((l) => l.full_name).join(", ")}</div>
           </div>
         </div>
       )}
@@ -221,12 +199,8 @@ function HisobotlarPage() {
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-start gap-3">
           <Phone className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
           <div>
-            <div className="text-sm font-semibold text-amber-700">
-              Bugun qayta qo'ng'iroq: {todayCallbacks.length} ta
-            </div>
-            <div className="text-xs text-amber-600 mt-0.5 line-clamp-1">
-              {todayCallbacks.map((l) => l.full_name).join(", ")}
-            </div>
+            <div className="text-sm font-semibold text-amber-700">Bugun qayta qo'ng'iroq: {todayCallbacks.length} ta</div>
+            <div className="text-xs text-amber-600 mt-0.5 line-clamp-1">{todayCallbacks.map((l) => l.full_name).join(", ")}</div>
           </div>
         </div>
       )}
@@ -239,7 +213,7 @@ function HisobotlarPage() {
         <KpiCard title="Faol pipeline" value={activePipeline} color="text-amber-600" />
       </div>
 
-      {/* Kanban ustunlari bo'yicha */}
+      {/* Kanban statuslar */}
       <div>
         <h2 className="text-base font-semibold text-slate-700 mb-3">Kanban ustunlari bo'yicha</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -259,9 +233,7 @@ function HisobotlarPage() {
 
       {/* Funnel */}
       <Card>
-        <CardHeader>
-          <CardTitle>Voronka — statuslar bo'yicha</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Voronka — statuslar bo'yicha</CardTitle></CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 320 }}>
             <ResponsiveContainer>
@@ -279,9 +251,7 @@ function HisobotlarPage() {
 
       {/* Source */}
       <Card>
-        <CardHeader>
-          <CardTitle>Manba bo'yicha lidlar</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Manba bo'yicha lidlar</CardTitle></CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 280 }}>
             <ResponsiveContainer>
@@ -301,9 +271,7 @@ function HisobotlarPage() {
 
       {/* Operators */}
       <Card>
-        <CardHeader>
-          <CardTitle>Operatorlar samaradorligi</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Operatorlar samaradorligi</CardTitle></CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -316,16 +284,11 @@ function HisobotlarPage() {
             </TableHeader>
             <TableBody>
               {operatorData.map((o) => (
-                <TableRow
-                  key={o.name}
-                  className={o.rate === maxRate && maxRate > 0 ? "bg-emerald-50" : ""}
-                >
+                <TableRow key={o.name} className={o.rate === maxRate && maxRate > 0 ? "bg-emerald-50" : ""}>
                   <TableCell className="font-medium">
                     {o.name}
                     {o.rate === maxRate && maxRate > 0 && (
-                      <span className="ml-2 text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded">
-                        Top
-                      </span>
+                      <span className="ml-2 text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded">Top</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">{o.total}</TableCell>
@@ -340,9 +303,7 @@ function HisobotlarPage() {
 
       {/* Daily trend */}
       <Card>
-        <CardHeader>
-          <CardTitle>Kunlik trend — manba bo'yicha</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Kunlik trend — manba bo'yicha</CardTitle></CardHeader>
         <CardContent>
           <div style={{ width: "100%", height: 300 }}>
             <ResponsiveContainer>
@@ -353,14 +314,7 @@ function HisobotlarPage() {
                 <Tooltip />
                 <Legend />
                 {SOURCE_LIST.map((s) => (
-                  <Line
-                    key={s}
-                    type="monotone"
-                    dataKey={s}
-                    name={SOURCE_LABEL[s]}
-                    stroke={SOURCE_COLOR[s]}
-                    strokeWidth={2}
-                  />
+                  <Line key={s} type="monotone" dataKey={s} name={SOURCE_LABEL[s]} stroke={SOURCE_COLOR[s]} strokeWidth={2} />
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -368,19 +322,22 @@ function HisobotlarPage() {
         </CardContent>
       </Card>
 
+      {/* Attribution Dashboard */}
       <AttributionSection />
     </div>
   );
 }
 
+// ─── Attribution Section ───────────────────────────────────────────────────────
+
 type AttributionRow = {
-  meta_campaign_id: string | null;
-  meta_adset_id: string | null;
-  meta_ad_id: string | null;
-  total_leads: number | null;
-  qualified_leads: number | null;
-  converted_leads: number | null;
-  invalid_leads: number | null;
+  campaign_id: string | null;
+  jami_lidlar: number;
+  sifatli_lid: number;
+  won: number;
+  won_foizi: string;
+  yoqotilgan: number;
+  sifat_foizi: string;
 };
 
 function AttributionSection() {
@@ -389,78 +346,70 @@ function AttributionSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("v_campaign_attribution" as never)
-        .select(
-          "meta_campaign_id, meta_adset_id, meta_ad_id, total_leads, qualified_leads, converted_leads, invalid_leads",
-        )
-        .order("total_leads", { ascending: false });
+        .select("*")
+        .order("jami_lidlar", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as AttributionRow[];
     },
   });
 
   const rows = q.data ?? [];
-  const sum = (k: keyof AttributionRow) =>
-    rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
-  const totalLeads = sum("total_leads");
-  const qualified = sum("qualified_leads");
-  const converted = sum("converted_leads");
-  const invalid = sum("invalid_leads");
+  const totalLeads = rows.reduce((a, r) => a + (r.jami_lidlar || 0), 0);
+  const qualified  = rows.reduce((a, r) => a + (r.sifatli_lid || 0), 0);
+  const won        = rows.reduce((a, r) => a + (r.won || 0), 0);
+  const lost       = rows.reduce((a, r) => a + (r.yoqotilgan || 0), 0);
+  const cvrTotal   = totalLeads ? ((won / totalLeads) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-slate-700">Reklama Attribution</h2>
+      <h2 className="text-base font-semibold text-slate-700">📊 Reklama Attribution (Facebook Ads)</h2>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Jami lidlar" value={totalLeads} color="text-blue-600" />
+        <KpiCard title="Reklamadan jami lid" value={totalLeads} color="text-blue-600" />
         <KpiCard title="Sifatli lidlar" value={qualified} color="text-emerald-600" />
-        <KpiCard title="Konvertatsiya" value={converted} color="text-violet-600" />
-        <KpiCard title="Sifatsiz" value={invalid} color="text-red-600" />
+        <KpiCard title="Sotuv (yotdi/qatnadi)" value={won} color="text-violet-600" />
+        <KpiCard title="Umumiy CVR" value={`${cvrTotal}%`} color="text-amber-600" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Kampaniyalar bo'yicha</CardTitle>
+          <CardTitle>Kampaniya bo'yicha sotuv natijasi</CardTitle>
         </CardHeader>
         <CardContent>
-          {rows.length === 0 ? (
+          {q.isLoading ? (
+            <div className="text-sm text-muted-foreground py-8 text-center">Yuklanmoqda...</div>
+          ) : rows.length === 0 || (rows.length === 1 && !rows[0].campaign_id) ? (
             <div className="text-sm text-muted-foreground py-8 text-center">
-              Hali reklama ma'lumotlari yo'q
+              Hali Facebook reklama kampaniyalaridan lid kelmagan.<br />
+              <span className="text-xs opacity-60">Lidlar kelgach, shu yerda har bir kampaniya bo'yicha sotuv ko'rsatiladi.</span>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Campaign ID</TableHead>
-                  <TableHead>Adset ID</TableHead>
-                  <TableHead>Ad ID</TableHead>
-                  <TableHead className="text-right">Jami</TableHead>
+                  <TableHead>Kampaniya ID</TableHead>
+                  <TableHead className="text-right">Jami lid</TableHead>
                   <TableHead className="text-right">Sifatli</TableHead>
-                  <TableHead className="text-right">Konvertatsiya</TableHead>
-                  <TableHead className="text-right">Sifatsiz</TableHead>
+                  <TableHead className="text-right">Sotuv</TableHead>
+                  <TableHead className="text-right">Yoqotilgan</TableHead>
                   <TableHead className="text-right">CVR%</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((r, i) => {
-                  const total = Number(r.total_leads) || 0;
-                  const conv = Number(r.converted_leads) || 0;
-                  const cvr = total ? (conv / total) * 100 : 0;
-                  return (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">
-                        {r.meta_campaign_id ?? "Noaniq"}
-                      </TableCell>
-                      <TableCell>{r.meta_adset_id ?? "—"}</TableCell>
-                      <TableCell>{r.meta_ad_id ?? "—"}</TableCell>
-                      <TableCell className="text-right">{total}</TableCell>
-                      <TableCell className="text-right">{r.qualified_leads ?? 0}</TableCell>
-                      <TableCell className="text-right">{conv}</TableCell>
-                      <TableCell className="text-right">{r.invalid_leads ?? 0}</TableCell>
-                      <TableCell className="text-right font-semibold">
-                        {cvr.toFixed(1)}%
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {rows.map((r, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium font-mono text-sm">
+                      {r.campaign_id && r.campaign_id !== "noma'lum"
+                        ? r.campaign_id
+                        : <span className="text-muted-foreground italic font-sans">Noma'lum</span>}
+                    </TableCell>
+                    <TableCell className="text-right">{r.jami_lidlar}</TableCell>
+                    <TableCell className="text-right">{r.sifatli_lid}</TableCell>
+                    <TableCell className="text-right font-semibold text-emerald-600">{r.won}</TableCell>
+                    <TableCell className="text-right text-red-500">{r.yoqotilgan}</TableCell>
+                    <TableCell className="text-right font-semibold">{r.won_foizi}%</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}
@@ -470,16 +419,9 @@ function AttributionSection() {
   );
 }
 
+// ─── KpiCard ──────────────────────────────────────────────────────────────────
 
-function KpiCard({
-  title,
-  value,
-  color,
-}: {
-  title: string;
-  value: number | string;
-  color: string;
-}) {
+function KpiCard({ title, value, color }: { title: string; value: number | string; color: string }) {
   return (
     <Card>
       <CardHeader className="pb-2">
