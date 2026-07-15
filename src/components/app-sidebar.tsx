@@ -1,9 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Users, BarChart3, Settings, LogOut, CalendarDays, UserRound } from "lucide-react";
+import { Users, BarChart3, Settings, ClipboardList, LogOut, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useClinicStatus, clinicInitial, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
 import {
   Sidebar,
   SidebarContent,
@@ -17,23 +15,17 @@ import {
 } from "@/components/ui/sidebar";
 
 const ITEMS = [
-  { title: "Umumiy lidlar", url: "/lidlar", icon: Users },
-  { title: "Bemorlar", url: "/bemorlar", icon: UserRound },
-  { title: "Qabul jadvali", url: "/kalendar", icon: CalendarDays },
-  { title: "Hisobotlar", url: "/hisobotlar", icon: BarChart3 },
-  { title: "Sozlamalar", url: "/sozlamalar", icon: Settings },
+  { title: "Umumiy lidlar",   url: "/lidlar",      icon: Users },
+  { title: "Ariza qoldirish", url: "/ariza",        icon: ClipboardList },
+  { title: "Hisobotlar",      url: "/hisobotlar",   icon: BarChart3 },
+  { title: "Attribution",     url: "/attribution",  icon: TrendingUp },
+  { title: "Sozlamalar",      url: "/sozlamalar",   icon: Settings },
 ];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
-  const clinicStatusQ = useClinicStatus();
-  const clinic = clinicStatusQ.data;
   const items = ITEMS;
-
-  useEffect(() => {
-    if (clinic?.clinic_name) document.title = clinic.clinic_name;
-  }, [clinic?.clinic_name]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -44,23 +36,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-2 py-2">
-          {clinic?.logo_url ? (
-            <img
-              src={clinic.logo_url}
-              alt={clinic.clinic_name}
-              className="h-8 w-8 rounded-md object-cover shrink-0"
-            />
-          ) : (
-            <div
-              className="h-8 w-8 rounded-md flex items-center justify-center text-white font-bold shrink-0"
-              style={{ backgroundColor: clinic?.primary_color ?? DEFAULT_BRAND_COLOR }}
-            >
-              {clinicInitial(clinic?.clinic_name ?? "C")}
-            </div>
-          )}
-          <span className="font-semibold text-base truncate group-data-[collapsible=icon]:hidden">
-            {clinic?.clinic_name ?? "CRM Dashboard"}
-          </span>
+          <div className="h-8 w-8 rounded-md bg-emerald-600 flex items-center justify-center text-white font-bold">C</div>
+          <span className="font-semibold text-base group-data-[collapsible=icon]:hidden">CRM Dashboard</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
