@@ -77,6 +77,12 @@ export async function handleWebLeadWebhook(request: Request): Promise<Response> 
       source_detail: sourceDetail,
       status: "yangi",
       clinic_id: CLINIC_ID,
+      fbclid,
+      fbc,
+      fbp,
+      meta_campaign_id: metaCampaignId,
+      meta_adset_id: metaAdsetId,
+      meta_ad_id: metaAdId,
     })
     .select("id")
     .maybeSingle();
