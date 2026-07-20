@@ -291,10 +291,25 @@ function AttributionPage() {
         <CardHeader>
           <CardTitle className="text-base">Kampaniyalar bo'yicha Attribution</CardTitle>
         </CardHeader>
+        <div className="px-4 pb-3 pt-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Kampaniya nomi bo'yicha qidirish..."
+              value={campaignSearch}
+              onChange={(e) => setCampaignSearch(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+        </div>
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Yuklanmoqda...</div>
-          ) : rows.length === 0 ? (
+          ) : filteredRows.length === 0 && rows.length > 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              "{campaignSearch}" bo'yicha kampaniya topilmadi.
+            </div>
+          ) : filteredRows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Ma'lumot topilmadi. Sana oralig'ini o'zgartiring yoki reklamadan lid keling.
             </div>
