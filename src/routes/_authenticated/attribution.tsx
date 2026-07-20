@@ -372,7 +372,14 @@ function AttributionPage() {
       {/* Campaign table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Kampaniyalar bo'yicha Attribution</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            Kampaniyalar bo'yicha Attribution
+            {!isLoading && rows.length > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                {rows.length} ta faol
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <div className="px-4 pb-3 pt-1">
           <div className="relative">
