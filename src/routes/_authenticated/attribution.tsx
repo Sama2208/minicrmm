@@ -439,13 +439,10 @@ function AttributionPage() {
                 <TableBody>
                   {filteredRows.map((r) => (
                     <TableRow key={r.campaign_id} className="text-sm">
-                      <TableCell className="pl-4 max-w-[200px]">
-                        <div className="font-medium truncate" title={r.campaign_name}>
-                          {r.campaign_name === "noma'lum"
-                            ? <span className="text-muted-foreground italic">Noma'lum manba</span>
-                            : r.campaign_name}
+                      <TableCell className="pl-4 max-w-[220px]">
+                        <div className="font-medium truncate text-sm" title={r.campaign_name}>
+                          {r.campaign_name}
                         </div>
-                        <div className="text-xs text-muted-foreground font-mono">{r.campaign_id}</div>
                       </TableCell>
                       <TableCell className="text-right font-medium">{fmtUSD(r.spend)}</TableCell>
                       <TableCell className="text-right">{r.lidlar}</TableCell>
