@@ -176,7 +176,7 @@ function AttributionPage() {
       });
     });
 
-    merged.sort((a, b) => b.lidlar - a.lidlar);
+    merged.sort((a, b) => b.spend - a.spend);
 
     // KPI totals
     const totalSpend  = merged.reduce((s, r) => s + r.spend, 0);
