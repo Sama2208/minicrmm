@@ -240,6 +240,28 @@ function AttributionPage() {
             <Label className="text-xs">Tugash</Label>
             <Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} className="w-[150px] mt-1" />
           </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { label: "7 kun", days: 7 },
+              { label: "14 kun", days: 14 },
+              { label: "30 kun", days: 30 },
+              { label: "90 kun", days: 90 },
+            ].map(({ label, days }) => (
+              <Button
+                key={days}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 px-2.5"
+                onClick={() => {
+                  setSince(daysAgo(days));
+                  setUntil(today());
+                  setRefreshKey((k) => k + 1);
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
           <Button variant="outline" size="sm" onClick={() => setRefreshKey((k) => k + 1)} className="gap-1.5">
             <RefreshCw className="h-3.5 w-3.5" />
             Yangilash
