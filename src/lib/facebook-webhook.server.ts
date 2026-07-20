@@ -70,6 +70,9 @@ async function processLeadgenEvent(value: LeadgenChange["value"]) {
     formId: value.form_id,
     leadgenId: value.leadgen_id,
     fieldData: leadData.field_data,
+    metaCampaignId: value.campaign_id,
+    metaAdsetId: value.adset_id,
+    metaAdId: value.ad_id,
   });
 }
 
