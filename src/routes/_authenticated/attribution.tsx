@@ -121,7 +121,7 @@ function AttributionPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ since, until }),
+          body: JSON.stringify({ adAccountId: "act_3356671387908032", since, until }),
         }
       );
       const json = await res.json();
