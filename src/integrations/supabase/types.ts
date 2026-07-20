@@ -445,6 +445,33 @@ export type Database = {
           },
         ]
       }
+      capi_settings: {
+        Row: {
+          access_token: string
+          created_at: string
+          description: string | null
+          id: string
+          pixel_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          pixel_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          pixel_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           appointment_id: string
