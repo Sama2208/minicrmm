@@ -250,7 +250,11 @@ function AttributionPage() {
       .map(([day, count]) => ({ day, won: count }))
       .sort((a, b) => a.day.localeCompare(b.day));
 
-    return { rows: merged, kpi, dailyWon };
+    const activeRows = merged.filter(
+      (r) => r.spend > 0 && r.campaign_id !== "noma'lum"
+    );
+
+    return { rows: activeRows, kpi, dailyWon };
   }, [adsQ.data, leadsQ.data, sortCol, sortDir]);
 
   const isLoading = adsQ.isLoading || leadsQ.isLoading;
@@ -343,18 +347,39 @@ function AttributionPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard icon={DollarSign} label="Xarajat"  value={fmtUSD(kpi.spend)}       color="text-slate-700" bg="bg-slate-50" loading={isLoading} />
-        <KpiCard icon={Users}      label="Lidlar"    value={fmt(kpi.leads)}           color="text-blue-700"  bg="bg-blue-50"  loading={isLoading} />
-        <KpiCard icon={Trophy}     label="WON"       value={fmt(kpi.won)}             color="text-emerald-700" bg="bg-emerald-50" loading={isLoading} />
-        <KpiCard icon={TrendingDown} label="LOST"   value={fmt(kpi.lost)}            color="text-red-700"   bg="bg-red-50"   loading={isLoading} />
-        <KpiCard icon={DollarSign} label="CPL"      value={fmtUSD(kpi.cpl)}          color="text-violet-700" bg="bg-violet-50" loading={isLoading} />
-        <KpiCard icon={TrendingUp} label="CONV.RATE" value={`${kpi.conv_rate}%`}     color="text-amber-700"  bg="bg-amber-50"  loading={isLoading} />
+        {[
+          { icon: DollarSign, label: "XARAJAT",     value: fmtUSD(kpi.spend),    color: "text-slate-700",   bg: "bg-white border" },
+          { icon: Users,      label: "JAMI LIDLAR", value: fmt(kpi.leads),       color: "text-blue-700",    bg: "bg-blue-50 border-blue-100 border" },
+          { icon: Trophy,     label: "WON",         value: fmt(kpi.won),         color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100 border" },
+          { icon: TrendingDown, label: "LOST",      value: fmt(kpi.lost),        color: "text-red-600",     bg: "bg-red-50 border-red-100 border" },
+          { icon: DollarSign, label: "CPL",         value: fmtUSD(kpi.cpl),      color: "text-violet-700",  bg: "bg-violet-50 border-violet-100 border" },
+          { icon: TrendingUp, label: "CONV.RATE",   value: `${kpi.conv_rate}%`,  color: "text-amber-700",   bg: "bg-amber-50 border-amber-100 border" },
+        ].map(({ icon: Icon, label, value, color, bg }) => (
+          <div key={label} className={`rounded-xl p-3 ${bg}`}>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Icon className={`h-3.5 w-3.5 ${color}`} />
+              <span className="text-[11px] text-muted-foreground font-medium tracking-wide">{label}</span>
+            </div>
+            {isLoading ? (
+              <div className="h-6 w-14 bg-slate-200 animate-pulse rounded" />
+            ) : (
+              <div className={`text-xl font-bold ${color}`}>{value}</div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Campaign table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Kampaniyalar bo'yicha Attribution</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            Kampaniyalar bo'yicha Attribution
+            {!isLoading && rows.length > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                {rows.length} ta faol
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <div className="px-4 pb-3 pt-1">
           <div className="relative">
@@ -376,7 +401,9 @@ function AttributionPage() {
             </div>
           ) : filteredRows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Ma'lumot topilmadi. Sana oralig'ini o'zgartiring yoki reklamadan lid keling.
+              Tanlangan davrda faol kampaniya topilmadi.
+              <br />
+              <span className="text-xs">Sana oralig'ini kengaytiring yoki Meta Ads kampaniyalarni tekshiring.</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -412,13 +439,10 @@ function AttributionPage() {
                 <TableBody>
                   {filteredRows.map((r) => (
                     <TableRow key={r.campaign_id} className="text-sm">
-                      <TableCell className="pl-4 max-w-[200px]">
-                        <div className="font-medium truncate" title={r.campaign_name}>
-                          {r.campaign_name === "noma'lum"
-                            ? <span className="text-muted-foreground italic">Noma'lum manba</span>
-                            : r.campaign_name}
+                      <TableCell className="pl-4 max-w-[220px]">
+                        <div className="font-medium truncate text-sm" title={r.campaign_name}>
+                          {r.campaign_name}
                         </div>
-                        <div className="text-xs text-muted-foreground font-mono">{r.campaign_id}</div>
                       </TableCell>
                       <TableCell className="text-right font-medium">{fmtUSD(r.spend)}</TableCell>
                       <TableCell className="text-right">{r.lidlar}</TableCell>
