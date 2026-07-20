@@ -24,7 +24,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Users, Trophy, Clock, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Trophy, Clock, RefreshCw, Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/attribution")({
   component: AttributionPage,
