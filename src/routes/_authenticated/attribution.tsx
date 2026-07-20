@@ -331,7 +331,7 @@ function AttributionPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r) => (
+                  {filteredRows.map((r) => (
                     <TableRow key={r.campaign_id} className="text-sm">
                       <TableCell className="pl-4 max-w-[200px]">
                         <div className="font-medium truncate" title={r.campaign_name}>
