@@ -98,11 +98,17 @@ function AttributionPage() {
   const adsQ = useQuery({
     queryKey: ["meta-ads-insights", since, until, refreshKey],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("meta-ads-insights", {
-        body: { since, until },
-      });
-      if (error) throw error;
-      return ((data as { data?: MetaInsightRow[] })?.data ?? []) as MetaInsightRow[];
+      const res = await fetch(
+        "https://uddkghraacwlflxrpcdq.supabase.co/functions/v1/meta-ads-insights",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ since, until }),
+        }
+      );
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      return ((json as { data?: MetaInsightRow[] })?.data ?? []) as MetaInsightRow[];
     },
     retry: 1,
   });

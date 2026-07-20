@@ -20,9 +20,9 @@ import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMeningLidlarimRouteImport } from './routes/_authenticated/mening-lidlarim'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedKalendarRouteImport } from './routes/_authenticated/kalendar'
-import { Route as AuthenticatedAttributionRouteImport } from './routes/_authenticated/attribution'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
 import { Route as AuthenticatedBemorlarRouteImport } from './routes/_authenticated/bemorlar'
+import { Route as AuthenticatedAttributionRouteImport } from './routes/_authenticated/attribution'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedBemorlarIdRouteImport } from './routes/_authenticated/bemorlar.$id'
@@ -84,11 +84,6 @@ const AuthenticatedKalendarRoute = AuthenticatedKalendarRouteImport.update({
   path: '/kalendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAttributionRoute = AuthenticatedAttributionRouteImport.update({
-  id: '/attribution',
-  path: '/attribution',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedHisobotlarRoute = AuthenticatedHisobotlarRouteImport.update({
   id: '/hisobotlar',
   path: '/hisobotlar',
@@ -99,6 +94,12 @@ const AuthenticatedBemorlarRoute = AuthenticatedBemorlarRouteImport.update({
   path: '/bemorlar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAttributionRoute =
+  AuthenticatedAttributionRouteImport.update({
+    id: '/attribution',
+    path: '/attribution',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -137,8 +138,8 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/attribution': typeof AuthenticatedAttributionRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -157,8 +158,8 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/attribution': typeof AuthenticatedAttributionRoute
+  '/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/kalendar': typeof AuthenticatedKalendarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
@@ -179,8 +180,8 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/_authenticated/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/_authenticated/attribution': typeof AuthenticatedAttributionRoute
+  '/_authenticated/bemorlar': typeof AuthenticatedBemorlarRouteWithChildren
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/kalendar': typeof AuthenticatedKalendarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
@@ -201,9 +202,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/attribution'
     | '/bemorlar'
-    | '/attribution'
-    | '/attribution'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -222,9 +222,8 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/attribution'
     | '/bemorlar'
-    | '/attribution'
-    | '/attribution'
     | '/hisobotlar'
     | '/kalendar'
     | '/lidlar'
@@ -244,6 +243,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/attribution'
     | '/_authenticated/bemorlar'
     | '/_authenticated/hisobotlar'
     | '/_authenticated/kalendar'
@@ -348,13 +348,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/attribution': {
-      id: '/_authenticated/attribution'
-      path: '/attribution'
-      fullPath: '/attribution'
-      preLoaderRoute: typeof AuthenticatedAttributionRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/hisobotlar': {
       id: '/_authenticated/hisobotlar'
       path: '/hisobotlar'
@@ -367,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/bemorlar'
       fullPath: '/bemorlar'
       preLoaderRoute: typeof AuthenticatedBemorlarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/attribution': {
+      id: '/_authenticated/attribution'
+      path: '/attribution'
+      fullPath: '/attribution'
+      preLoaderRoute: typeof AuthenticatedAttributionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/.well-known/oauth-protected-resource': {
@@ -421,8 +421,8 @@ const AuthenticatedBemorlarRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedBemorlarRoute: typeof AuthenticatedBemorlarRouteWithChildren
   AuthenticatedAttributionRoute: typeof AuthenticatedAttributionRoute
+  AuthenticatedBemorlarRoute: typeof AuthenticatedBemorlarRouteWithChildren
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedKalendarRoute: typeof AuthenticatedKalendarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
@@ -431,8 +431,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedBemorlarRoute: AuthenticatedBemorlarRouteWithChildren,
   AuthenticatedAttributionRoute: AuthenticatedAttributionRoute,
+  AuthenticatedBemorlarRoute: AuthenticatedBemorlarRouteWithChildren,
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedKalendarRoute: AuthenticatedKalendarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
