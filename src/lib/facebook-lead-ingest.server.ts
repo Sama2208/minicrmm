@@ -9,6 +9,9 @@ export async function ingestFacebookLead(params: {
   formId: string;
   leadgenId: string;
   fieldData: FacebookFieldDatum[];
+  metaCampaignId?: string;
+  metaAdsetId?: string;
+  metaAdId?: string;
 }): Promise<{ inserted: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -47,6 +50,9 @@ export async function ingestFacebookLead(params: {
       source_detail: "Lead Ads",
       status: "yangi",
       clinic_id: params.clinicId,
+      meta_campaign_id: params.metaCampaignId ?? null,
+      meta_adset_id: params.metaAdsetId ?? null,
+      meta_ad_id: params.metaAdId ?? null,
     })
     .select("id")
     .maybeSingle();
