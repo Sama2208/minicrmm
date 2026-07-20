@@ -24,7 +24,18 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Users, Trophy, Clock, RefreshCw, Search } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Users,
+  Trophy,
+  RefreshCw,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/attribution")({
   component: AttributionPage,
@@ -63,6 +74,8 @@ type MergedRow = {
   qual_rate: number;
 };
 
+type SortCol = "spend" | "lidlar" | "won" | "lost" | "qual" | "cpl" | "costWon";
+
 // ─── Status constants ─────────────────────────────────────────────────────────
 
 const WON_STATUSES   = ["yotdi", "qatnadi"];
@@ -94,6 +107,17 @@ function AttributionPage() {
   const [until, setUntil] = useState(today());
   const [refreshKey, setRefreshKey] = useState(0);
   const [campaignSearch, setCampaignSearch] = useState("");
+  const [sortCol, setSortCol] = useState<SortCol>("spend");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  const toggleSort = (col: SortCol) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortCol(col);
+      setSortDir("desc");
+    }
+  };
 
   // 1. Meta Ads spend
   const adsQ = useQuery({
@@ -133,11 +157,9 @@ function AttributionPage() {
     const adData  = adsQ.data  ?? [];
     const crmData = leadsQ.data ?? [];
 
-    // Build campaign map from Meta Ads
     const adMap = new Map<string, MetaInsightRow>();
     adData.forEach((r) => adMap.set(r.campaign_id, r));
 
-    // Build CRM aggregation per campaign
     const crmMap = new Map<string, { lidlar: number; won: number; lost: number; qual: number; jarayonda: number }>();
     crmData.forEach((l) => {
       const cid = l.meta_campaign_id ?? "noma'lum";
@@ -150,7 +172,6 @@ function AttributionPage() {
       else r.jarayonda++;
     });
 
-    // Merge by campaign_id (union of both sets)
     const allIds = new Set([...adMap.keys(), ...crmMap.keys()]);
     const merged: MergedRow[] = [];
 
@@ -176,9 +197,28 @@ function AttributionPage() {
       });
     });
 
-    merged.sort((a, b) => b.spend - a.spend);
+    merged.sort((a, b) => {
+      const mult = sortDir === "desc" ? -1 : 1;
+      switch (sortCol) {
+        case "spend": return mult * (b.spend - a.spend);
+        case "lidlar": return mult * (b.lidlar - a.lidlar);
+        case "won": return mult * (b.won - a.won);
+        case "lost": return mult * (b.lost - a.lost);
+        case "qual": return mult * (b.qual - a.qual);
+        case "cpl": {
+          const aCpl = a.lidlar ? a.spend / a.lidlar : 0;
+          const bCpl = b.lidlar ? b.spend / b.lidlar : 0;
+          return mult * (bCpl - aCpl);
+        }
+        case "costWon": {
+          const aCw = a.won ? a.spend / a.won : 0;
+          const bCw = b.won ? b.spend / b.won : 0;
+          return mult * (bCw - aCw);
+        }
+        default: return mult * (b.spend - a.spend);
+      }
+    });
 
-    // KPI totals
     const totalSpend  = merged.reduce((s, r) => s + r.spend, 0);
     const totalLeads  = merged.reduce((s, r) => s + r.lidlar, 0);
     const totalWon    = merged.reduce((s, r) => s + r.won, 0);
@@ -199,7 +239,6 @@ function AttributionPage() {
       qual_rate:   parseFloat(pct(totalQual, totalLeads)),
     };
 
-    // Daily won dynamics (from CRM)
     const dayMap = new Map<string, number>();
     crmData
       .filter((l) => WON_STATUSES.includes(l.status))
@@ -212,7 +251,7 @@ function AttributionPage() {
       .sort((a, b) => a.day.localeCompare(b.day));
 
     return { rows: merged, kpi, dailyWon };
-  }, [adsQ.data, leadsQ.data]);
+  }, [adsQ.data, leadsQ.data, sortCol, sortDir]);
 
   const isLoading = adsQ.isLoading || leadsQ.isLoading;
   const adsError  = adsQ.error as Error | null;
@@ -222,6 +261,13 @@ function AttributionPage() {
     const q = campaignSearch.toLowerCase();
     return rows.filter((r) => r.campaign_name.toLowerCase().includes(q));
   }, [rows, campaignSearch]);
+
+  const SortIcon = ({ col }: { col: SortCol }) => {
+    if (sortCol !== col) return <ArrowUpDown className="inline h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === "desc"
+      ? <ArrowDown className="inline h-3 w-3 ml-1" />
+      : <ArrowUp className="inline h-3 w-3 ml-1" />;
+  };
 
   return (
     <div className="space-y-6">
@@ -242,18 +288,20 @@ function AttributionPage() {
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[
+              { label: "Bugun", days: 0 },
               { label: "7 kun", days: 7 },
               { label: "14 kun", days: 14 },
               { label: "30 kun", days: 30 },
               { label: "90 kun", days: 90 },
             ].map(({ label, days }) => (
               <Button
-                key={days}
+                key={label}
                 variant="outline"
                 size="sm"
                 className="text-xs h-8 px-2.5"
                 onClick={() => {
-                  setSince(daysAgo(days));
+                  const d = days === 0 ? today() : daysAgo(days);
+                  setSince(d);
                   setUntil(today());
                   setRefreshKey((k) => k + 1);
                 }}
@@ -267,6 +315,23 @@ function AttributionPage() {
             Yangilash
           </Button>
         </div>
+      </div>
+
+      {/* Tabs (visual only) */}
+      <div className="flex gap-1 border-b">
+        {["Kampaniyalar", "Ad Sets", "Reklamalar"].map((tab, i) => (
+          <button
+            key={tab}
+            disabled={i !== 0}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              i === 0
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground opacity-50 cursor-not-allowed"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       {/* Meta API error notice */}
@@ -319,13 +384,27 @@ function AttributionPage() {
                 <TableHeader>
                   <TableRow className="bg-slate-50 text-xs">
                     <TableHead className="pl-4">KAMPANIYA</TableHead>
-                    <TableHead className="text-right">XARAJAT</TableHead>
-                    <TableHead className="text-right">LIDLAR</TableHead>
-                    <TableHead className="text-right">CPL</TableHead>
-                    <TableHead className="text-right text-emerald-600">WON</TableHead>
-                    <TableHead className="text-right text-red-500">LOST</TableHead>
-                    <TableHead className="text-right text-blue-600">QUAL</TableHead>
-                    <TableHead className="text-right">COST/WON</TableHead>
+                    <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort("spend")}>
+                      XARAJAT <SortIcon col="spend" />
+                    </TableHead>
+                    <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort("lidlar")}>
+                      LIDLAR <SortIcon col="lidlar" />
+                    </TableHead>
+                    <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort("cpl")}>
+                      CPL <SortIcon col="cpl" />
+                    </TableHead>
+                    <TableHead className="text-right text-emerald-600 cursor-pointer select-none" onClick={() => toggleSort("won")}>
+                      WON <SortIcon col="won" />
+                    </TableHead>
+                    <TableHead className="text-right text-red-500 cursor-pointer select-none" onClick={() => toggleSort("lost")}>
+                      LOST <SortIcon col="lost" />
+                    </TableHead>
+                    <TableHead className="text-right text-blue-600 cursor-pointer select-none" onClick={() => toggleSort("qual")}>
+                      QUAL <SortIcon col="qual" />
+                    </TableHead>
+                    <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort("costWon")}>
+                      COST/WON <SortIcon col="costWon" />
+                    </TableHead>
                     <TableHead className="text-right">CONV.RATE</TableHead>
                     <TableHead className="text-right pr-4">QUAL.RATE</TableHead>
                   </TableRow>
@@ -372,7 +451,34 @@ function AttributionPage() {
         <CardHeader>
           <CardTitle className="text-base">WON dinamikasi (kunlik)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* KPI mini cards above chart */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {[
+              { label: "WON", value: fmt(kpi.won), color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "LOST", value: fmt(kpi.lost), color: "text-red-500", bg: "bg-red-50" },
+              { label: "JARAYONDA", value: fmt(kpi.jarayonda), color: "text-purple-600", bg: "bg-purple-50" },
+              {
+                label: "CONV.RATE",
+                value: kpi.leads ? `${((kpi.won / kpi.leads) * 100).toFixed(1)}%` : "—",
+                color: "text-blue-600",
+                bg: "bg-blue-50",
+              },
+              {
+                label: "COST/WON",
+                value: kpi.won ? fmtUSD(kpi.spend / kpi.won) : "—",
+                color: "text-orange-600",
+                bg: "bg-orange-50",
+              },
+              { label: "JAMI LIDLAR", value: fmt(kpi.leads), color: "text-foreground", bg: "bg-muted" },
+            ].map(({ label, value, color, bg }) => (
+              <div key={label} className={`${bg} rounded-lg px-3 py-2`}>
+                <div className={`text-lg font-bold ${color}`}>{value}</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{label}</div>
+              </div>
+            ))}
+          </div>
+
           {dailyWon.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">Ma'lumot yo'q</div>
           ) : (
