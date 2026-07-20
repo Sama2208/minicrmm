@@ -9,6 +9,9 @@ export async function ingestFacebookLead(params: {
   formId: string;
   leadgenId: string;
   fieldData: FacebookFieldDatum[];
+  metaCampaignId?: string;
+  metaAdsetId?: string;
+  metaAdId?: string;
 }): Promise<{ inserted: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
