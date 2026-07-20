@@ -250,7 +250,11 @@ function AttributionPage() {
       .map(([day, count]) => ({ day, won: count }))
       .sort((a, b) => a.day.localeCompare(b.day));
 
-    return { rows: merged, kpi, dailyWon };
+    const activeRows = merged.filter(
+      (r) => r.spend > 0 && r.campaign_id !== "noma'lum"
+    );
+
+    return { rows: activeRows, kpi, dailyWon };
   }, [adsQ.data, leadsQ.data, sortCol, sortDir]);
 
   const isLoading = adsQ.isLoading || leadsQ.isLoading;
