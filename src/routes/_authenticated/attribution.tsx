@@ -217,6 +217,12 @@ function AttributionPage() {
   const isLoading = adsQ.isLoading || leadsQ.isLoading;
   const adsError  = adsQ.error as Error | null;
 
+  const filteredRows = useMemo(() => {
+    if (!campaignSearch.trim()) return rows;
+    const q = campaignSearch.toLowerCase();
+    return rows.filter((r) => r.campaign_name.toLowerCase().includes(q));
+  }, [rows, campaignSearch]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
