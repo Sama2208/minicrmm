@@ -401,7 +401,9 @@ function AttributionPage() {
             </div>
           ) : filteredRows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              Ma'lumot topilmadi. Sana oralig'ini o'zgartiring yoki reklamadan lid keling.
+              Tanlangan davrda faol kampaniya topilmadi.
+              <br />
+              <span className="text-xs">Sana oralig'ini kengaytiring yoki Meta Ads kampaniyalarni tekshiring.</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
