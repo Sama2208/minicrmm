@@ -3,7 +3,14 @@ import { ingestFacebookLead } from "./facebook-lead-ingest.server";
 
 type LeadgenChange = {
   field: string;
-  value: { leadgen_id: string; page_id: string; form_id: string };
+  value: {
+    leadgen_id: string;
+    page_id: string;
+    form_id: string;
+    campaign_id?: string;
+    adset_id?: string;
+    ad_id?: string;
+  };
 };
 
 type FacebookWebhookPayload = {
