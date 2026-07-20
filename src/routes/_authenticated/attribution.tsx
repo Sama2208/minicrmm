@@ -24,7 +24,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Users, Trophy, Clock, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Trophy, Clock, RefreshCw, Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/attribution")({
   component: AttributionPage,
@@ -93,6 +93,7 @@ function AttributionPage() {
   const [since, setSince] = useState(daysAgo(30));
   const [until, setUntil] = useState(today());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [campaignSearch, setCampaignSearch] = useState("");
 
   // 1. Meta Ads spend
   const adsQ = useQuery({
@@ -175,7 +176,7 @@ function AttributionPage() {
       });
     });
 
-    merged.sort((a, b) => b.lidlar - a.lidlar);
+    merged.sort((a, b) => b.spend - a.spend);
 
     // KPI totals
     const totalSpend  = merged.reduce((s, r) => s + r.spend, 0);
@@ -216,6 +217,12 @@ function AttributionPage() {
   const isLoading = adsQ.isLoading || leadsQ.isLoading;
   const adsError  = adsQ.error as Error | null;
 
+  const filteredRows = useMemo(() => {
+    if (!campaignSearch.trim()) return rows;
+    const q = campaignSearch.toLowerCase();
+    return rows.filter((r) => r.campaign_name.toLowerCase().includes(q));
+  }, [rows, campaignSearch]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -232,6 +239,28 @@ function AttributionPage() {
           <div>
             <Label className="text-xs">Tugash</Label>
             <Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} className="w-[150px] mt-1" />
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { label: "7 kun", days: 7 },
+              { label: "14 kun", days: 14 },
+              { label: "30 kun", days: 30 },
+              { label: "90 kun", days: 90 },
+            ].map(({ label, days }) => (
+              <Button
+                key={days}
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 px-2.5"
+                onClick={() => {
+                  setSince(daysAgo(days));
+                  setUntil(today());
+                  setRefreshKey((k) => k + 1);
+                }}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
           <Button variant="outline" size="sm" onClick={() => setRefreshKey((k) => k + 1)} className="gap-1.5">
             <RefreshCw className="h-3.5 w-3.5" />
@@ -262,10 +291,25 @@ function AttributionPage() {
         <CardHeader>
           <CardTitle className="text-base">Kampaniyalar bo'yicha Attribution</CardTitle>
         </CardHeader>
+        <div className="px-4 pb-3 pt-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Kampaniya nomi bo'yicha qidirish..."
+              value={campaignSearch}
+              onChange={(e) => setCampaignSearch(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+        </div>
         <CardContent className="p-0">
           {isLoading ? (
             <div className="py-12 text-center text-sm text-muted-foreground">Yuklanmoqda...</div>
-          ) : rows.length === 0 ? (
+          ) : filteredRows.length === 0 && rows.length > 0 ? (
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              "{campaignSearch}" bo'yicha kampaniya topilmadi.
+            </div>
+          ) : filteredRows.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               Ma'lumot topilmadi. Sana oralig'ini o'zgartiring yoki reklamadan lid keling.
             </div>
@@ -287,7 +331,7 @@ function AttributionPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r) => (
+                  {filteredRows.map((r) => (
                     <TableRow key={r.campaign_id} className="text-sm">
                       <TableCell className="pl-4 max-w-[200px]">
                         <div className="font-medium truncate" title={r.campaign_name}>
