@@ -93,6 +93,7 @@ function AttributionPage() {
   const [since, setSince] = useState(daysAgo(30));
   const [until, setUntil] = useState(today());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [campaignSearch, setCampaignSearch] = useState("");
 
   // 1. Meta Ads spend
   const adsQ = useQuery({
