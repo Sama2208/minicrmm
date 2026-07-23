@@ -4,7 +4,9 @@ const CAPI_STATUSES: Record<string, string> = {
   konsultatsiyaga_yozildi: "Lead",
     konsultatsiyada_boldi: "Lead",
       yotishga_yozildi: "won",
-      qatnovchi: "won"
+      qatnovchi: "won",
+      yotdi: "won",
+      qatnadi: "won",
 };
 
 async function sha256hex(value: string): Promise<string> {
