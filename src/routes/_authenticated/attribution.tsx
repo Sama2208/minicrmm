@@ -9,7 +9,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
+  TableHeader
   TableRow,
 } from "@/components/ui/table";
 import {
@@ -71,8 +71,8 @@ type SortCol = "spend" | "lidlar" | "won" | "lost" | "qual" | "cpl" | "costWon";
 
 // ─── Status constants ─────────────────────────────────────────────────────────
 
-const WON_STATUSES  = ["yotdi", "qatnadi"];
-const QUAL_STATUSES = ["yotishga_yozildi", "konsultatsiyada_boldi"];
+const WON_STATUSES  = ["yotishga_yozildi", "qatnovchi"];
+const QUAL_STATUSES = ["konsultatsiyaga_yozildi", "konsultatsiyada_boldi"];
 const LOST_STATUSES = ["sifatsiz_lid", "kotarmadi"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
