@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CAPI_STATUSES: Record<string, string> = {
-  yotishga_yozildi: "Lead",
-  konsultatsiyada_boldi: "Lead",
-  yotdi: "Purchase",
-  qatnadi: "Purchase",
+  konsultatsiyaga_yozildi: "Lead",
+    konsultatsiyada_boldi: "Lead",
+    yotishga_yozildi: "Purchase",
+    qatnovchi: "Purchase"
 };
 
 async function sha256hex(value: string): Promise<string> {
