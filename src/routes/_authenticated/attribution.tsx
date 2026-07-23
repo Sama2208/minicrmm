@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 import {
   LineChart,
   Line,
@@ -71,7 +71,7 @@ type SortCol = "spend" | "lidlar" | "won" | "lost" | "qual" | "cpl" | "costWon";
 
 // ─── Status constants ─────────────────────────────────────────────────────────
 
-const WON_STATUSES  = ["yotishga_yozildi", "qatnovchi"];
+const WON_STATUSES  = ["yotishga_yozildi", "qatnovchi", "yotdi", "qatnadi"];
 const QUAL_STATUSES = ["konsultatsiyaga_yozildi", "konsultatsiyada_boldi"];
 const LOST_STATUSES = ["sifatsiz_lid", "kotarmadi"];
 
