@@ -162,17 +162,18 @@
               "type": "string",
               "enum": [
                 "yangi",
-                "kotarmadi",
                 "qayta_qongiroq",
+                "sifatsiz",
+                "malumot_oldi",
                 "konsultatsiyaga_yozildi",
-                "konsultatsiyada_boldi",
+                "ertangi_konsultatsiya",
+                "bugungi_konsultatsiya",
+                "konsultatsiyaga_keldi",
                 "yotishga_yozildi",
-                "sifatsiz_lid",
-                "qatnovchi",
-                "maslahat",
-                "qatnashga_yozildi",
-                "yotdi",
-                "qatnadi"
+                "bekor_qilindi",
+                "qayta_qongiroq_2",
+                "qayta_qongiroq_4",
+                "qayta_qongiroq_6_sifatsiz"
               ]
             }
           },
