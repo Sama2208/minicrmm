@@ -14,21 +14,20 @@ export type ColumnDef = {
 };
 
 export const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "yangi", status: "yangi", title: "Yangi lid", locked: true },
-  { key: "sifatsiz_lid", status: "sifatsiz_lid", title: "Sifatsiz lid", accent: "muted" },
-  { key: "kotarmadi", status: "kotarmadi", title: "Ko'tarmadi" },
-  { key: "maslahat", status: "maslahat", title: "Maslahat" },
-  {
-    key: "konsultatsiyaga_yozildi",
-    status: "konsultatsiyaga_yozildi",
-    title: "Konsultatsiyaga yozildi",
-  },
-  { key: "qatnashga_yozildi", status: "qatnashga_yozildi", title: "Qatnashishga yozildi" },
-  { key: "yotishga_yozildi", status: "yotishga_yozildi", title: "Yotishga yozildi" },
-  { key: "konsultatsiyada_boldi", status: "konsultatsiyada_boldi", title: "Konsultatsiyaga keldi" },
-  { key: "yotdi", status: "yotdi", title: "Yotdi", accent: "green" },
-  { key: "qatnadi", status: "qatnadi", title: "Qatnadi", accent: "green" },
-];
+  { key: "yangi", status: "yangi", title: "Yangi", locked: true },
+  { key: "qayta_qongiroq", status: "qayta_qongiroq", title: "Qayta qo'ng'iroq" },
+  { key: "sifatsiz", status: "sifatsiz", title: "Sifatsiz", accent: "muted" },
+  { key: "malumot_oldi", status: "malumot_oldi", title: "Ma'lumot oldi" },
+  { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
+  { key: "ertangi_konsultatsiya", status: "ertangi_konsultatsiya", title: "Ertangi konsultatsiya" },
+  { key: "bugungi_konsultatsiya", status: "bugungi_konsultatsiya", title: "Bugungi konsultatsiya" },
+  { key: "konsultatsiyaga_keldi", status: "konsultatsiyaga_keldi", title: "Konsultatsiyaga keldi", accent: "green" },
+  { key: "yotishga_yozildi", status: "yotishga_yozildi", title: "Yotishga yozildi", accent: "green" },
+  { key: "bekor_qilindi", status: "bekor_qilindi", title: "Bekor qilindi", accent: "muted" },
+  { key: "qayta_qongiroq_2", status: "qayta_qongiroq_2", title: "Qayta qo'ng'iroq 2" },
+  { key: "qayta_qongiroq_4", status: "qayta_qongiroq_4", title: "Qayta qo'ng'iroq 4" },
+  { key: "qayta_qongiroq_6_sifatsiz", status: "qayta_qongiroq_6_sifatsiz", title: "Qayta qo'ng'iroq 6 sifatsiz", accent: "muted" },
+  ];
 
 export const SOURCE_BADGE: Record<LeadSource, string> = {
   facebook: "bg-blue-100 text-blue-700",

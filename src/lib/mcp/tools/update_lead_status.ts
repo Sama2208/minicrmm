@@ -4,18 +4,19 @@ import { supabaseForUser, notAuthenticated } from "../supabase";
 
 const STATUSES = [
   "yangi",
-  "kotarmadi",
   "qayta_qongiroq",
+  "sifatsiz",
+  "malumot_oldi",
   "konsultatsiyaga_yozildi",
-  "konsultatsiyada_boldi",
+  "ertangi_konsultatsiya",
+  "bugungi_konsultatsiya",
+  "konsultatsiyaga_keldi",
   "yotishga_yozildi",
-  "sifatsiz_lid",
-  "qatnovchi",
-  "maslahat",
-  "qatnashga_yozildi",
-  "yotdi",
-  "qatnadi",
-] as const;
+  "bekor_qilindi",
+  "qayta_qongiroq_2",
+  "qayta_qongiroq_4",
+  "qayta_qongiroq_6_sifatsiz",
+  ] as const;
 
 export default defineTool({
   name: "update_lead_status",

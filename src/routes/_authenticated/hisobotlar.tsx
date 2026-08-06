@@ -117,7 +117,7 @@ function HisobotlarPage() {
   const converted = leads.filter((l) => l.status === CONVERSION_STATUS).length;
   const conversion = total ? Math.round((converted / total) * 1000) / 10 : 0;
   const activePipeline = leads.filter(
-    (l) => !["yotishga_yozildi", "sifatsiz_lid", "kotarmadi"].includes(l.status),
+    (l) => !["yotishga_yozildi", "sifatsiz", "bekor_qilindi", "qayta_qongiroq_6_sifatsiz"].includes(l.status),
   ).length;
 
   const funnelData = STATUS_ORDER.map((s) => ({
@@ -367,7 +367,7 @@ function AttributionSection() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Reklamadan jami lid" value={totalLeads} color="text-blue-600" />
         <KpiCard title="Sifatli lidlar" value={qualified} color="text-emerald-600" />
-        <KpiCard title="Sotuv (yotdi/qatnadi)" value={won} color="text-violet-600" />
+        <KpiCard title="Sotuv (Yotishga yozildi)" value={won} color="text-violet-600" />
         <KpiCard title="Umumiy CVR" value={`${cvrTotal}%`} color="text-amber-600" />
       </div>
 

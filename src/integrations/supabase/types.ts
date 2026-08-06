@@ -4308,19 +4308,19 @@ export type Database = {
         | "telegram"
         | "friends"
       lead_status:
-        | "yangi"
-        | "kotarmadi"
-        | "qayta_qongiroq"
-        | "konsultatsiyaga_yozildi"
-        | "konsultatsiyada_boldi"
-        | "yotishga_yozildi"
-        | "sifatsiz_lid"
-        | "qatnovchi"
-        | "maslahat"
-        | "qatnashga_yozildi"
-        | "yotdi"
-        | "qatnadi"
-        | "new"
+      | "yangi"
+      | "qayta_qongiroq"
+      | "sifatsiz"
+      | "malumot_oldi"
+      | "konsultatsiyaga_yozildi"
+      | "ertangi_konsultatsiya"
+      | "bugungi_konsultatsiya"
+      | "konsultatsiyaga_keldi"
+      | "yotishga_yozildi"
+      | "bekor_qilindi"
+      | "qayta_qongiroq_2"
+      | "qayta_qongiroq_4"
+      | "qayta_qongiroq_6_sifatsiz"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4460,19 +4460,19 @@ export const Constants = {
       ],
       lead_status: [
         "yangi",
-        "kotarmadi",
         "qayta_qongiroq",
+        "sifatsiz",
+        "malumot_oldi",
         "konsultatsiyaga_yozildi",
-        "konsultatsiyada_boldi",
+        "ertangi_konsultatsiya",
+        "bugungi_konsultatsiya",
+        "konsultatsiyaga_keldi",
         "yotishga_yozildi",
-        "sifatsiz_lid",
-        "qatnovchi",
-        "maslahat",
-        "qatnashga_yozildi",
-        "yotdi",
-        "qatnadi",
-        "new",
-      ],
-    },
+        "bekor_qilindi",
+        "qayta_qongiroq_2",
+        "qayta_qongiroq_4",
+        "qayta_qongiroq_6_sifatsiz",
+        ],
+      },
   },
 } as const
