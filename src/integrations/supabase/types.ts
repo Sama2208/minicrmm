@@ -2144,6 +2144,8 @@ export type Database = {
           can_visit_clinic: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id: string
           created_at: string | null
+          facebook_page_id: string | null
+          facebook_page_name: string | null
           fbc: string | null
           fbclid: string | null
           fbp: string | null
@@ -2173,6 +2175,8 @@ export type Database = {
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id: string
           created_at?: string | null
+          facebook_page_id?: string | null
+          facebook_page_name?: string | null
           fbc?: string | null
           fbclid?: string | null
           fbp?: string | null
@@ -2202,6 +2206,8 @@ export type Database = {
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id?: string
           created_at?: string | null
+          facebook_page_id?: string | null
+          facebook_page_name?: string | null
           fbc?: string | null
           fbclid?: string | null
           fbp?: string | null
@@ -3999,12 +4005,13 @@ export type Database = {
       v_campaign_attribution: {
         Row: {
           campaign_id: string | null
-          jami_lidlar: number | null
-          sifat_foizi: number | null
-          sifatli_lid: number | null
-          won: number | null
-          won_foizi: number | null
-          yoqotilgan: number | null
+          conversion_rate: number | null
+          first_lead_date: string | null
+          last_lead_date: string | null
+          lost_leads: number | null
+          qualified_leads: number | null
+          total_leads: number | null
+          won_leads: number | null
         }
         Relationships: []
       }
@@ -4037,6 +4044,14 @@ export type Database = {
           converted: number | null
           source: Database["public"]["Enums"]["lead_source"] | null
           total: number | null
+        }
+        Relationships: []
+      }
+      v_won_daily: {
+        Row: {
+          date: string | null
+          total_leads_that_day: number | null
+          won_count: number | null
         }
         Relationships: []
       }
@@ -4308,19 +4323,19 @@ export type Database = {
         | "telegram"
         | "friends"
       lead_status:
-      | "yangi"
-      | "qayta_qongiroq"
-      | "sifatsiz"
-      | "malumot_oldi"
-      | "konsultatsiyaga_yozildi"
-      | "ertangi_konsultatsiya"
-      | "bugungi_konsultatsiya"
-      | "konsultatsiyaga_keldi"
-      | "yotishga_yozildi"
-      | "bekor_qilindi"
-      | "qayta_qongiroq_2"
-      | "qayta_qongiroq_4"
-      | "qayta_qongiroq_6_sifatsiz"
+        | "yangi"
+        | "qayta_qongiroq"
+        | "sifatsiz"
+        | "malumot_oldi"
+        | "konsultatsiyaga_yozildi"
+        | "ertangi_konsultatsiya"
+        | "bugungi_konsultatsiya"
+        | "konsultatsiyaga_keldi"
+        | "yotishga_yozildi"
+        | "bekor_qilindi"
+        | "qayta_qongiroq_2"
+        | "qayta_qongiroq_4"
+        | "qayta_qongiroq_6_sifatsiz"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4472,7 +4487,7 @@ export const Constants = {
         "qayta_qongiroq_2",
         "qayta_qongiroq_4",
         "qayta_qongiroq_6_sifatsiz",
-        ],
-      },
+      ],
+    },
   },
 } as const
