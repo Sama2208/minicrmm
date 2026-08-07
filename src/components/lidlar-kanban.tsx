@@ -8,7 +8,7 @@ import {
   Calendar,
   Trash2,
   GripVertical,
-  X,
+  
   Square,
   CheckSquare,
   Search,
@@ -265,15 +265,6 @@ export function LidlarKanban({
     }
   };
 
-  const deleteColumn = (col: ColumnDef) => {
-    if (!window.confirm(`"${col.title}" ustunini yashirmoqchimisiz?`)) return;
-    if (col.custom) {
-      saveExtras(extras.filter((e) => e.key !== col.key));
-    } else {
-      saveHidden([...hidden, col.key]);
-    }
-    saveColOrder(colOrder.filter((k) => k !== col.key));
-  };
 
   const columns = useMemo<ColumnDef[]>(() => {
     const allCols = [...DEFAULT_COLUMNS, ...extras]
@@ -532,16 +523,6 @@ export function LidlarKanban({
                     <span className="inline-flex items-center justify-center text-[11px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[20px] h-5 px-1.5">
                       {items.length}
                     </span>
-                    {!col.locked && (
-                      <button
-                        type="button"
-                        onClick={() => deleteColumn(col)}
-                        className="p-0.5 rounded hover:bg-red-100 hover:text-red-500 text-slate-300 transition-colors"
-                        title="Ustunni yashirish"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
                   </div>
                 </div>
 
