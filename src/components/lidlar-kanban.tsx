@@ -265,15 +265,6 @@ export function LidlarKanban({
     }
   };
 
-  const deleteColumn = (col: ColumnDef) => {
-    if (!window.confirm(`"${col.title}" ustunini yashirmoqchimisiz?`)) return;
-    if (col.custom) {
-      saveExtras(extras.filter((e) => e.key !== col.key));
-    } else {
-      saveHidden([...hidden, col.key]);
-    }
-    saveColOrder(colOrder.filter((k) => k !== col.key));
-  };
 
   const columns = useMemo<ColumnDef[]>(() => {
     const allCols = [...DEFAULT_COLUMNS, ...extras]
