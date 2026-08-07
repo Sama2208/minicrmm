@@ -154,6 +154,40 @@ export function LidlarKanban({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [zoom, setZoom] = useState<number>(() => {
+    try {
+      return Number(localStorage.getItem("kanban_zoom")) || 100;
+    } catch {
+      return 100;
+    }
+  });
+  const [compact, setCompact] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("kanban_compact") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const applyZoom = (v: number) => {
+    setZoom(v);
+    try {
+      localStorage.setItem("kanban_zoom", String(v));
+    } catch {
+      /* noop */
+    }
+  };
+  const toggleCompact = () => {
+    setCompact((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("kanban_compact", next ? "1" : "0");
+      } catch {
+        /* noop */
+      }
+      return next;
+    });
+  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
