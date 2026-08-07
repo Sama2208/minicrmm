@@ -625,6 +625,7 @@ function DraggableCard({
   onDetail,
   isSelected,
   onToggle,
+  compact,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -633,6 +634,7 @@ function DraggableCard({
   onDetail: (lead: KanbanLead) => void;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  compact?: boolean;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id: lead.id });
   return (
@@ -644,6 +646,7 @@ function DraggableCard({
         onDetail={onDetail}
         isSelected={isSelected}
         onToggle={onToggle}
+        compact={compact}
       />
     </div>
   );
