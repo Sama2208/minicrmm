@@ -58,6 +58,8 @@ type Lead = {
   next_followup_date: string | null;
   last_contact_at: string | null;
   created_at: string;
+  facebook_page_id: string | null;
+  facebook_page_name: string | null;
 };
 
 type Operator = { id: string; full_name: string; is_active: boolean };
@@ -66,10 +68,12 @@ function LidlarPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [operatorFilter, setOperatorFilter] = useState<string>("all");
+  const [facebookPageFilter, setFacebookPageFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
