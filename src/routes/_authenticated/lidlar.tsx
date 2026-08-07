@@ -58,6 +58,8 @@ type Lead = {
   next_followup_date: string | null;
   last_contact_at: string | null;
   created_at: string;
+  facebook_page_id: string | null;
+  facebook_page_name: string | null;
 };
 
 type Operator = { id: string; full_name: string; is_active: boolean };
@@ -66,10 +68,12 @@ function LidlarPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [operatorFilter, setOperatorFilter] = useState<string>("all");
+  const [facebookPageFilter, setFacebookPageFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+
 
   const leadsQ = useQuery({
     queryKey: ["leads"],
@@ -92,6 +96,22 @@ function LidlarPage() {
         .order("full_name");
       if (error) throw error;
       return data as Operator[];
+    },
+  });
+
+  const fbPagesQ = useQuery({
+    queryKey: ["fb-pages-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leads")
+        .select("facebook_page_id, facebook_page_name")
+        .not("facebook_page_id", "is", null);
+      const seen = new Set<string>();
+      return (data ?? []).filter((r) => {
+        if (!r.facebook_page_id || seen.has(r.facebook_page_id)) return false;
+        seen.add(r.facebook_page_id);
+        return true;
+      });
     },
   });
 
@@ -124,6 +144,7 @@ function LidlarPage() {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
       if (operatorFilter !== "all" && l.assigned_to !== operatorFilter) return false;
+      if (facebookPageFilter !== "all" && l.facebook_page_id !== facebookPageFilter) return false;
       if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(l.created_at) > new Date(dateTo + "T23:59:59")) return false;
       if (search) {
@@ -140,7 +161,16 @@ function LidlarPage() {
       }
       return true;
     });
-  }, [leadsQ.data, statusFilter, sourceFilter, operatorFilter, dateFrom, dateTo, search]);
+  }, [
+    leadsQ.data,
+    statusFilter,
+    sourceFilter,
+    operatorFilter,
+    facebookPageFilter,
+    dateFrom,
+    dateTo,
+    search,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -221,6 +251,21 @@ function LidlarPage() {
             ))}
           </SelectContent>
         </Select>
+        {(fbPagesQ.data ?? []).length > 1 && (
+          <Select value={facebookPageFilter} onValueChange={setFacebookPageFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Facebook sahifa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha sahifalar</SelectItem>
+              {(fbPagesQ.data ?? []).map((p) => (
+                <SelectItem key={p.facebook_page_id!} value={p.facebook_page_id!}>
+                  {p.facebook_page_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Input
           type="date"
           value={dateFrom}
