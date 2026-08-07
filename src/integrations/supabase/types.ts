@@ -4336,6 +4336,11 @@ export type Database = {
         | "qayta_qongiroq_2"
         | "qayta_qongiroq_4"
         | "qayta_qongiroq_6_sifatsiz"
+        | "prioritet"
+        | "qayta_aloqa"
+        | "konsultatsiyaga_kelmadi"
+        | "yotdi"
+        | "qatnadi"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4487,6 +4492,11 @@ export const Constants = {
         "qayta_qongiroq_2",
         "qayta_qongiroq_4",
         "qayta_qongiroq_6_sifatsiz",
+        "prioritet",
+        "qayta_aloqa",
+        "konsultatsiyaga_kelmadi",
+        "yotdi",
+        "qatnadi",
       ],
     },
   },
