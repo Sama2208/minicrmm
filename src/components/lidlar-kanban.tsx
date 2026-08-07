@@ -8,7 +8,7 @@ import {
   Calendar,
   Trash2,
   GripVertical,
-  X,
+  
   Square,
   CheckSquare,
   Search,
