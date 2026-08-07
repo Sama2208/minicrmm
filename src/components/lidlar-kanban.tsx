@@ -414,7 +414,12 @@ export function LidlarKanban({
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        <div className="flex gap-3 overflow-x-auto pb-3">
+        <div
+          className="flex gap-3 overflow-x-auto pb-3 origin-top-left"
+          style={{
+            zoom: zoom / 100,
+          }}
+        >
           {columns.map((col) => {
             const items = grouped.get(col.key) ?? [];
             return (
