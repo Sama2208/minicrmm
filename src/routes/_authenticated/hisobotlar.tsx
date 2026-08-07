@@ -162,20 +162,6 @@ function HisobotlarPage() {
   });
   const maxRate = Math.max(0, ...operatorData.map((o) => o.rate));
 
-  const dailyData = useMemo(() => {
-    const map = new Map<string, Record<string, number | string>>();
-    leads.forEach((l) => {
-      const day = toAdsDate(l.created_at);
-      if (!map.has(day)) {
-        const row: Record<string, number | string> = { day };
-        SOURCE_LIST.forEach((s) => (row[s] = 0));
-        map.set(day, row);
-      }
-      const row = map.get(day)!;
-      row[l.source] = (row[l.source] as number) + 1;
-    });
-    return Array.from(map.values()).sort((a, b) => String(a.day).localeCompare(String(b.day)));
-  }, [leads]);
 
   return (
     <div className="space-y-6">
