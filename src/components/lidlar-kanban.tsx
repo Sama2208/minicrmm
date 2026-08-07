@@ -433,7 +433,7 @@ export function LidlarKanban({
         <div className="flex items-center gap-1 shrink-0 border rounded-md px-2 h-9 bg-white">
           <button
             type="button"
-            onClick={() => applyZoom(Math.max(60, zoom - 10))}
+            onClick={() => applyZoom(Math.max(30, zoom - 10))}
             className="text-slate-500 hover:text-slate-900 px-1 text-sm font-bold"
             title="Kichiklashtirish"
           >
