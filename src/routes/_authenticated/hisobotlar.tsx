@@ -149,11 +149,6 @@ function HisobotlarPage() {
     total: leads.filter((l) => l.status === s).length,
   }));
 
-  const sourceData = SOURCE_LIST.map((s) => {
-    const list = leads.filter((l) => l.source === s);
-    const conv = list.filter((l) => l.status === CONVERSION_STATUS).length;
-    return { source: SOURCE_LABEL[s], total: list.length, converted: conv };
-  });
 
   const operatorData = (opsQ.data ?? []).map((o) => {
     const list = leads.filter((l) => l.assigned_to === o.id);
