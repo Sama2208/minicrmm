@@ -56,6 +56,29 @@ export async function ingestFacebookLead(params: {
     facebookPageName = conn?.page_name ?? null;
   }
 
+  // Round-robin: eng kam lidi bor faol operatorga avtomatik taqsimlash
+  let assignedTo: string | null = null;
+  const { data: activeOperators } = await supabaseAdmin
+    .from("operators")
+    .select("id")
+    .eq("clinic_id", params.clinicId)
+    .eq("is_active", true);
+
+  if (activeOperators && activeOperators.length > 0) {
+    const counts = await Promise.all(
+      activeOperators.map(async (op) => {
+        const { count } = await supabaseAdmin
+          .from("leads")
+          .select("id", { count: "exact", head: true })
+          .eq("clinic_id", params.clinicId)
+          .eq("assigned_to", op.id);
+        return { id: op.id, count: count ?? 0 };
+      })
+    );
+    counts.sort((a, b) => a.count - b.count);
+    assignedTo = counts[0].id;
+  }
+
   // .maybeSingle(): prevent_duplicate_phone trigger'i takroriy raqamda
   // NULL qaytaradi — bu xatolik emas.
   const { data: lead } = await supabaseAdmin
