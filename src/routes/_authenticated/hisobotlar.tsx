@@ -291,25 +291,8 @@ function HisobotlarPage() {
         </CardContent>
       </Card>
 
-      {/* Source */}
-      <Card>
-        <CardHeader><CardTitle>Manba bo'yicha lidlar</CardTitle></CardHeader>
-        <CardContent>
-          <div style={{ width: "100%", height: 280 }}>
-            <ResponsiveContainer>
-              <BarChart data={sourceData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="source" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="total" name="Jami" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="converted" name="Aylangan" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+
+
 
       {/* Operators */}
       <Card>
