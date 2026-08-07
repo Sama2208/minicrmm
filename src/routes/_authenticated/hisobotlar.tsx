@@ -55,19 +55,22 @@ type Lead = {
   assigned_to: string | null;
   next_followup_date: string | null;
   created_at: string;
+  facebook_page_id: string | null;
+  facebook_page_name: string | null;
 };
 
 function HisobotlarPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [operatorFilter, setOperatorFilter] = useState("all");
+  const [facebookPageFilter, setFacebookPageFilter] = useState("all");
 
   const leadsQ = useQuery({
     queryKey: ["leads-report"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, full_name, status, source, assigned_to, next_followup_date, created_at");
+        .select("id, full_name, status, source, assigned_to, next_followup_date, created_at, facebook_page_id, facebook_page_name");
       if (error) throw error;
       return data as Lead[];
     },
@@ -82,14 +85,31 @@ function HisobotlarPage() {
     },
   });
 
+  const fbPagesQ = useQuery({
+    queryKey: ["fb-pages-list-report"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leads")
+        .select("facebook_page_id, facebook_page_name")
+        .not("facebook_page_id", "is", null);
+      const seen = new Set<string>();
+      return (data ?? []).filter((r) => {
+        if (!r.facebook_page_id || seen.has(r.facebook_page_id)) return false;
+        seen.add(r.facebook_page_id);
+        return true;
+      });
+    },
+  });
+
   const leads = useMemo(() => {
     const list = leadsQ.data ?? [];
     return list.filter((l) => {
       if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(l.created_at) > new Date(dateTo + "T23:59:59")) return false;
+      if (facebookPageFilter !== "all" && l.facebook_page_id !== facebookPageFilter) return false;
       return true;
     });
-  }, [leadsQ.data, dateFrom, dateTo]);
+  }, [leadsQ.data, dateFrom, dateTo, facebookPageFilter]);
 
   const todayCallbacks = useMemo(() => {
     if (operatorFilter === "all") return [];
@@ -184,6 +204,24 @@ function HisobotlarPage() {
             </SelectContent>
           </Select>
         </div>
+        {(fbPagesQ.data ?? []).length > 1 && (
+          <div>
+            <Label className="text-xs">Facebook sahifa</Label>
+            <Select value={facebookPageFilter} onValueChange={setFacebookPageFilter}>
+              <SelectTrigger className="w-[200px] mt-1">
+                <SelectValue placeholder="Facebook sahifa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha sahifalar</SelectItem>
+                {(fbPagesQ.data ?? []).map((p) => (
+                  <SelectItem key={p.facebook_page_id!} value={p.facebook_page_id!}>
+                    {p.facebook_page_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {overdueCallbacks.length > 0 && (
