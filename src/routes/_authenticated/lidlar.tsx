@@ -161,7 +161,16 @@ function LidlarPage() {
       }
       return true;
     });
-  }, [leadsQ.data, statusFilter, sourceFilter, operatorFilter, dateFrom, dateTo, search]);
+  }, [
+    leadsQ.data,
+    statusFilter,
+    sourceFilter,
+    operatorFilter,
+    facebookPageFilter,
+    dateFrom,
+    dateTo,
+    search,
+  ]);
 
   return (
     <div className="space-y-4">
