@@ -28,11 +28,12 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
   const fullName =
     get("full_name") ||
     get("full name") ||
+    get("полное_имя") ||
     [get("first_name"), get("last_name")].filter(Boolean).join(" ").trim() ||
     null;
 
   // Foydalanuvchi kiritgan telefon (ba'zan noto'g'ri formatda kelishi mumkin)
-  const rawCustomPhone = get("telefon_raqamingizni_kiriting!");
+  const rawCustomPhone = get("telefon_raqamingizni_kiriting!") || get("ishlaydigan_telefon_raqam");
   // Facebook profilidan avtomatik to'ldirilgan telefon (odatda to'g'ri format)
   const fbAutoPhone = get("номер_телефона");
 
@@ -50,7 +51,10 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
   const nomerAsosiy = fbAutoPhone;
 
   // Kasallik turi — leads.problem_type ga saqlanadi
-  const problemType = get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") || null;
+  const problemType =
+    get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") ||
+    get("qaysi_turdagi_kasallik_bezovta_qiladi?") ||
+    null;
 
   return {
     fullName: fullName || null,
