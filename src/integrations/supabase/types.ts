@@ -4057,6 +4057,7 @@ export type Database = {
       }
     }
     Functions: {
+      auto_move_leads: { Args: never; Returns: Json }
       book_appointment: {
         Args: {
           p_doctor_id: string
