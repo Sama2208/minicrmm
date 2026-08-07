@@ -5,8 +5,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 
-// Talab qilinadigan Meta ruxsatlari — real Meta App yaratilganda App
-// Review'da aynan shu ro'yxat so'raladi.
 const OAUTH_SCOPE =
   "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement";
 
@@ -15,19 +13,13 @@ async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
   if (!isAdmin) throw new Error("Faqat admin Facebook ulanishini boshqara oladi");
 }
 
-// `clinicId` berilsa — bu platforma admin boshqa klinika uchun ulanishni
-// boshqarmoqchi (masalan klinika yangi yaratilgandan keyin darhol Facebook
-// ulash uchun). Bu holda faqat platforma egasiga ruxsat beriladi. Berilmasa —
-// odatiy holat: klinikaning o'z admini o'zining klinikasini boshqaradi.
 async function resolveWriteClinicId(
   supabase: SupabaseClient<Database>,
   explicitClinicId?: string,
 ): Promise<string> {
   if (explicitClinicId) {
     const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-    if (!isPlatformAdmin) {
-      throw new Error("Ruxsat yo'q: faqat platforma egasi boshqa klinika uchun amal bajara oladi");
-    }
+    if (!isPlatformAdmin) throw new Error("Ruxsat yo'q");
     return explicitClinicId;
   }
   await requireClinicAdmin(supabase);
@@ -50,9 +42,6 @@ async function resolveReadClinicId(
   return clinicId;
 }
 
-// OAuth sessiyasi allaqachon aniq klinikaga bog'langan (yaratilgan paytda
-// yozilgan). Shuning uchun bu yerda faqat: chaqiruvchi o'sha klinikaning o'zi
-// (current_clinic_id mos keladi) yoki platforma admin ekanini tekshiramiz.
 async function authorizeClinicAccess(
   supabase: SupabaseClient<Database>,
   targetClinicId: string,
@@ -70,29 +59,22 @@ export const createFacebookOAuthState = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
-
     const appId = process.env.FACEBOOK_APP_ID;
     if (!appId) throw new Error("FACEBOOK_APP_ID sozlanmagan");
-
     const request = getRequest();
     const origin = new URL(request.url).origin;
     const redirectUri = `${origin}/api/facebook/oauth-callback`;
-
-    // Platforma admin (clinicId ko'rsatib) ulanishni boshlasa, callback
-    // qaytishi kerak bo'lgan sahifani bilishi uchun state'ga belgi qo'shamiz.
     const state = data.clinicId ? `${crypto.randomUUID()}::platforma` : crypto.randomUUID();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("facebook_oauth_sessions")
       .insert({ state, clinic_id: clinicId, user_id: context.userId });
     if (error) throw new Error(error.message);
-
     const authorizeUrl =
       `https://www.facebook.com/v21.0/dialog/oauth?client_id=${encodeURIComponent(appId)}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&state=${encodeURIComponent(state)}` +
       `&scope=${encodeURIComponent(OAUTH_SCOPE)}`;
-
     return { authorizeUrl };
   });
 
@@ -111,7 +93,6 @@ export const listPendingFacebookPages = createServerFn({ method: "POST" })
     if (error || !session) throw new Error("Sessiya topilmadi");
     await authorizeClinicAccess(context.supabase, session.clinic_id);
     if (new Date(session.expires_at) < new Date()) throw new Error("Sessiya muddati tugagan");
-
     const pages =
       (session.pages as { id: string; name: string; access_token: string }[] | null) ?? [];
     return pages.map((p) => ({ id: p.id, name: p.name }));
@@ -132,13 +113,11 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
     if (sessionErr || !session) throw new Error("Sessiya topilmadi");
     await authorizeClinicAccess(context.supabase, session.clinic_id);
     if (new Date(session.expires_at) < new Date()) throw new Error("Sessiya muddati tugagan");
-
     const clinicId = session.clinic_id;
     const pages =
       (session.pages as { id: string; name: string; access_token: string }[] | null) ?? [];
     const page = pages.find((p) => p.id === data.pageId);
     if (!page) throw new Error("Page topilmadi");
-
     const { data: connection, error: connErr } = await supabaseAdmin
       .from("facebook_connections")
       .upsert(
@@ -155,7 +134,6 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (connErr) throw new Error(connErr.message);
-
     const { listLeadFormsForPage, subscribePageToLeadgen } =
       await import("./facebook-graph.server");
     const forms = await listLeadFormsForPage(page.id, page.access_token);
@@ -170,45 +148,53 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
         { onConflict: "connection_id,form_id", ignoreDuplicates: true },
       );
     }
-
     let subscribeError: string | null = null;
     try {
       await subscribePageToLeadgen(page.id, page.access_token);
     } catch (err) {
-      // Ulanish va formalar baribir saqlanadi — xatoni foydalanuvchiga
-      // ko'rsatamiz, "Formalarni yangilash" bilan keyinroq qayta urinish mumkin.
       subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
       console.error("Facebook leadgen obuna xatosi:", err);
     }
-
     await supabaseAdmin.from("facebook_oauth_sessions").delete().eq("state", data.state);
-
     return { ok: true, pageName: page.name, subscribeError };
   });
 
+// O'ZGARTIRILDI: barcha faol page'larni qaytaradi (oldin faqat bitta)
 export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveReadClinicId(context.supabase, data.clinicId);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: connection } = await supabaseAdmin
+
+    const { data: connections } = await supabaseAdmin
       .from("facebook_connections")
-      .select("id, page_name, is_active")
+      .select("id, page_id, page_name")
       .eq("clinic_id", clinicId)
       .eq("is_active", true)
-      .maybeSingle();
+      .order("page_name");
 
-    if (!connection) return { connected: false as const, pageName: null, forms: [] };
+    if (!connections || connections.length === 0) {
+      return { connected: false as const, pages: [] };
+    }
 
-    const { data: forms } = await supabaseAdmin
-      .from("facebook_lead_forms")
-      .select("id, form_id, form_name, is_syncing")
-      .eq("connection_id", connection.id)
-      .order("form_name");
+    const pages = await Promise.all(
+      connections.map(async (conn) => {
+        const { data: forms } = await supabaseAdmin
+          .from("facebook_lead_forms")
+          .select("id, form_id, form_name, is_syncing")
+          .eq("connection_id", conn.id)
+          .order("form_name");
+        return {
+          connectionId: conn.id,
+          pageId: conn.page_id,
+          pageName: conn.page_name,
+          forms: forms ?? [],
+        };
+      }),
+    );
 
-    return { connected: true as const, pageName: connection.page_name, forms: forms ?? [] };
+    return { connected: true as const, pages };
   });
 
 const ToggleInput = z.object({
@@ -222,7 +208,6 @@ export const toggleFacebookFormSync = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ToggleInput.parse(input))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("facebook_lead_forms")
@@ -238,14 +223,11 @@ const ImportHistoricalInput = z.object({
   clinicId: z.string().uuid().optional(),
 });
 
-// Forma ulanishidan OLDIN Meta'da to'plangan lidlarni bir martalik import
-// qiladi — webhook faqat kelajakdagi hodisalarni yetkazadi, eskilarini emas.
 export const importHistoricalLeads = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ImportHistoricalInput.parse(input))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: form, error: formErr } = await supabaseAdmin
       .from("facebook_lead_forms")
@@ -254,19 +236,15 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
       .eq("clinic_id", clinicId)
       .single();
     if (formErr || !form) throw new Error("Forma topilmadi");
-
     const { data: connection, error: connErr } = await supabaseAdmin
       .from("facebook_connections")
       .select("page_access_token")
       .eq("id", form.connection_id)
       .single();
     if (connErr || !connection) throw new Error("Ulanish topilmadi");
-
     const { listLeadsForForm } = await import("./facebook-graph.server");
     const { ingestFacebookLead } = await import("./facebook-lead-ingest.server");
-
     const historicalLeads = await listLeadsForForm(form.form_id, connection.page_access_token);
-
     let imported = 0;
     for (const lead of historicalLeads) {
       const { inserted } = await ingestFacebookLead({
@@ -277,40 +255,50 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
       });
       if (inserted) imported++;
     }
-
     return { ok: true, total: historicalLeads.length, imported };
   });
 
+// O'ZGARTIRILDI: pageId qabul qiladi — faqat shu page uziladi (oldin hammasi)
+const DisconnectInput = z.object({
+  pageId: z.string().min(1),
+  clinicId: z.string().uuid().optional(),
+});
+
 export const disconnectFacebook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .inputValidator((input: unknown) => DisconnectInput.parse(input))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("facebook_connections")
       .update({ is_active: false })
-      .eq("clinic_id", clinicId);
+      .eq("clinic_id", clinicId)
+      .eq("page_id", data.pageId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
+// O'ZGARTIRILDI: connectionId qabul qiladi — shu connection formalarini yangilaydi
+const SyncFormsInput = z.object({
+  connectionId: z.string().uuid(),
+  clinicId: z.string().uuid().optional(),
+});
+
 export const syncFacebookForms = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ClinicIdInput.parse(input ?? {}))
+  .inputValidator((input: unknown) => SyncFormsInput.parse(input))
   .handler(async ({ data, context }) => {
     const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: connection } = await supabaseAdmin
       .from("facebook_connections")
       .select("id, page_id, page_access_token")
+      .eq("id", data.connectionId)
       .eq("clinic_id", clinicId)
       .eq("is_active", true)
-      .maybeSingle();
+      .single();
     if (!connection) throw new Error("Faol Facebook ulanish topilmadi");
-
     const { listLeadFormsForPage, subscribePageToLeadgen } =
       await import("./facebook-graph.server");
     const forms = await listLeadFormsForPage(connection.page_id, connection.page_access_token);
@@ -325,8 +313,6 @@ export const syncFacebookForms = createServerFn({ method: "POST" })
         { onConflict: "connection_id,form_id", ignoreDuplicates: true },
       );
     }
-
-    // Webhook obunasini ham yangilash
     let subscribeError: string | null = null;
     try {
       await subscribePageToLeadgen(connection.page_id, connection.page_access_token);
@@ -334,6 +320,5 @@ export const syncFacebookForms = createServerFn({ method: "POST" })
       subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
       console.error("Facebook leadgen obuna yangilash xatosi:", err);
     }
-
     return { ok: true, count: forms.length, subscribeError };
   });
