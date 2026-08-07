@@ -99,6 +99,22 @@ function LidlarPage() {
     },
   });
 
+  const fbPagesQ = useQuery({
+    queryKey: ["fb-pages-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("leads")
+        .select("facebook_page_id, facebook_page_name")
+        .not("facebook_page_id", "is", null);
+      const seen = new Set<string>();
+      return (data ?? []).filter((r) => {
+        if (!r.facebook_page_id || seen.has(r.facebook_page_id)) return false;
+        seen.add(r.facebook_page_id);
+        return true;
+      });
+    },
+  });
+
   // Faqat operator filteri tanlanganda ko'rsatiladi
   const todayCallbacks = useMemo(() => {
     if (operatorFilter === "all") return [];
