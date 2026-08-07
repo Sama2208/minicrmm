@@ -29,17 +29,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  LineChart,
-  Line,
-  Legend,
 } from "recharts";
 import {
   STATUS_LABEL,
   STATUS_ORDER,
   STATUS_BADGE,
-  SOURCE_LABEL,
-  SOURCE_LIST,
-  SOURCE_COLOR,
   CONVERSION_STATUS,
   type LeadStatus,
   type LeadSource,
