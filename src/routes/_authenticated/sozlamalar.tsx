@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Facebook, Download } from "lucide-react";
 import { toast } from "sonner";
-import { useClinicId, useClinicStatus, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
+import { useClinicId } from "@/lib/clinic";
 import {
   createFacebookOAuthState,
   listPendingFacebookPages,
