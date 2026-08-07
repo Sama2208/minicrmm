@@ -480,6 +480,7 @@ export function LidlarKanban({
                       onDetail={setSelectedLead}
                       isSelected={selectedIds.has(l.id)}
                       onToggle={toggleSelect}
+                      compact={compact}
                     />
                   ))}
 
