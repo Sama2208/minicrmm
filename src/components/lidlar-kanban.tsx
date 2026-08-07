@@ -154,6 +154,40 @@ export function LidlarKanban({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [zoom, setZoom] = useState<number>(() => {
+    try {
+      return Number(localStorage.getItem("kanban_zoom")) || 100;
+    } catch {
+      return 100;
+    }
+  });
+  const [compact, setCompact] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("kanban_compact") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const applyZoom = (v: number) => {
+    setZoom(v);
+    try {
+      localStorage.setItem("kanban_zoom", String(v));
+    } catch {
+      /* noop */
+    }
+  };
+  const toggleCompact = () => {
+    setCompact((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("kanban_compact", next ? "1" : "0");
+      } catch {
+        /* noop */
+      }
+      return next;
+    });
+  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -396,6 +430,43 @@ export function LidlarKanban({
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1 shrink-0 border rounded-md px-2 h-9 bg-white">
+          <button
+            type="button"
+            onClick={() => applyZoom(Math.max(60, zoom - 10))}
+            className="text-slate-500 hover:text-slate-900 px-1 text-sm font-bold"
+            title="Kichiklashtirish"
+          >
+            −
+          </button>
+          <span className="text-[11px] text-slate-500 w-9 text-center tabular-nums">{zoom}%</span>
+          <button
+            type="button"
+            onClick={() => applyZoom(Math.min(130, zoom + 10))}
+            className="text-slate-500 hover:text-slate-900 px-1 text-sm font-bold"
+            title="Kattalashtirish"
+          >
+            +
+          </button>
+          <div className="w-px h-4 bg-slate-200 mx-1" />
+          <button
+            type="button"
+            onClick={() => applyZoom(100)}
+            className="text-[10px] text-slate-400 hover:text-slate-700 px-1"
+            title="Asliga qaytarish"
+          >
+            ⟲
+          </button>
+        </div>
+        <Button
+          variant={compact ? "default" : "outline"}
+          size="sm"
+          onClick={toggleCompact}
+          className={`h-9 gap-1.5 shrink-0 text-xs ${compact ? "bg-slate-700 hover:bg-slate-800" : ""}`}
+          title="Kompakt rejim — kam ma'lumot, ko'p karta"
+        >
+          {compact ? "▤ Kompakt" : "▦ To'liq"}
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -414,7 +485,12 @@ export function LidlarKanban({
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        <div className="flex gap-3 overflow-x-auto pb-3">
+        <div
+          className="flex gap-3 overflow-x-auto pb-3 origin-top-left"
+          style={{
+            zoom: zoom / 100,
+          }}
+        >
           {columns.map((col) => {
             const items = grouped.get(col.key) ?? [];
             return (
@@ -480,6 +556,7 @@ export function LidlarKanban({
                       onDetail={setSelectedLead}
                       isSelected={selectedIds.has(l.id)}
                       onToggle={toggleSelect}
+                      compact={compact}
                     />
                   ))}
 
@@ -625,6 +702,7 @@ function DraggableCard({
   onDetail,
   isSelected,
   onToggle,
+  compact,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -633,6 +711,7 @@ function DraggableCard({
   onDetail: (lead: KanbanLead) => void;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  compact?: boolean;
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id: lead.id });
   return (
@@ -644,6 +723,7 @@ function DraggableCard({
         onDetail={onDetail}
         isSelected={isSelected}
         onToggle={onToggle}
+        compact={compact}
       />
     </div>
   );
@@ -656,6 +736,7 @@ function CardBody({
   onDetail,
   isSelected,
   onToggle,
+  compact,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -663,6 +744,7 @@ function CardBody({
   onDetail?: (lead: KanbanLead) => void;
   isSelected?: boolean;
   onToggle?: (id: string) => void;
+  compact?: boolean;
 }) {
   const borderClass = isSelected
     ? "border-2 border-red-400"
@@ -679,7 +761,7 @@ function CardBody({
     <div
       className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}
     >
-      <div className="px-3 py-2 flex items-start gap-2">
+      <div className={`${compact ? "px-2 py-1.5" : "px-3 py-2"} flex items-start gap-2`}>
         {onToggle && (
           <button
             type="button"
@@ -701,22 +783,22 @@ function CardBody({
         <div className="flex-1 min-w-0 space-y-0.5">
           <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
           <div className="text-[11px] text-slate-600 truncate">📞 {lead.phone ?? "—"}</div>
-          {lead.nomer_asosiy && (
+          {!compact && lead.nomer_asosiy && (
             <div className="text-[11px] text-slate-500 truncate">📱 {lead.nomer_asosiy}</div>
           )}
-          {lead.region && (
+          {!compact && lead.region && (
             <div className="text-[11px] text-slate-500 truncate">📍 {lead.region}</div>
           )}
-          {lead.problem_type && (
+          {!compact && lead.problem_type && (
             <div className="text-[11px] text-slate-500 line-clamp-2">💬 {lead.problem_type}</div>
           )}
-          {lead.can_visit_clinic && (
+          {!compact && lead.can_visit_clinic && (
             <div className="text-[11px] text-slate-500 truncate">
               🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}
             </div>
           )}
           {/* Notes indicator */}
-          {lead.notes && (
+          {!compact && lead.notes && (
             <div className="text-[10px] text-slate-400 line-clamp-1 italic">📝 {lead.notes}</div>
           )}
           {/* Konsultatsiya sanasi */}
