@@ -897,60 +897,73 @@ function ClinicFacebookDialog({
           <p className="text-sm text-slate-500">Yuklanmoqda...</p>
         ) : statusQ.data?.connected ? (
           <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <div className="font-medium">{statusQ.data.pageName}</div>
-                <div className="text-xs text-slate-500">Ulangan</div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => syncForms.mutate()}
-                  disabled={syncForms.isPending}
-                >
-                  {syncForms.isPending ? "Yuklanmoqda..." : "Formalarni yangilash"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700"
-                  onClick={() => disconnect.mutate()}
-                  disabled={disconnect.isPending}
-                >
-                  Uzish
-                </Button>
-              </div>
-            </div>
-            {statusQ.data.forms.length > 0 && (
-              <div className="space-y-2">
-                <Label>Formalar</Label>
-                {statusQ.data.forms.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between text-sm">
-                    <span>{f.form_name}</span>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Eski lidlarni import qilish"
-                        onClick={() => importLeads.mutate(f.id)}
-                        disabled={importLeads.isPending}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                      </Button>
-                      <Switch
-                        checked={f.is_syncing}
-                        onCheckedChange={(checked) =>
-                          toggleForm.mutate({ formRowId: f.id, enabled: checked })
-                        }
-                      />
-                    </div>
+            {statusQ.data.pages.map((page) => (
+              <div key={page.connectionId} className="space-y-2 rounded-md border p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{page.pageName}</div>
+                    <div className="text-xs text-slate-500">Ulangan</div>
                   </div>
-                ))}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => syncForms.mutate(page.connectionId)}
+                      disabled={syncForms.isPending}
+                    >
+                      {syncForms.isPending ? "Yuklanmoqda..." : "Formalarni yangilash"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => disconnect.mutate(page.pageId)}
+                      disabled={disconnect.isPending}
+                    >
+                      Uzish
+                    </Button>
+                  </div>
+                </div>
+                {page.forms.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Formalar</Label>
+                    {page.forms.map((f) => (
+                      <div key={f.id} className="flex items-center justify-between text-sm">
+                        <span>{f.form_name}</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="Eski lidlarni import qilish"
+                            onClick={() => importLeads.mutate(f.id)}
+                            disabled={importLeads.isPending}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                          <Switch
+                            checked={f.is_syncing}
+                            onCheckedChange={(checked) =>
+                              toggleForm.mutate({ formRowId: f.id, enabled: checked })
+                            }
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
+            <Button
+              variant="outline"
+              onClick={() => connect.mutate()}
+              disabled={connect.isPending}
+            >
+              <Facebook className="h-4 w-4" />
+              {connect.isPending ? "Yo'naltirilmoqda..." : "Yana bir Facebook Page ulash"}
+            </Button>
           </div>
+
         ) : (
           <Button
             onClick={() => connect.mutate()}
