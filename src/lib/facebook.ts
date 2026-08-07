@@ -51,7 +51,10 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
   const nomerAsosiy = fbAutoPhone;
 
   // Kasallik turi — leads.problem_type ga saqlanadi
-  const problemType = get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") || null;
+  const problemType =
+    get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?") ||
+    get("qaysi_turdagi_kasallik_bezovta_qiladi?") ||
+    null;
 
   return {
     fullName: fullName || null,
