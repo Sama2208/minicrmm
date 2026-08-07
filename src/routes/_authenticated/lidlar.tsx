@@ -144,6 +144,7 @@ function LidlarPage() {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
       if (operatorFilter !== "all" && l.assigned_to !== operatorFilter) return false;
+      if (facebookPageFilter !== "all" && l.facebook_page_id !== facebookPageFilter) return false;
       if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(l.created_at) > new Date(dateTo + "T23:59:59")) return false;
       if (search) {
