@@ -90,32 +90,50 @@ export type KanbanLead = {
 
 export type KanbanOperator = { id: string; full_name: string };
 
-type CallLog = {
-  id: string;
-  lead_id: string;
-  operator_name: string;
-  result: "gaplashdi" | "kotarmadi" | "qayta_kerak";
-  notes: string | null;
-  called_at: string;
-};
+function ErtangiActions({ leadId }: { leadId: string }) {
+  const qc = useQueryClient();
+  const [saving, setSaving] = useState(false);
 
-const RESULT_META: Record<CallLog["result"], { cls: string; label: string; icon: string }> = {
-  gaplashdi: {
-    cls: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-    label: "Gaplashdi",
-    icon: "✅",
-  },
-  kotarmadi: {
-    cls: "bg-red-100 text-red-700 border border-red-200",
-    label: "Ko'tarmadi",
-    icon: "📵",
-  },
-  qayta_kerak: {
-    cls: "bg-amber-100 text-amber-700 border border-amber-200",
-    label: "Qayta kerak",
-    icon: "🔄",
-  },
-};
+  const move = async (status: "bugungi_konsultatsiya" | "bekor_qilindi" | "konsultatsiyaga_yozildi") => {
+    setSaving(true);
+    await supabase.from("leads").update({ status }).eq("id", leadId);
+    setSaving(false);
+    qc.invalidateQueries({ queryKey: ["leads"] });
+  };
+
+  if (saving) return <div className="text-[10px] text-slate-400">Saqlanmoqda...</div>;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); move("bugungi_konsultatsiya"); }}
+        className="w-full text-[10px] font-medium py-1 px-2 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors text-left"
+      >
+        ✅ Ha keladi
+      </button>
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); move("konsultatsiyaga_yozildi"); }}
+        className="w-full text-[10px] font-medium py-1 px-2 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors text-left"
+      >
+        📅 Kuni o'zgardi
+      </button>
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); move("bekor_qilindi"); }}
+        className="w-full text-[10px] font-medium py-1 px-2 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-left"
+      >
+        ❌ Bekor qildi
+      </button>
+    </div>
+  );
+}
+
+
 
 export function LidlarKanban({
   leads,
@@ -728,6 +746,13 @@ function CardBody({
                   : formatDate(lead.next_followup_date)}
             </div>
           )}
+          {/* Ertangi konsultatsiya — kelish holati */}
+          {lead.status === "ertangi_konsultatsiya" && onDetail && (
+            <div className="mt-2 pt-2 border-t border-cyan-100 space-y-1.5">
+              <div className="text-[10px] font-semibold text-cyan-700 mb-1">Konsultatsiyaga keladi?</div>
+              <ErtangiActions leadId={lead.id} />
+            </div>
+          )}
           <div className="pt-1">
             <span
               className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}
@@ -765,198 +790,8 @@ function CardBody({
   );
 }
 
-// ─── CallLogSection ───────────────────────────────────────────────────────────
 
-function CallLogSection({ leadId, operators }: { leadId: string; operators: KanbanOperator[] }) {
-  const qc = useQueryClient();
-  const clinicQ = useClinicId();
-  const [showForm, setShowForm] = useState(false);
-  const [opName, setOpName] = useState("");
-  const [result, setResult] = useState<CallLog["result"]>("gaplashdi");
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  const { data: logs = [], isLoading } = useQuery({
-    queryKey: ["call_logs", leadId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("call_logs")
-        .select("*")
-        .eq("lead_id", leadId)
-        .order("called_at", { ascending: false });
-      if (error) throw error;
-      return data as CallLog[];
-    },
-  });
-
-  const save = async () => {
-    if (!opName.trim()) {
-      toast.error("Operator nomi kiritilishi shart");
-      return;
-    }
-    if (!clinicQ.data) {
-      toast.error("Klinika aniqlanmadi");
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase.from("call_logs").insert({
-      lead_id: leadId,
-      operator_name: opName.trim(),
-      result,
-      notes: notes.trim() || null,
-      clinic_id: clinicQ.data,
-    });
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Qo'ng'iroq qo'shildi");
-    qc.invalidateQueries({ queryKey: ["call_logs", leadId] });
-    setShowForm(false);
-    setOpName("");
-    setResult("gaplashdi");
-    setNotes("");
-  };
-
-  const deleteLog = async (id: string) => {
-    if (!window.confirm("Bu qo'ng'iroqni o'chirasizmi?")) return;
-    const { error } = await supabase.from("call_logs").delete().eq("id", id);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    qc.invalidateQueries({ queryKey: ["call_logs", leadId] });
-    toast.success("O'chirildi");
-  };
-
-  return (
-    <div className="space-y-3 pt-2 border-t">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-          📞 Qo'ng'iroq tarixi
-          {logs.length > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center text-[10px] font-medium bg-slate-200 text-slate-700 rounded-full min-w-[18px] h-[18px] px-1">
-              {logs.length}
-            </span>
-          )}
-        </Label>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="text-xs text-emerald-600 hover:text-emerald-800 font-medium flex items-center gap-0.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Qo'ng'iroq qo'shish
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="bg-slate-50 border rounded-md p-3 space-y-2">
-          {operators.length > 0 ? (
-            <Select value={opName} onValueChange={setOpName}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Operator tanlang" />
-              </SelectTrigger>
-              <SelectContent>
-                {operators.map((o) => (
-                  <SelectItem key={o.id} value={o.full_name}>
-                    {o.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Input
-              placeholder="Operator ismi"
-              value={opName}
-              onChange={(e) => setOpName(e.target.value)}
-              className="h-8 text-xs"
-            />
-          )}
-          <Select value={result} onValueChange={(v) => setResult(v as CallLog["result"])}>
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="gaplashdi">✅ Gaplashdi</SelectItem>
-              <SelectItem value="kotarmadi">📵 Ko'tarmadi</SelectItem>
-              <SelectItem value="qayta_kerak">🔄 Qayta qo'ng'iroq kerak</SelectItem>
-            </SelectContent>
-          </Select>
-          <Textarea
-            placeholder="Izoh — nima dedi, kelishuvlar, keyingi qadam…"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={2}
-            className="text-xs resize-none"
-          />
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              className="h-7 text-xs flex-1 bg-emerald-600 hover:bg-emerald-700"
-              onClick={save}
-              disabled={saving}
-            >
-              {saving ? "Saqlanmoqda…" : "Saqlash"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => setShowForm(false)}
-            >
-              Bekor
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {isLoading ? (
-        <p className="text-xs text-slate-400 text-center py-2">Yuklanmoqda…</p>
-      ) : logs.length === 0 ? (
-        <div className="text-center py-4 text-slate-400">
-          <p className="text-xl">📵</p>
-          <p className="text-xs mt-1">Hali qo'ng'iroq yo'q</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {logs.map((log) => {
-            const m = RESULT_META[log.result];
-            return (
-              <div key={log.id} className="bg-white border rounded-md p-2.5 space-y-1">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <span
-                    className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${m.cls}`}
-                  >
-                    {m.icon} {m.label}
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] text-slate-400">{formatDate(log.called_at)}</span>
-                    <button
-                      type="button"
-                      onClick={() => deleteLog(log.id)}
-                      className="text-slate-300 hover:text-red-500 transition-colors"
-                      title="O'chirish"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-600">👤 {log.operator_name}</div>
-                {log.notes && (
-                  <div className="text-xs text-slate-500 bg-slate-50 rounded px-2 py-1 italic">
-                    {log.notes}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Lead Detail Dialog ────────────────────────────────────────────────────────
 
@@ -1170,9 +1005,6 @@ function LeadDetailDialog({
             Yaratilgan: {formatDate(lead.created_at)}
           </div>
         </div>
-
-        {/* Qo'ng'iroq logi */}
-        <CallLogSection leadId={lead.id} operators={operators} />
 
         <DialogFooter className="gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>
