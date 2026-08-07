@@ -14,20 +14,20 @@ export type ColumnDef = {
 };
 
 export const DEFAULT_COLUMNS: ColumnDef[] = [
-  { key: "yangi", status: "yangi", title: "Yangi", locked: true },
-  { key: "qayta_qongiroq", status: "qayta_qongiroq", title: "Qayta qo'ng'iroq" },
-  { key: "sifatsiz", status: "sifatsiz", title: "Sifatsiz", accent: "muted" },
+  { key: "yangi", status: "yangi", title: "Yangi lid", locked: true },
+  { key: "prioritet", status: "prioritet", title: "Prioritet", accent: "green" },
+  { key: "qayta_aloqa", status: "qayta_aloqa", title: "Qayta aloqa" },
   { key: "malumot_oldi", status: "malumot_oldi", title: "Ma'lumot oldi" },
   { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
   { key: "ertangi_konsultatsiya", status: "ertangi_konsultatsiya", title: "Ertangi konsultatsiya" },
   { key: "bugungi_konsultatsiya", status: "bugungi_konsultatsiya", title: "Bugungi konsultatsiya" },
+  { key: "konsultatsiyaga_kelmadi", status: "konsultatsiyaga_kelmadi", title: "Konsultatsiyaga kelmadi", accent: "muted" },
   { key: "konsultatsiyaga_keldi", status: "konsultatsiyaga_keldi", title: "Konsultatsiyaga keldi", accent: "green" },
-  { key: "yotishga_yozildi", status: "yotishga_yozildi", title: "Yotishga yozildi", accent: "green" },
+  { key: "yotdi", status: "yotdi", title: "Yotdi", accent: "green" },
+  { key: "qatnadi", status: "qatnadi", title: "Qatnadi", accent: "green" },
   { key: "bekor_qilindi", status: "bekor_qilindi", title: "Bekor qilindi", accent: "muted" },
-  { key: "qayta_qongiroq_2", status: "qayta_qongiroq_2", title: "Qayta qo'ng'iroq 2" },
-  { key: "qayta_qongiroq_4", status: "qayta_qongiroq_4", title: "Qayta qo'ng'iroq 4" },
-  { key: "qayta_qongiroq_6_sifatsiz", status: "qayta_qongiroq_6_sifatsiz", title: "Qayta qo'ng'iroq 6 sifatsiz", accent: "muted" },
-  ];
+  { key: "sifatsiz", status: "sifatsiz", title: "Sifatsiz lid", accent: "muted" },
+];
 
 export const SOURCE_BADGE: Record<LeadSource, string> = {
   facebook: "bg-blue-100 text-blue-700",
