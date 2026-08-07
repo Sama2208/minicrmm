@@ -251,6 +251,21 @@ function LidlarPage() {
             ))}
           </SelectContent>
         </Select>
+        {(fbPagesQ.data ?? []).length > 1 && (
+          <Select value={facebookPageFilter} onValueChange={setFacebookPageFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Facebook sahifa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Barcha sahifalar</SelectItem>
+              {(fbPagesQ.data ?? []).map((p) => (
+                <SelectItem key={p.facebook_page_id!} value={p.facebook_page_id!}>
+                  {p.facebook_page_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Input
           type="date"
           value={dateFrom}
