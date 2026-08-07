@@ -7,7 +7,7 @@ import {
   ChevronRight,
   Calendar,
   Trash2,
-  GripVertical,
+  
   
   Square,
   CheckSquare,
@@ -43,7 +43,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+
 import {
   SOURCE_LABEL,
   SOURCE_LIST,
@@ -63,7 +63,7 @@ import {
   initials,
   LS_TITLES,
   LS_EXTRA,
-  LS_COL_ORDER,
+  
   LS_HIDDEN,
   type ColumnDef,
 } from "@/lib/kanban";
@@ -145,7 +145,7 @@ export function LidlarKanban({
   const qc = useQueryClient();
   const [titles, setTitles] = useState<Record<string, string>>({});
   const [extras, setExtras] = useState<ColumnDef[]>([]);
-  const [colOrder, setColOrder] = useState<string[]>([]);
+  
   const [hidden, setHidden] = useState<string[]>([]);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
@@ -223,8 +223,6 @@ export function LidlarKanban({
       if (t) setTitles(JSON.parse(t));
       const e = localStorage.getItem(LS_EXTRA);
       if (e) setExtras(JSON.parse(e));
-      const o = localStorage.getItem(LS_COL_ORDER);
-      if (o) setColOrder(JSON.parse(o));
       const h = localStorage.getItem(LS_HIDDEN);
       if (h) setHidden(JSON.parse(h));
     } catch {
@@ -248,14 +246,6 @@ export function LidlarKanban({
       /* noop */
     }
   };
-  const saveColOrder = (order: string[]) => {
-    setColOrder(order);
-    try {
-      localStorage.setItem(LS_COL_ORDER, JSON.stringify(order));
-    } catch {
-      /* noop */
-    }
-  };
   const saveHidden = (next: string[]) => {
     setHidden(next);
     try {
@@ -267,24 +257,14 @@ export function LidlarKanban({
 
 
   const columns = useMemo<ColumnDef[]>(() => {
-    const allCols = [...DEFAULT_COLUMNS, ...extras]
+    return [...DEFAULT_COLUMNS, ...extras]
       .filter((c) => !hidden.includes(c.key))
       .map((c) => ({
         ...c,
         title: titles[c.key] ?? c.title,
       }));
-    if (colOrder.length === 0) return allCols;
-    // "yangi" har doim birinchi
-    const yangi = allCols.find((c) => c.key === "yangi");
-    const rest = allCols.filter((c) => c.key !== "yangi");
-    const sorted = colOrder
-      .map((k) => rest.find((c) => c.key === k))
-      .filter((c): c is ColumnDef => !!c);
-    rest.forEach((c) => {
-      if (!colOrder.includes(c.key)) sorted.push(c);
-    });
-    return yangi ? [yangi, ...sorted] : sorted;
-  }, [extras, titles, colOrder, hidden]);
+  }, [extras, titles, hidden]);
+
 
   const opMap = useMemo(() => {
     const m = new Map<string, string>();
@@ -332,7 +312,7 @@ export function LidlarKanban({
   };
 
   const activeLead = useMemo(() => leads.find((l) => l.id === activeId) ?? null, [leads, activeId]);
-  const activeColKey = activeId?.startsWith("__col__") ? activeId.slice(7, -2) : null;
+  
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
@@ -371,20 +351,6 @@ export function LidlarKanban({
     const activeStr = String(e.active.id);
     const overStr = String(e.over.id);
 
-    // Ustun harakatlantirish
-    if (activeStr.startsWith("__col__")) {
-      const fromKey = activeStr.slice(7, -2);
-      const toKey = overStr;
-      const keys = columns.map((c) => c.key);
-      const fromIdx = keys.indexOf(fromKey);
-      const toIdx = keys.indexOf(toKey);
-      if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
-        const newOrder = arrayMove(keys, fromIdx, toIdx);
-        saveColOrder(newOrder.filter((k) => k !== "yangi"));
-      }
-      return;
-    }
-
     // Lid harakatlantirish
     const col = columns.find((c) => c.key === overStr);
     if (!col || !col.status) return;
@@ -392,6 +358,7 @@ export function LidlarKanban({
     if (!lead || lead.status === col.status) return;
     updateStatus.mutate({ id: lead.id, status: col.status });
   };
+
 
   return (
     <>
@@ -487,11 +454,9 @@ export function LidlarKanban({
             const items = grouped.get(col.key) ?? [];
             return (
               <KanbanColumn key={col.key} colKey={col.key} accent={col.accent}>
-                <div
-                  className={`flex items-center justify-between px-2 py-2 border-b transition-opacity ${activeColKey === col.key ? "opacity-30" : ""}`}
-                >
-                  <div className="flex items-center gap-1 min-w-0">
-                    {!col.locked && <ColGripHandle colKey={col.key} />}
+                <div className="flex items-center justify-between px-2 py-2 border-b">
+                  <div className="flex items-start gap-1 min-w-0">
+
                     {editingKey === col.key && !col.locked ? (
                       <input
                         autoFocus
@@ -508,7 +473,8 @@ export function LidlarKanban({
                       />
                     ) : (
                       <span
-                        className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none truncate"
+                        className="text-[12px] font-medium text-slate-600 uppercase tracking-wide select-none leading-tight"
+
                         onDoubleClick={() => {
                           if (!col.locked) setEditingKey(col.key);
                         }}
@@ -581,20 +547,14 @@ export function LidlarKanban({
         </div>
 
         <DragOverlay>
-          {activeColKey ? (
-            <div className="bg-white border border-slate-300 rounded-lg shadow-xl w-[260px] h-12 flex items-center px-3 gap-2 opacity-90">
-              <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
-              <span className="text-[12px] font-medium text-slate-600 uppercase tracking-wide truncate">
-                {columns.find((c) => c.key === activeColKey)?.title ?? activeColKey}
-              </span>
-            </div>
-          ) : activeLead ? (
+          {activeLead ? (
             <CardBody
               lead={activeLead}
               opName={activeLead.assigned_to ? (opMap.get(activeLead.assigned_to) ?? null) : null}
             />
           ) : null}
         </DragOverlay>
+
       </DndContext>
 
       {selectedLead && (
@@ -642,22 +602,8 @@ export function LidlarKanban({
   );
 }
 
-// ─── Ustun drag handle ────────────────────────────────────────────────────────
 
-function ColGripHandle({ colKey }: { colKey: string }) {
-  const { attributes, listeners, setNodeRef } = useDraggable({ id: `__col__${colKey}__` });
-  return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors shrink-0 touch-none select-none"
-      title="Ushlab sudrang — ustun o'rnini o'zgartirish"
-    >
-      <GripVertical className="h-4 w-4" />
-    </div>
-  );
-}
+
 
 function KanbanColumn({
   colKey,
