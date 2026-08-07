@@ -851,7 +851,7 @@ function ClinicFacebookDialog({
   });
 
   const disconnect = useMutation({
-    mutationFn: () => disconnectFacebook({ data: { clinicId: clinic.id } }),
+    mutationFn: (pageId: string) => disconnectFacebook({ data: { pageId, clinicId: clinic.id } }),
     onSuccess: () => {
       toast.success("Facebook ulanishi uzildi");
       qc.invalidateQueries({ queryKey: ["platform-facebook-status", clinic.id] });
@@ -860,7 +860,8 @@ function ClinicFacebookDialog({
   });
 
   const syncForms = useMutation({
-    mutationFn: () => syncFacebookForms({ data: { clinicId: clinic.id } }),
+    mutationFn: (connectionId: string) =>
+      syncFacebookForms({ data: { connectionId, clinicId: clinic.id } }),
     onSuccess: (res) => {
       if (res.subscribeError) {
         toast.error(
