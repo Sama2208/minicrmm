@@ -396,6 +396,43 @@ export function LidlarKanban({
             ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1 shrink-0 border rounded-md px-2 h-9 bg-white">
+          <button
+            type="button"
+            onClick={() => applyZoom(Math.max(60, zoom - 10))}
+            className="text-slate-500 hover:text-slate-900 px-1 text-sm font-bold"
+            title="Kichiklashtirish"
+          >
+            −
+          </button>
+          <span className="text-[11px] text-slate-500 w-9 text-center tabular-nums">{zoom}%</span>
+          <button
+            type="button"
+            onClick={() => applyZoom(Math.min(130, zoom + 10))}
+            className="text-slate-500 hover:text-slate-900 px-1 text-sm font-bold"
+            title="Kattalashtirish"
+          >
+            +
+          </button>
+          <div className="w-px h-4 bg-slate-200 mx-1" />
+          <button
+            type="button"
+            onClick={() => applyZoom(100)}
+            className="text-[10px] text-slate-400 hover:text-slate-700 px-1"
+            title="Asliga qaytarish"
+          >
+            ⟲
+          </button>
+        </div>
+        <Button
+          variant={compact ? "default" : "outline"}
+          size="sm"
+          onClick={toggleCompact}
+          className={`h-9 gap-1.5 shrink-0 text-xs ${compact ? "bg-slate-700 hover:bg-slate-800" : ""}`}
+          title="Kompakt rejim — kam ma'lumot, ko'p karta"
+        >
+          {compact ? "▤ Kompakt" : "▦ To'liq"}
+        </Button>
         <Button
           variant="outline"
           size="sm"
