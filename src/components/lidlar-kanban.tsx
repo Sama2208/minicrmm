@@ -656,6 +656,7 @@ function CardBody({
   onDetail,
   isSelected,
   onToggle,
+  compact,
 }: {
   lead: KanbanLead;
   opName: string | null;
@@ -663,6 +664,7 @@ function CardBody({
   onDetail?: (lead: KanbanLead) => void;
   isSelected?: boolean;
   onToggle?: (id: string) => void;
+  compact?: boolean;
 }) {
   const borderClass = isSelected
     ? "border-2 border-red-400"
@@ -679,7 +681,7 @@ function CardBody({
     <div
       className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}
     >
-      <div className="px-3 py-2 flex items-start gap-2">
+      <div className={`${compact ? "px-2 py-1.5" : "px-3 py-2"} flex items-start gap-2`}>
         {onToggle && (
           <button
             type="button"
@@ -701,22 +703,22 @@ function CardBody({
         <div className="flex-1 min-w-0 space-y-0.5">
           <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
           <div className="text-[11px] text-slate-600 truncate">📞 {lead.phone ?? "—"}</div>
-          {lead.nomer_asosiy && (
+          {!compact && lead.nomer_asosiy && (
             <div className="text-[11px] text-slate-500 truncate">📱 {lead.nomer_asosiy}</div>
           )}
-          {lead.region && (
+          {!compact && lead.region && (
             <div className="text-[11px] text-slate-500 truncate">📍 {lead.region}</div>
           )}
-          {lead.problem_type && (
+          {!compact && lead.problem_type && (
             <div className="text-[11px] text-slate-500 line-clamp-2">💬 {lead.problem_type}</div>
           )}
-          {lead.can_visit_clinic && (
+          {!compact && lead.can_visit_clinic && (
             <div className="text-[11px] text-slate-500 truncate">
               🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}
             </div>
           )}
           {/* Notes indicator */}
-          {lead.notes && (
+          {!compact && lead.notes && (
             <div className="text-[10px] text-slate-400 line-clamp-1 italic">📝 {lead.notes}</div>
           )}
           {/* Konsultatsiya sanasi */}
