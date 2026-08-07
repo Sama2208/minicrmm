@@ -480,6 +480,7 @@ export function LidlarKanban({
           className="flex gap-3 overflow-x-auto pb-3 origin-top-left"
           style={{
             zoom: zoom / 100,
+            ["--kanban-zoom" as string]: String(zoom / 100),
           }}
         >
           {columns.map((col) => {
