@@ -97,6 +97,7 @@ export async function ingestFacebookLead(params: {
       meta_ad_id: params.metaAdId ?? null,
       facebook_page_id: facebookPageId,
       facebook_page_name: facebookPageName,
+      assigned_to: assignedTo,
     })
     .select("id")
     .maybeSingle();
