@@ -27,8 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, Facebook, Download } from "lucide-react";
 import { toast } from "sonner";
-import { useClinicId, useClinicStatus, DEFAULT_BRAND_COLOR } from "@/lib/clinic";
-import { updateClinicBranding } from "@/lib/branding.functions";
+import { useClinicId } from "@/lib/clinic";
 import {
   createFacebookOAuthState,
   listPendingFacebookPages,
@@ -123,7 +122,6 @@ function SozlamalarPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <BrandingCard />
       <FacebookConnectionCard />
 
       <Card>
@@ -202,72 +200,6 @@ function SozlamalarPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-}
-
-function BrandingCard() {
-  const qc = useQueryClient();
-  const clinicStatusQ = useClinicStatus();
-  const [logoUrl, setLogoUrl] = useState("");
-  const [color, setColor] = useState(DEFAULT_BRAND_COLOR);
-
-  useEffect(() => {
-    if (!clinicStatusQ.data) return;
-    setLogoUrl(clinicStatusQ.data.logo_url ?? "");
-    setColor(clinicStatusQ.data.primary_color);
-  }, [clinicStatusQ.data]);
-
-  const save = useMutation({
-    mutationFn: () =>
-      updateClinicBranding({ data: { logoUrl: logoUrl.trim(), primaryColor: color } }),
-    onSuccess: () => {
-      toast.success("Branding yangilandi");
-      qc.invalidateQueries({ queryKey: ["my-clinic-status"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Klinika brandingi</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <Label>Logo manzili (URL, ixtiyoriy)</Label>
-          <Input
-            value={logoUrl}
-            onChange={(e) => setLogoUrl(e.target.value)}
-            className="mt-1"
-            placeholder="https://..."
-          />
-        </div>
-        <div>
-          <Label>Asosiy rang</Label>
-          <div className="flex items-center gap-2 mt-1">
-            <Input
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="h-9 w-14 p-1"
-            />
-            <Input
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="font-mono text-sm max-w-[120px]"
-            />
-          </div>
-        </div>
-        <Button
-          onClick={() => save.mutate()}
-          disabled={save.isPending}
-          style={{ backgroundColor: color }}
-          className="hover:opacity-90"
-        >
-          {save.isPending ? "Saqlanmoqda..." : "Saqlash"}
-        </Button>
-      </CardContent>
-    </Card>
   );
 }
 
