@@ -29,7 +29,7 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const target = safeNext(next);
+  const target = safeNext(next ?? "");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
