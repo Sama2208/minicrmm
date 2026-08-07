@@ -204,7 +204,7 @@ export const deleteClinic = createServerFn({ method: "POST" })
 // Faqat jamlangan (aggregate) sonlar — individual lid nomi/telefoni hech
 // qachon qaytarilmaydi, chunki bu bemor ma'lumoti va platforma admin buni
 // ko'rmasligi kerak.
-const CONVERTED_STATUS = "yotdi";
+const CONVERTED_STATUS = "yotishga_yozildi";
 
 export const getClinicsOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
