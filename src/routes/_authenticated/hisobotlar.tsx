@@ -45,6 +45,10 @@ import {
   type LeadSource,
 } from "@/lib/crm";
 
+// Ads Manager timezone: America/Los_Angeles (GMT-07:00 yozda, GMT-08:00 qishda)
+const toAdsDate = (utcStr: string): string =>
+  new Date(utcStr).toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+
 export const Route = createFileRoute("/_authenticated/hisobotlar")({ component: HisobotlarPage });
 
 type Lead = {
@@ -104,8 +108,8 @@ function HisobotlarPage() {
   const leads = useMemo(() => {
     const list = leadsQ.data ?? [];
     return list.filter((l) => {
-      if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
-      if (dateTo && new Date(l.created_at) > new Date(dateTo + "T23:59:59")) return false;
+      if (dateFrom && toAdsDate(l.created_at) < dateFrom) return false;
+      if (dateTo && toAdsDate(l.created_at) > dateTo) return false;
       if (facebookPageFilter !== "all" && l.facebook_page_id !== facebookPageFilter) return false;
       return true;
     });
@@ -166,7 +170,7 @@ function HisobotlarPage() {
   const dailyData = useMemo(() => {
     const map = new Map<string, Record<string, number | string>>();
     leads.forEach((l) => {
-      const day = l.created_at.slice(0, 10);
+      const day = toAdsDate(l.created_at);
       if (!map.has(day)) {
         const row: Record<string, number | string> = { day };
         SOURCE_LIST.forEach((s) => (row[s] = 0));
