@@ -134,11 +134,7 @@ function SozlamalarPage() {
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[180px]">
               <Label>Ism</Label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="mt-1"
-              />
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} className="mt-1" />
             </div>
             <div className="flex-1 min-w-[180px]">
               <Label>Telegram chat ID</Label>
@@ -275,6 +271,7 @@ function BrandingCard() {
   );
 }
 
+// ✅ O'ZGARTIRILDI: Ko'p sahifali Facebook — har bir page alohida ko'rsatiladi
 function FacebookConnectionCard() {
   const qc = useQueryClient();
   const [pendingState, setPendingState] = useState<string | null>(null);
@@ -306,19 +303,16 @@ function FacebookConnectionCard() {
 
   const connect = useMutation({
     mutationFn: () => createFacebookOAuthState(),
-    onSuccess: (result) => {
-      window.location.href = result.authorizeUrl;
-    },
+    onSuccess: (result) => { window.location.href = result.authorizeUrl; },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const confirmPage = useMutation({
-    mutationFn: (pageId: string) => confirmFacebookPage({ data: { state: pendingState!, pageId } }),
+    mutationFn: (pageId: string) =>
+      confirmFacebookPage({ data: { state: pendingState!, pageId } }),
     onSuccess: (result) => {
       if (result.subscribeError) {
-        toast.error(
-          `"${result.pageName}" ulandi, lekin webhook obunasi xato: ${result.subscribeError}`,
-        );
+        toast.error(`"${result.pageName}" ulandi, lekin webhook obunasi xato: ${result.subscribeError}`);
       } else {
         toast.success(`"${result.pageName}" ulandi`);
       }
@@ -335,24 +329,24 @@ function FacebookConnectionCard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // pageId qabul qiladi — faqat shu page uziladi
   const disconnect = useMutation({
-    mutationFn: () => disconnectFacebook(),
+    mutationFn: (pageId: string) => disconnectFacebook({ data: { pageId } }),
     onSuccess: () => {
-      toast.success("Facebook ulanishi uzildi");
+      toast.success("Facebook page ulanishi uzildi");
       qc.invalidateQueries({ queryKey: ["facebook-connection"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // connectionId qabul qiladi — shu page formalarini yangilaydi
   const syncForms = useMutation({
-    mutationFn: () => syncFacebookForms(),
+    mutationFn: (connectionId: string) => syncFacebookForms({ data: { connectionId } }),
     onSuccess: (res) => {
       if (res.subscribeError) {
-        toast.error(
-          `Formalar yangilandi (${res.count} ta), lekin webhook obunasi xato: ${res.subscribeError}`,
-        );
+        toast.error(`Formalar yangilandi (${res.count} ta), webhook xato: ${res.subscribeError}`);
       } else {
-        toast.success(`Formalar yangilandi (${res.count} ta), webhook obunasi tasdiqlandi`);
+        toast.success(`Formalar yangilandi (${res.count} ta)`);
       }
       qc.invalidateQueries({ queryKey: ["facebook-connection"] });
     },
@@ -367,6 +361,8 @@ function FacebookConnectionCard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const pages = statusQ.data?.connected ? statusQ.data.pages : [];
+
   return (
     <Card>
       <CardHeader>
@@ -375,7 +371,8 @@ function FacebookConnectionCard() {
           Facebook Lead Ads
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
+        {/* OAuth dan qaytganda — page tanlash */}
         {pendingState && (
           <div className="border rounded-md p-3 bg-slate-50 space-y-2">
             <p className="text-sm font-medium text-slate-700">Qaysi Page'ni ulaymiz?</p>
@@ -408,79 +405,94 @@ function FacebookConnectionCard() {
 
         {statusQ.isLoading ? (
           <p className="text-sm text-slate-500">Yuklanmoqda...</p>
-        ) : statusQ.data?.connected ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm">
-                Ulangan: <span className="font-medium">{statusQ.data.pageName}</span>
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={() => syncForms.mutate()}
-                  disabled={syncForms.isPending}
-                >
-                  {syncForms.isPending ? "Yuklanmoqda..." : "Formalarni yangilash"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs text-red-600 hover:text-red-700"
-                  onClick={() => disconnect.mutate()}
-                  disabled={disconnect.isPending}
-                >
-                  Uzish
-                </Button>
-              </div>
-            </div>
-            {statusQ.data.forms.length === 0 ? (
-              <p className="text-sm text-slate-400">Reklama lid formalari topilmadi</p>
-            ) : (
-              <div className="space-y-1.5">
-                {statusQ.data.forms.map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex items-center justify-between border rounded-md px-3 py-2"
-                  >
-                    <span className="text-sm">{f.form_name}</span>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Eski lidlarni import qilish"
-                        onClick={() => importLeads.mutate(f.id)}
-                        disabled={importLeads.isPending}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                      </Button>
-                      <Switch
-                        checked={f.is_syncing}
-                        onCheckedChange={(v) => toggleForm.mutate({ formRowId: f.id, enabled: v })}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-slate-500">
-              Facebook/Instagram reklama lid formalaringizni ulab, mijozlar to'ldirgan zahoti CRM'ga
-              avtomatik tushishini yoqing.
-            </p>
-            <Button
-              onClick={() => connect.mutate()}
-              disabled={connect.isPending}
-              className="bg-[#1877F2] hover:bg-[#1461cc]"
-            >
-              <Facebook className="h-4 w-4" />
-              {connect.isPending ? "Ulanmoqda..." : "Facebook orqali ulash"}
-            </Button>
-          </div>
+          <>
+            {/* Ulangan page'lar ro'yxati */}
+            {pages.map((page) => (
+              <div key={page.connectionId} className="border rounded-md p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold flex items-center gap-1.5">
+                    <Facebook className="h-3.5 w-3.5 text-[#1877F2]" />
+                    {page.pageName}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => syncForms.mutate(page.connectionId)}
+                      disabled={syncForms.isPending}
+                    >
+                      Formalarni yangilash
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs text-red-600 hover:text-red-700"
+                      onClick={() => disconnect.mutate(page.pageId)}
+                      disabled={disconnect.isPending}
+                    >
+                      Uzish
+                    </Button>
+                  </div>
+                </div>
+                {page.forms.length === 0 ? (
+                  <p className="text-sm text-slate-400 pl-5">Reklama lid formalari topilmadi</p>
+                ) : (
+                  <div className="space-y-1.5 pl-1">
+                    {page.forms.map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex items-center justify-between border rounded-md px-3 py-2"
+                      >
+                        <span className="text-sm">{f.form_name}</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title="Eski lidlarni import qilish"
+                            onClick={() => importLeads.mutate(f.id)}
+                            disabled={importLeads.isPending}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </Button>
+                          <Switch
+                            checked={f.is_syncing}
+                            onCheckedChange={(v) =>
+                              toggleForm.mutate({ formRowId: f.id, enabled: v })
+                            }
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Yangi page ulash tugmasi — har doim ko'rinadi */}
+            <div className="pt-1">
+              {pages.length === 0 && (
+                <p className="text-sm text-slate-500 mb-2">
+                  Facebook/Instagram reklama lid formalaringizni ulab, mijozlar to'ldirgan zahoti
+                  CRM'ga avtomatik tushishini yoqing.
+                </p>
+              )}
+              <Button
+                onClick={() => connect.mutate()}
+                disabled={connect.isPending}
+                className="bg-[#1877F2] hover:bg-[#1461cc]"
+              >
+                <Facebook className="h-4 w-4 mr-1" />
+                {connect.isPending
+                  ? "Ulanmoqda..."
+                  : pages.length > 0
+                    ? "Yana bir Facebook Page ulash"
+                    : "Facebook orqali ulash"}
+              </Button>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
