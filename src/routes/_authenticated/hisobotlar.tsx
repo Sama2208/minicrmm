@@ -204,6 +204,24 @@ function HisobotlarPage() {
             </SelectContent>
           </Select>
         </div>
+        {(fbPagesQ.data ?? []).length > 1 && (
+          <div>
+            <Label className="text-xs">Facebook sahifa</Label>
+            <Select value={facebookPageFilter} onValueChange={setFacebookPageFilter}>
+              <SelectTrigger className="w-[200px] mt-1">
+                <SelectValue placeholder="Facebook sahifa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha sahifalar</SelectItem>
+                {(fbPagesQ.data ?? []).map((p) => (
+                  <SelectItem key={p.facebook_page_id!} value={p.facebook_page_id!}>
+                    {p.facebook_page_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {overdueCallbacks.length > 0 && (
