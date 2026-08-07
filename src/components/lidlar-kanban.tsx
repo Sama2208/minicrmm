@@ -527,7 +527,12 @@ export function LidlarKanban({
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-2 space-y-2 max-h-[calc(100vh-260px)]">
+                <div
+                  className="flex-1 overflow-y-auto p-2 space-y-2"
+                  style={{
+                    maxHeight: "calc((100vh - 260px) / var(--kanban-zoom, 1))",
+                  }}
+                >
                   {items.map((l) => (
                     <DraggableCard
                       key={l.id}
