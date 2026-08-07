@@ -28,11 +28,12 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
   const fullName =
     get("full_name") ||
     get("full name") ||
+    get("полное_имя") ||
     [get("first_name"), get("last_name")].filter(Boolean).join(" ").trim() ||
     null;
 
   // Foydalanuvchi kiritgan telefon (ba'zan noto'g'ri formatda kelishi mumkin)
-  const rawCustomPhone = get("telefon_raqamingizni_kiriting!");
+  const rawCustomPhone = get("telefon_raqamingizni_kiriting!") || get("ishlaydigan_telefon_raqam");
   // Facebook profilidan avtomatik to'ldirilgan telefon (odatda to'g'ri format)
   const fbAutoPhone = get("номер_телефона");
 
