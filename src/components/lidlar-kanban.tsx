@@ -718,10 +718,17 @@ function CardBody({
   const today = new Date().toISOString().split("T")[0];
   const isCallbackToday = lead.next_followup_date === today;
   const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
+  const sla = getSla(lead);
+  const slaCardClass =
+    sla.level === "danger"
+      ? "bg-red-100 border-2 border-red-500"
+      : sla.level === "warn"
+        ? "bg-amber-100 border-2 border-amber-500"
+        : `bg-white ${borderClass}`;
 
   return (
     <div
-      className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}
+      className={`rounded-md ${slaCardClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "ring-2 ring-red-400" : ""}`}
     >
       <div className={`${compact ? "px-2 py-1.5" : "px-3 py-2"} flex items-start gap-2`}>
         {onToggle && (
@@ -743,8 +750,25 @@ function CardBody({
           </button>
         )}
         <div className="flex-1 min-w-0 space-y-0.5">
-          <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
-          <div className="text-[11px] text-slate-600 truncate">📞 {lead.phone ?? "—"}</div>
+          <div
+            className={`text-[13px] font-semibold truncate ${sla.level === "danger" ? "text-red-900" : sla.level === "warn" ? "text-amber-900" : "text-slate-900"}`}
+          >
+            {lead.full_name}
+          </div>
+          {sla.level !== "none" && (
+            <div
+              className={`text-[11px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-1 ${
+                sla.level === "danger" ? "bg-red-600 text-white" : "bg-amber-500 text-white"
+              }`}
+            >
+              ⏱ {slaLabel(sla.minutes)}
+            </div>
+          )}
+          <div
+            className={`text-[11px] truncate ${sla.level === "danger" ? "text-red-800 font-medium" : sla.level === "warn" ? "text-amber-800 font-medium" : "text-slate-600"}`}
+          >
+            📞 {lead.phone ?? "—"}
+          </div>
           {!compact && lead.nomer_asosiy && (
             <div className="text-[11px] text-slate-500 truncate">📱 {lead.nomer_asosiy}</div>
           )}
