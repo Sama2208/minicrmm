@@ -4342,6 +4342,7 @@ export type Database = {
         | "konsultatsiyaga_kelmadi"
         | "yotdi"
         | "qatnadi"
+        | "viloyatga_qabul"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4498,6 +4499,7 @@ export const Constants = {
         "konsultatsiyaga_kelmadi",
         "yotdi",
         "qatnadi",
+        "viloyatga_qabul",
       ],
     },
   },
