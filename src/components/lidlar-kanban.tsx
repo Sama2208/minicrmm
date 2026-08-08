@@ -86,9 +86,30 @@ export type KanbanLead = {
   appointment_time: string | null;
   next_followup_date: string | null;
   created_at: string;
+  last_contact_at: string | null;
 };
 
 export type KanbanOperator = { id: string; full_name: string };
+
+type SlaLevel = "none" | "warn" | "danger";
+
+function getSla(lead: { status: string; last_contact_at: string | null; created_at: string }): {
+  level: SlaLevel;
+  minutes: number;
+} {
+  if (lead.status !== "yangi" || lead.last_contact_at) return { level: "none", minutes: 0 };
+  const minutes = Math.floor((Date.now() - new Date(lead.created_at).getTime()) / 60000);
+  if (minutes >= 20) return { level: "danger", minutes };
+  if (minutes >= 10) return { level: "warn", minutes };
+  return { level: "none", minutes };
+}
+
+function slaLabel(minutes: number): string {
+  if (minutes < 60) return `${minutes} daq javobsiz`;
+  const h = Math.floor(minutes / 60);
+  if (h < 24) return `${h} soat javobsiz`;
+  return `${Math.floor(h / 24)} kun javobsiz`;
+}
 
 function ErtangiActions({ leadId }: { leadId: string }) {
   const qc = useQueryClient();
