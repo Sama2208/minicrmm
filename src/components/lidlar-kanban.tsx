@@ -916,6 +916,7 @@ function LeadDetailDialog({
           appointment_date: appointmentDate || null,
           appointment_time: appointmentDate ? appointmentTime || null : null,
           assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
+          last_contact_at: new Date().toISOString(),
         })
         .eq("id", lead.id);
       if (error) throw error;
