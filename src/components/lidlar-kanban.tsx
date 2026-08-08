@@ -86,9 +86,30 @@ export type KanbanLead = {
   appointment_time: string | null;
   next_followup_date: string | null;
   created_at: string;
+  last_contact_at: string | null;
 };
 
 export type KanbanOperator = { id: string; full_name: string };
+
+type SlaLevel = "none" | "warn" | "danger";
+
+function getSla(lead: { status: string; last_contact_at: string | null; created_at: string }): {
+  level: SlaLevel;
+  minutes: number;
+} {
+  if (lead.status !== "yangi" || lead.last_contact_at) return { level: "none", minutes: 0 };
+  const minutes = Math.floor((Date.now() - new Date(lead.created_at).getTime()) / 60000);
+  if (minutes >= 20) return { level: "danger", minutes };
+  if (minutes >= 10) return { level: "warn", minutes };
+  return { level: "none", minutes };
+}
+
+function slaLabel(minutes: number): string {
+  if (minutes < 60) return `${minutes} daq javobsiz`;
+  const h = Math.floor(minutes / 60);
+  if (h < 24) return `${h} soat javobsiz`;
+  return `${Math.floor(h / 24)} kun javobsiz`;
+}
 
 function ErtangiActions({ leadId }: { leadId: string }) {
   const qc = useQueryClient();
@@ -154,6 +175,11 @@ export function LidlarKanban({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 30000);
+    return () => clearInterval(t);
+  }, []);
   const [zoom, setZoom] = useState<number>(() => {
     try {
       return Number(localStorage.getItem("kanban_zoom")) || 100;
@@ -316,7 +342,10 @@ export function LidlarKanban({
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
-      const { error } = await supabase.from("leads").update({ status }).eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .update({ status, last_contact_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onMutate: async ({ id, status }) => {
@@ -689,10 +718,17 @@ function CardBody({
   const today = new Date().toISOString().split("T")[0];
   const isCallbackToday = lead.next_followup_date === today;
   const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
+  const sla = getSla(lead);
+  const slaCardClass =
+    sla.level === "danger"
+      ? "bg-red-100 border-2 border-red-500"
+      : sla.level === "warn"
+        ? "bg-amber-100 border-2 border-amber-500"
+        : `bg-white ${borderClass}`;
 
   return (
     <div
-      className={`bg-white rounded-md ${borderClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "bg-red-50" : ""}`}
+      className={`rounded-md ${slaCardClass} ${opacityClass} shadow-sm hover:shadow transition-shadow ${isSelected ? "ring-2 ring-red-400" : ""}`}
     >
       <div className={`${compact ? "px-2 py-1.5" : "px-3 py-2"} flex items-start gap-2`}>
         {onToggle && (
@@ -714,8 +750,25 @@ function CardBody({
           </button>
         )}
         <div className="flex-1 min-w-0 space-y-0.5">
-          <div className="text-[13px] font-medium text-slate-900 truncate">{lead.full_name}</div>
-          <div className="text-[11px] text-slate-600 truncate">📞 {lead.phone ?? "—"}</div>
+          <div
+            className={`text-[13px] font-semibold truncate ${sla.level === "danger" ? "text-red-900" : sla.level === "warn" ? "text-amber-900" : "text-slate-900"}`}
+          >
+            {lead.full_name}
+          </div>
+          {sla.level !== "none" && (
+            <div
+              className={`text-[11px] font-bold px-1.5 py-0.5 rounded inline-flex items-center gap-1 ${
+                sla.level === "danger" ? "bg-red-600 text-white" : "bg-amber-500 text-white"
+              }`}
+            >
+              ⏱ {slaLabel(sla.minutes)}
+            </div>
+          )}
+          <div
+            className={`text-[11px] truncate ${sla.level === "danger" ? "text-red-800 font-medium" : sla.level === "warn" ? "text-amber-800 font-medium" : "text-slate-600"}`}
+          >
+            📞 {lead.phone ?? "—"}
+          </div>
           {!compact && lead.nomer_asosiy && (
             <div className="text-[11px] text-slate-500 truncate">📱 {lead.nomer_asosiy}</div>
           )}
@@ -863,6 +916,7 @@ function LeadDetailDialog({
           appointment_date: appointmentDate || null,
           appointment_time: appointmentDate ? appointmentTime || null : null,
           assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
+          last_contact_at: new Date().toISOString(),
         })
         .eq("id", lead.id);
       if (error) throw error;
