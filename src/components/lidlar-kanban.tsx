@@ -175,6 +175,11 @@ export function LidlarKanban({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 30000);
+    return () => clearInterval(t);
+  }, []);
   const [zoom, setZoom] = useState<number>(() => {
     try {
       return Number(localStorage.getItem("kanban_zoom")) || 100;
