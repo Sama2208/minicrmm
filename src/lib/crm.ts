@@ -4,6 +4,7 @@ export type LeadStatus =
   | "qayta_aloqa"
   | "malumot_oldi"
   | "konsultatsiyaga_yozildi"
+  | "viloyatga_qabul"
   | "ertangi_konsultatsiya"
   | "bugungi_konsultatsiya"
   | "konsultatsiyaga_kelmadi"
@@ -23,6 +24,7 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
   qayta_aloqa: "Qayta aloqa",
   malumot_oldi: "Ma'lumot oldi",
   konsultatsiyaga_yozildi: "Konsultatsiyaga yozildi",
+  viloyatga_qabul: "Viloyatga qabul",
   ertangi_konsultatsiya: "Ertangi konsultatsiya",
   bugungi_konsultatsiya: "Bugungi konsultatsiya",
   konsultatsiyaga_kelmadi: "Konsultatsiyaga kelmadi",
@@ -39,6 +41,7 @@ export const STATUS_BADGE: Record<LeadStatus, string> = {
   qayta_aloqa: "bg-orange-50 text-orange-700 border border-orange-200",
   malumot_oldi: "bg-purple-50 text-purple-700 border border-purple-200",
   konsultatsiyaga_yozildi: "bg-violet-50 text-violet-700 border border-violet-200",
+  viloyatga_qabul: "bg-indigo-50 text-indigo-700 border border-indigo-200",
   ertangi_konsultatsiya: "bg-cyan-50 text-cyan-700 border border-cyan-200",
   bugungi_konsultatsiya: "bg-sky-50 text-sky-700 border border-sky-200",
   konsultatsiyaga_kelmadi: "bg-rose-50 text-rose-700 border border-rose-200",
@@ -55,6 +58,7 @@ export const STATUS_ORDER: LeadStatus[] = [
   "qayta_aloqa",
   "malumot_oldi",
   "konsultatsiyaga_yozildi",
+  "viloyatga_qabul",
   "ertangi_konsultatsiya",
   "bugungi_konsultatsiya",
   "konsultatsiyaga_kelmadi",

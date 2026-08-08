@@ -19,6 +19,7 @@ export const DEFAULT_COLUMNS: ColumnDef[] = [
   { key: "qayta_aloqa", status: "qayta_aloqa", title: "Qayta aloqa" },
   { key: "malumot_oldi", status: "malumot_oldi", title: "Ma'lumot oldi" },
   { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
+  { key: "viloyatga_qabul", status: "viloyatga_qabul", title: "Viloyatga qabul" },
   { key: "ertangi_konsultatsiya", status: "ertangi_konsultatsiya", title: "Ertangi konsultatsiya" },
   { key: "bugungi_konsultatsiya", status: "bugungi_konsultatsiya", title: "Bugungi konsultatsiya" },
   { key: "konsultatsiyaga_kelmadi", status: "konsultatsiyaga_kelmadi", title: "Konsultatsiyaga kelmadi", accent: "muted" },
