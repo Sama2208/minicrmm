@@ -342,7 +342,10 @@ export function LidlarKanban({
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
-      const { error } = await supabase.from("leads").update({ status }).eq("id", id);
+      const { error } = await supabase
+        .from("leads")
+        .update({ status, last_contact_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onMutate: async ({ id, status }) => {
