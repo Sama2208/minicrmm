@@ -124,6 +124,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -304,6 +311,13 @@ export type Database = {
             referencedRelation: "leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
         ]
       }
       campaign_metrics: {
@@ -441,6 +455,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capi_events_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
             referencedColumns: ["id"]
           },
         ]
@@ -743,6 +764,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
             referencedColumns: ["id"]
           },
           {
@@ -1232,6 +1260,13 @@ export type Database = {
             referencedRelation: "leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "facebook_lead_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
         ]
       }
       facebook_lead_forms: {
@@ -1457,6 +1492,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fb_lead_ingest_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
             referencedColumns: ["id"]
           },
         ]
@@ -2067,8 +2109,29 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lead_assignment_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "lead_assignment_history_new_assigned_to_fkey"
             columns: ["new_assigned_to"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignment_history_new_assigned_to_fkey"
+            columns: ["new_assigned_to"]
+            isOneToOne: false
+            referencedRelation: "v_operator_control"
+            referencedColumns: ["operator_id"]
+          },
+          {
+            foreignKeyName: "lead_assignment_history_old_assigned_to_fkey"
+            columns: ["old_assigned_to"]
             isOneToOne: false
             referencedRelation: "operators"
             referencedColumns: ["id"]
@@ -2077,8 +2140,8 @@ export type Database = {
             foreignKeyName: "lead_assignment_history_old_assigned_to_fkey"
             columns: ["old_assigned_to"]
             isOneToOne: false
-            referencedRelation: "operators"
-            referencedColumns: ["id"]
+            referencedRelation: "v_operator_control"
+            referencedColumns: ["operator_id"]
           },
         ]
       }
@@ -2119,6 +2182,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lead_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "v_operator_control"
+            referencedColumns: ["operator_id"]
+          },
+          {
             foreignKeyName: "lead_status_history_clinic_id_fkey"
             columns: ["clinic_id"]
             isOneToOne: false
@@ -2130,6 +2200,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_status_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
             referencedColumns: ["id"]
           },
         ]
@@ -2235,6 +2312,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "operators"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "v_operator_control"
+            referencedColumns: ["operator_id"]
           },
           {
             foreignKeyName: "leads_campaign_id_fkey"
@@ -2881,6 +2965,13 @@ export type Database = {
             referencedRelation: "leads"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "patients_source_lead_id_fkey"
+            columns: ["source_lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
         ]
       }
       payments: {
@@ -3344,6 +3435,13 @@ export type Database = {
             columns: ["referred_lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referred_lead_id_fkey"
+            columns: ["referred_lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
             referencedColumns: ["id"]
           },
           {
@@ -3992,6 +4090,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "waitlist_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "waitlist_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
@@ -4023,12 +4128,53 @@ export type Database = {
         }
         Relationships: []
       }
+      v_daily_sla: {
+        Row: {
+          clinic_id: string | null
+          javobsiz: number | null
+          kelgan: number | null
+          kun: string | null
+          tez_javob: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_funnel_summary: {
         Row: {
           status: Database["public"]["Enums"]["lead_status"] | null
           total: number | null
         }
         Relationships: []
+      }
+      v_operator_control: {
+        Row: {
+          bugun_harakat: number | null
+          clinic_id: string | null
+          eng_uzoq_daq: number | null
+          jami_lid: number | null
+          javobsiz: number | null
+          operator: string | null
+          operator_id: string | null
+          ort_javob_daq: number | null
+          tez_javob_foiz: number | null
+          yotdi: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operators_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       v_operator_summary: {
         Row: {
@@ -4046,6 +4192,27 @@ export type Database = {
           total: number | null
         }
         Relationships: []
+      }
+      v_waiting_leads: {
+        Row: {
+          clinic_id: string | null
+          created_at: string | null
+          facebook_page_name: string | null
+          full_name: string | null
+          id: string | null
+          kutish_daq: number | null
+          operator: string | null
+          phone: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       v_won_daily: {
         Row: {
@@ -4311,6 +4478,10 @@ export type Database = {
       void_invoice: {
         Args: { p_invoice_id: string; p_reason: string }
         Returns: undefined
+      }
+      working_minutes: {
+        Args: { t_end: string; t_start: string }
+        Returns: number
       }
     }
     Enums: {
