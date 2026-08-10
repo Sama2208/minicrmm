@@ -93,12 +93,40 @@ export type KanbanOperator = { id: string; full_name: string };
 
 type SlaLevel = "none" | "warn" | "danger";
 
+// Yakshanba ish kuni emas — SLA hisobida yakshanba daqiqalari chiqarib tashlanadi.
+// Vaqt mintaqasi: Asia/Tashkent (UTC+5).
+const TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1000;
+
+function workingMinutes(startIso: string, endMs: number): number {
+  const start = new Date(startIso).getTime();
+  if (!start || endMs <= start) return 0;
+
+  let sundayMs = 0;
+  // Tashkent vaqtidagi kun boshlanishi (UTC ms da)
+  const dayMs = 24 * 60 * 60 * 1000;
+  const firstDay = Math.floor((start + TASHKENT_OFFSET_MS) / dayMs);
+  const lastDay = Math.floor((endMs + TASHKENT_OFFSET_MS) / dayMs);
+
+  for (let d = firstDay; d <= lastDay; d++) {
+    const dayStartUtc = d * dayMs - TASHKENT_OFFSET_MS;
+    const dayEndUtc = dayStartUtc + dayMs;
+    // 1970-01-01 payshanba edi → (d + 4) % 7 === 0 bo'lsa yakshanba
+    if ((d + 4) % 7 === 0) {
+      const segStart = Math.max(start, dayStartUtc);
+      const segEnd = Math.min(endMs, dayEndUtc);
+      if (segEnd > segStart) sundayMs += segEnd - segStart;
+    }
+  }
+
+  return Math.floor((endMs - start - sundayMs) / 60000);
+}
+
 function getSla(lead: { status: string; last_contact_at: string | null; created_at: string }): {
   level: SlaLevel;
   minutes: number;
 } {
   if (lead.status !== "yangi" || lead.last_contact_at) return { level: "none", minutes: 0 };
-  const minutes = Math.floor((Date.now() - new Date(lead.created_at).getTime()) / 60000);
+  const minutes = workingMinutes(lead.created_at, Date.now());
   if (minutes >= 20) return { level: "danger", minutes };
   if (minutes >= 10) return { level: "warn", minutes };
   return { level: "none", minutes };
