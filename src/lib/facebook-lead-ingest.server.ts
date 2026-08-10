@@ -56,28 +56,12 @@ export async function ingestFacebookLead(params: {
     facebookPageName = conn?.page_name ?? null;
   }
 
-  // Round-robin: eng kam lidi bor faol operatorga avtomatik taqsimlash
-  let assignedTo: string | null = null;
-  const { data: activeOperators } = await supabaseAdmin
-    .from("operators")
-    .select("id")
-    .eq("clinic_id", params.clinicId)
-    .eq("is_active", true);
-
-  if (activeOperators && activeOperators.length > 0) {
-    const counts = await Promise.all(
-      activeOperators.map(async (op) => {
-        const { count } = await supabaseAdmin
-          .from("leads")
-          .select("id", { count: "exact", head: true })
-          .eq("clinic_id", params.clinicId)
-          .eq("assigned_to", op.id);
-        return { id: op.id, count: count ?? 0 };
-      })
-    );
-    counts.sort((a, b) => a.count - b.count);
-    assignedTo = counts[0].id;
-  }
+  // Round-robin: aylanma hisoblagich orqali navbatdagi operatorga beriladi.
+  // Eski lidlar soni hisobga olinmaydi — faqat yangi lidlar teng taqsimlanadi.
+  const { data: nextOp } = await supabaseAdmin.rpc("get_next_operator", {
+    p_clinic_id: params.clinicId,
+  });
+  const assignedTo: string | null = (nextOp as string | null) ?? null;
 
   // .maybeSingle(): prevent_duplicate_phone trigger'i takroriy raqamda
   // NULL qaytaradi — bu xatolik emas.

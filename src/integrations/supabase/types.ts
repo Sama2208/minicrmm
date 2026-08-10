@@ -2581,7 +2581,7 @@ export type Database = {
           {
             foreignKeyName: "operator_rr_counter_clinic_id_fkey"
             columns: ["clinic_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
