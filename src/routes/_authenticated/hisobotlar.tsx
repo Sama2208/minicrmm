@@ -301,9 +301,273 @@ function HisobotlarPage() {
         </CardContent>
       </Card>
 
+      <OperatorControlSection />
+
     </div>
   );
 }
+
+// ─── Operatorlar nazorati ──────────────────────────────────────────────────────
+
+type OperatorControl = {
+  operator_id: string;
+  operator: string;
+  jami_lid: number;
+  javobsiz: number;
+  eng_uzoq_daq: number;
+  bugun_harakat: number;
+  ort_javob_daq: number;
+  tez_javob_foiz: number;
+  yotdi: number;
+};
+
+type WaitingLead = {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  operator: string | null;
+  kutish_daq: number;
+  facebook_page_name: string | null;
+};
+
+type DailySla = {
+  kun: string;
+  kelgan: number;
+  tez_javob: number;
+  javobsiz: number;
+};
+
+function durText(min: number): string {
+  if (min < 60) return `${min} daq`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} soat ${min % 60} daq`;
+  return `${Math.floor(h / 24)} kun ${h % 24} soat`;
+}
+
+function OperatorControlSection() {
+  const ctrlQ = useQuery({
+    queryKey: ["v_operator_control"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_operator_control" as never)
+        .select("*");
+      if (error) throw error;
+      return (data ?? []) as unknown as OperatorControl[];
+    },
+    refetchInterval: 60000,
+  });
+
+  const waitQ = useQuery({
+    queryKey: ["v_waiting_leads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_waiting_leads" as never)
+        .select("*")
+        .order("kutish_daq", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return (data ?? []) as unknown as WaitingLead[];
+    },
+    refetchInterval: 60000,
+  });
+
+  const slaQ = useQuery({
+    queryKey: ["v_daily_sla"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("v_daily_sla" as never)
+        .select("*")
+        .order("kun", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as unknown as DailySla[];
+    },
+  });
+
+  const rows = [...(ctrlQ.data ?? [])].sort((a, b) =>
+    a.operator.localeCompare(b.operator, undefined, { numeric: true }),
+  );
+  const waiting = waitQ.data ?? [];
+  const daily = (slaQ.data ?? []).map((d) => ({
+    ...d,
+    kunLabel: d.kun.slice(5),
+    kechikkan: d.kelgan - d.tez_javob,
+  }));
+
+  const jamiJavobsiz = rows.reduce((a, r) => a + Number(r.javobsiz || 0), 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-slate-700">
+          👁 Operatorlar nazorati
+        </h2>
+        <span className="text-xs text-slate-400">
+          Yakshanba hisobga olinmaydi · har daqiqada yangilanadi
+        </span>
+      </div>
+
+      {jamiJavobsiz > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <div className="text-sm font-semibold text-red-700">
+            Jami {jamiJavobsiz} ta lidga hali aloqa qilinmagan
+          </div>
+        </div>
+      )}
+
+      {/* 1-blok: svetofor */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Bugungi holat</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {rows.map((r) => {
+              const kritik = Number(r.javobsiz) >= 5 || Number(r.eng_uzoq_daq) >= 120;
+              const ogoh = Number(r.javobsiz) > 0;
+              const dot = kritik ? "bg-red-500" : ogoh ? "bg-amber-500" : "bg-emerald-500";
+              const bg = kritik ? "bg-red-50 border-red-200" : ogoh ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200";
+              return (
+                <div
+                  key={r.operator_id}
+                  className={`flex flex-wrap items-center gap-x-6 gap-y-1 border rounded-lg px-3 py-2.5 ${bg}`}
+                >
+                  <div className="flex items-center gap-2 min-w-[110px]">
+                    <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
+                    <span className="text-sm font-semibold text-slate-800">
+                      Operator {r.operator}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-slate-500">Javobsiz: </span>
+                    <span className={`font-bold ${Number(r.javobsiz) > 0 ? "text-red-600" : "text-emerald-600"}`}>
+                      {r.javobsiz}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-slate-500">Eng uzoq: </span>
+                    <span className="font-semibold text-slate-700">
+                      {Number(r.eng_uzoq_daq) > 0 ? durText(Number(r.eng_uzoq_daq)) : "—"}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-slate-500">Bugun harakat: </span>
+                    <span className={`font-bold ${Number(r.bugun_harakat) === 0 ? "text-red-600" : "text-emerald-600"}`}>
+                      {Number(r.bugun_harakat) === 0 ? "0 ❌" : `${r.bugun_harakat} ✅`}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="text-slate-500">Jami lid: </span>
+                    <span className="font-semibold text-slate-700">{r.jami_lid}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 2-blok: javob tezligi */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Javob tezligi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Operator</TableHead>
+                <TableHead className="text-right">O'rtacha javob</TableHead>
+                <TableHead className="text-right">10 daq ichida</TableHead>
+                <TableHead className="text-right">Yotdi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((r) => (
+                <TableRow key={r.operator_id}>
+                  <TableCell className="font-medium">Operator {r.operator}</TableCell>
+                  <TableCell className="text-right">
+                    {Number(r.ort_javob_daq) > 0 ? durText(Number(r.ort_javob_daq)) : "—"}
+                  </TableCell>
+                  <TableCell className={`text-right font-semibold ${Number(r.tez_javob_foiz) >= 50 ? "text-emerald-600" : "text-red-500"}`}>
+                    {r.tez_javob_foiz}%
+                  </TableCell>
+                  <TableCell className="text-right">{r.yotdi}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* 3-blok: eng uzoq kutayotganlar */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">
+            Eng uzoq kutayotgan lidlar
+            {waiting.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-red-500">
+                {waiting.length} ta ko'rsatilmoqda
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {waiting.length === 0 ? (
+            <div className="text-sm text-emerald-600 py-6 text-center">
+              ✅ Barcha lidlarga aloqa qilingan
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Ism</TableHead>
+                  <TableHead>Telefon</TableHead>
+                  <TableHead>Operator</TableHead>
+                  <TableHead className="text-right">Kutmoqda</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {waiting.map((w) => (
+                  <TableRow key={w.id} className={w.kutish_daq >= 120 ? "bg-red-50" : w.kutish_daq >= 20 ? "bg-amber-50" : ""}>
+                    <TableCell className="font-medium">{w.full_name}</TableCell>
+                    <TableCell className="text-slate-600 text-sm">{w.phone ?? "—"}</TableCell>
+                    <TableCell className="text-sm">{w.operator ? `Operator ${w.operator}` : "—"}</TableCell>
+                    <TableCell className={`text-right font-bold ${w.kutish_daq >= 120 ? "text-red-600" : "text-amber-600"}`}>
+                      {durText(w.kutish_daq)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 4-blok: 14 kunlik grafik */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Oxirgi 14 kun — javob tezligi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div style={{ width: "100%", height: 260 }}>
+            <ResponsiveContainer>
+              <BarChart data={daily}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="kunLabel" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="tez_javob" name="10 daq ichida javob" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="kechikkan" name="Kechikkan" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
 
 
 // ─── KpiCard ──────────────────────────────────────────────────────────────────
