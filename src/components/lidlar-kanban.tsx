@@ -1278,16 +1278,19 @@ function LeadDetailDialog({
             <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" /> Qayta qo'ng'iroq sanasi
             </Label>
-            <Input
-              type="date"
-              value={nextFollowup}
-              onChange={(e) => setNextFollowup(e.target.value)}
-              className="mt-1 h-9"
+            <FollowupPicker
+              date={nextFollowup}
+              time={nextFollowupTime}
+              onDateChange={setNextFollowup}
+              onTimeChange={setNextFollowupTime}
             />
             {nextFollowup && (
               <button
                 type="button"
-                onClick={() => setNextFollowup("")}
+                onClick={() => {
+                  setNextFollowup("");
+                  setNextFollowupTime(DEFAULT_FOLLOWUP_TIME);
+                }}
                 className="text-[11px] text-slate-400 hover:text-red-500 mt-1"
               >
                 × Sanani o'chirish
