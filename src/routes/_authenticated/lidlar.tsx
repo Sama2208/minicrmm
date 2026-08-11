@@ -36,6 +36,8 @@ import {
 } from "@/lib/crm";
 import { LidlarKanban } from "@/components/lidlar-kanban";
 import { useClinicId } from "@/lib/clinic";
+import { getFacebookFilterOptions } from "@/lib/facebook-filters.functions";
+
 
 export const Route = createFileRoute("/_authenticated/lidlar")({ component: LidlarPage });
 
