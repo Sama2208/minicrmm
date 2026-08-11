@@ -1102,8 +1102,9 @@ function LeadDetailDialog({
   const [phone, setPhone] = useState(lead.phone ?? "");
   const [nomerAsosiy, setNomerAsosiy] = useState(lead.nomer_asosiy ?? "");
   const [notes, setNotes] = useState(lead.notes ?? "");
-  const [nextFollowup, setNextFollowup] = useState(
-    lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "",
+  const [nextFollowup, setNextFollowup] = useState(() => splitFollowup(lead.next_followup_date).date);
+  const [nextFollowupTime, setNextFollowupTime] = useState(
+    () => splitFollowup(lead.next_followup_date).time,
   );
   const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "__none__");
   const [appointmentDate, setAppointmentDate] = useState(
