@@ -41,7 +41,7 @@ async function graphFetch<T>(path: string, params: Record<string, string>): Prom
 
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
 
-  console.log("[graphFetch]", path, "appsecret_proof:", !!params.appsecret_proof);
+
 
   const res = await fetch(url.toString());
   const body = await res.json();
