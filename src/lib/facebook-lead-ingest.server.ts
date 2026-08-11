@@ -38,7 +38,7 @@ export async function ingestFacebookLead(params: {
   // facebook_lead_forms.form_id → connection_id → facebook_connections.page_id/page_name
   const { data: formRow } = await supabaseAdmin
     .from("facebook_lead_forms")
-    .select("connection_id")
+    .select("connection_id, form_name")
     .eq("form_id", params.formId)
     .eq("clinic_id", params.clinicId)
     .maybeSingle();
@@ -81,6 +81,8 @@ export async function ingestFacebookLead(params: {
       meta_ad_id: params.metaAdId ?? null,
       facebook_page_id: facebookPageId,
       facebook_page_name: facebookPageName,
+      facebook_form_id: params.formId,
+      facebook_form_name: formRow?.form_name ?? null,
       assigned_to: assignedTo,
     })
     .select("id")
