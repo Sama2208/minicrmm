@@ -139,6 +139,164 @@ function slaLabel(minutes: number): string {
   return `${Math.floor(h / 24)} kun javobsiz`;
 }
 
+// ─── Qayta qo'ng'iroq: sana + soat (Asia/Tashkent = +05:00) ────────────────────
+
+const TASHKENT_TZ = "+05:00";
+const DEFAULT_FOLLOWUP_TIME = "10:00";
+
+const FOLLOWUP_TIMES: string[] = (() => {
+  const out: string[] = [];
+  for (let m = 8 * 60; m <= 20 * 60; m += 30) {
+    out.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
+  }
+  return out;
+})();
+
+// ISO (timestamptz) → Toshkent vaqtidagi {date, time}
+function splitFollowup(iso: string | null): { date: string; time: string } {
+  if (!iso) return { date: "", time: DEFAULT_FOLLOWUP_TIME };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { date: "", time: DEFAULT_FOLLOWUP_TIME };
+  const local = new Date(d.getTime() + TASHKENT_OFFSET_MS);
+  const date = local.toISOString().slice(0, 10);
+  const time = local.toISOString().slice(11, 16);
+  return { date, time };
+}
+
+function buildFollowupIso(date: string, time: string): string | null {
+  if (!date) return null;
+  const t = time || DEFAULT_FOLLOWUP_TIME;
+  const d = new Date(`${date}T${t}:00${TASHKENT_TZ}`);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+const UZ_MONTHS = [
+  "yan",
+  "fev",
+  "mar",
+  "apr",
+  "may",
+  "iyn",
+  "iyl",
+  "avg",
+  "sen",
+  "okt",
+  "noy",
+  "dek",
+];
+
+// "15-avg 14:00" ko'rinishida (Toshkent vaqti)
+function formatFollowup(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const local = new Date(d.getTime() + TASHKENT_OFFSET_MS);
+  const day = local.getUTCDate();
+  const month = UZ_MONTHS[local.getUTCMonth()];
+  const hh = String(local.getUTCHours()).padStart(2, "0");
+  const mm = String(local.getUTCMinutes()).padStart(2, "0");
+  return `${day}-${month} ${hh}:${mm}`;
+}
+
+const CALLBACK_STATUSES: LeadStatus[] = ["qayta_aloqa", "malumot_oldi"];
+
+function FollowupPicker({
+  date,
+  time,
+  onDateChange,
+  onTimeChange,
+}: {
+  date: string;
+  time: string;
+  onDateChange: (v: string) => void;
+  onTimeChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 mt-1">
+      <Input
+        type="date"
+        value={date}
+        onChange={(e) => onDateChange(e.target.value)}
+        className="h-9"
+      />
+      <Select value={time || DEFAULT_FOLLOWUP_TIME} onValueChange={onTimeChange}>
+        <SelectTrigger className="h-9">
+          <SelectValue placeholder="Soat" />
+        </SelectTrigger>
+        <SelectContent className="max-h-64">
+          {FOLLOWUP_TIMES.map((t) => (
+            <SelectItem key={t} value={t}>
+              {t}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function CallbackPromptDialog({
+  open,
+  leadName,
+  onCancel,
+  onSave,
+}: {
+  open: boolean;
+  leadName: string;
+  onCancel: () => void;
+  onSave: (iso: string) => void;
+}) {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState(DEFAULT_FOLLOWUP_TIME);
+
+  useEffect(() => {
+    if (open) {
+      const now = new Date(Date.now() + TASHKENT_OFFSET_MS);
+      setDate(now.toISOString().slice(0, 10));
+      setTime(DEFAULT_FOLLOWUP_TIME);
+    }
+  }, [open]);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onCancel();
+      }}
+    >
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-base">Qayta qo'ng'iroq sanasi va vaqtini tanlang</DialogTitle>
+        </DialogHeader>
+        <div className="py-1">
+          <Label className="text-xs font-medium text-slate-600">{leadName}</Label>
+          <FollowupPicker date={date} time={time} onDateChange={setDate} onTimeChange={setTime} />
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Bekor qilish
+          </Button>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700"
+            disabled={!date}
+            onClick={() => {
+              const iso = buildFollowupIso(date, time);
+              if (!iso) {
+                toast.error("Sana tanlang");
+                return;
+              }
+              onSave(iso);
+            }}
+          >
+            Saqlash
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ErtangiActions({ leadId }: { leadId: string }) {
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
