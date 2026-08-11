@@ -1026,23 +1026,15 @@ function CardBody({
               {lead.appointment_time && ` ${formatTime(lead.appointment_time)}`}
             </div>
           )}
-          {/* Callback date */}
+          {/* Qayta qo'ng'iroq vaqti */}
           {lead.next_followup_date && (
             <div
               className={`text-[10px] font-medium flex items-center gap-0.5 ${
-                isCallbackOverdue
-                  ? "text-red-500"
-                  : isCallbackToday
-                    ? "text-amber-600"
-                    : "text-slate-400"
+                isCallbackOverdue ? "text-red-500" : "text-slate-400"
               }`}
             >
               <Calendar className="h-3 w-3" />
-              {isCallbackToday
-                ? "Bugun qo'ng'iroq!"
-                : isCallbackOverdue
-                  ? `O'tib ketgan: ${formatDate(lead.next_followup_date)}`
-                  : formatDate(lead.next_followup_date)}
+              {formatFollowup(lead.next_followup_date)}
             </div>
           )}
           {/* Ertangi konsultatsiya — kelish holati */}
