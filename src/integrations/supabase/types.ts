@@ -2151,6 +2151,7 @@ export type Database = {
           changed_by: string | null
           clinic_id: string
           id: string
+          is_automated: boolean
           lead_id: string | null
           new_status: Database["public"]["Enums"]["lead_status"]
           old_status: Database["public"]["Enums"]["lead_status"] | null
@@ -2160,6 +2161,7 @@ export type Database = {
           changed_by?: string | null
           clinic_id: string
           id?: string
+          is_automated?: boolean
           lead_id?: string | null
           new_status: Database["public"]["Enums"]["lead_status"]
           old_status?: Database["public"]["Enums"]["lead_status"] | null
@@ -2169,6 +2171,7 @@ export type Database = {
           changed_by?: string | null
           clinic_id?: string
           id?: string
+          is_automated?: boolean
           lead_id?: string | null
           new_status?: Database["public"]["Enums"]["lead_status"]
           old_status?: Database["public"]["Enums"]["lead_status"] | null
