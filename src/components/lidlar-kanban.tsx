@@ -365,7 +365,7 @@ export function LidlarKanban({
   } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [formFilter, setFormFilter] = useState<string>("all");
   const [, setTick] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
