@@ -346,9 +346,11 @@ function ErtangiActions({ leadId }: { leadId: string }) {
 export function LidlarKanban({
   leads,
   operators,
+  formOptions,
 }: {
   leads: KanbanLead[];
   operators: KanbanOperator[];
+  formOptions?: { name: string; pageId: string | null; pageName: string }[];
 }) {
   const qc = useQueryClient();
   const [titles, setTitles] = useState<Record<string, string>>({});
