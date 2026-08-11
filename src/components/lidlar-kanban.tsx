@@ -650,10 +650,15 @@ export function LidlarKanban({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha formalar</SelectItem>
-            {uniqueForms.map((f) => (
-              <SelectItem key={f} value={f}>
-                {f}
-              </SelectItem>
+            {formGroups.map((g) => (
+              <SelectGroup key={g.pageName}>
+                <SelectLabel className="text-[11px] text-slate-400">{g.pageName}</SelectLabel>
+                {g.forms.map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {f}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
