@@ -489,10 +489,18 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
+  const uniqueForms = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach((l) => {
+      if (l.facebook_form_name) set.add(l.facebook_form_name);
+    });
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
     return leads.filter((l) => {
-      if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
+      if (formFilter !== "all" && l.facebook_form_name !== formFilter) return false;
       if (!q) return true;
       const haystack = [l.full_name, l.phone, l.nomer_asosiy, l.region]
         .filter(Boolean)
@@ -500,7 +508,8 @@ export function LidlarKanban({
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [leads, search, sourceFilter]);
+  }, [leads, search, formFilter]);
+
 
   const grouped = useMemo(() => {
     const m = new Map<string, KanbanLead[]>();
