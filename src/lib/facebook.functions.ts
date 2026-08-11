@@ -244,7 +244,23 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
     if (connErr || !connection) throw new Error("Ulanish topilmadi");
     const { listLeadsForForm } = await import("./facebook-graph.server");
     const { ingestFacebookLead } = await import("./facebook-lead-ingest.server");
-    const historicalLeads = await listLeadsForForm(form.form_id, connection.page_access_token);
+    console.log(
+      "[importHistoricalLeads] FACEBOOK_APP_SECRET mavjud:",
+      !!process.env.FACEBOOK_APP_SECRET,
+    );
+    console.log(
+      "[importHistoricalLeads] formId:",
+      form.form_id,
+      "token_len:",
+      connection.page_access_token?.length,
+    );
+    let historicalLeads;
+    try {
+      historicalLeads = await listLeadsForForm(form.form_id, connection.page_access_token);
+    } catch (err) {
+      console.error("[importHistoricalLeads] Facebook API xatosi:", err);
+      throw err;
+    }
     let imported = 0;
     for (const lead of historicalLeads) {
       const { inserted } = await ingestFacebookLead({
