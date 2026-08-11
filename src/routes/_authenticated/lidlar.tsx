@@ -329,7 +329,14 @@ function LidlarPage() {
       {leadsQ.isLoading ? (
         <div className="text-center text-muted-foreground py-8">Yuklanmoqda...</div>
       ) : (
-        <LidlarKanban leads={filtered} operators={opsQ.data ?? []} />
+        <LidlarKanban
+          leads={filtered}
+          operators={opsQ.data ?? []}
+          formOptions={(fbFormsQ.data ?? []).filter(
+            (f) => facebookPageFilter === "all" || f.pageId === facebookPageFilter,
+          )}
+        />
+
       )}
 
       <CreateLeadDialog
