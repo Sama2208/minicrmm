@@ -58,7 +58,7 @@ async function processLeadgenEvent(value: LeadgenChange["value"]) {
 
   const { data: form } = await supabaseAdmin
     .from("facebook_lead_forms")
-    .select("id, is_syncing")
+    .select("id, is_syncing, form_name")
     .eq("connection_id", connection.id)
     .eq("form_id", value.form_id)
     .maybeSingle();
@@ -68,6 +68,8 @@ async function processLeadgenEvent(value: LeadgenChange["value"]) {
   await ingestFacebookLead({
     clinicId: connection.clinic_id,
     formId: value.form_id,
+    pageId: value.page_id,
+    formName: form.form_name ?? null,
     leadgenId: value.leadgen_id,
     fieldData: leadData.field_data,
     metaCampaignId: value.campaign_id,

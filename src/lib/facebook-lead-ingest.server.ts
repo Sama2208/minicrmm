@@ -9,6 +9,10 @@ export async function ingestFacebookLead(params: {
   formId: string;
   leadgenId: string;
   fieldData: FacebookFieldDatum[];
+  // Webhook payload'idan kelgan haqiqiy page_id — yagona haqiqat manbai.
+  pageId?: string;
+  // Import yo'lida forma nomi allaqachon ma'lum bo'ladi.
+  formName?: string | null;
   metaCampaignId?: string;
   metaAdsetId?: string;
   metaAdId?: string;
@@ -34,27 +38,46 @@ export async function ingestFacebookLead(params: {
   const normalizedPhone = phone ? (normalizeUzPhone(phone) ?? phone) : null;
   const normalizedNomerAsosiy = nomerAsosiy ? (normalizeUzPhone(nomerAsosiy) ?? nomerAsosiy) : null;
 
-  // Qaysi Facebook page dan kelganini formId orqali topamiz:
-  // facebook_lead_forms.form_id → connection_id → facebook_connections.page_id/page_name
-  const { data: formRow } = await supabaseAdmin
-    .from("facebook_lead_forms")
-    .select("connection_id, form_name")
-    .eq("form_id", params.formId)
-    .eq("clinic_id", params.clinicId)
-    .maybeSingle();
+  // MUHIM: forma nomi FAQAT payload'dagi form_id bo'yicha topiladi.
+  // Topilmasa — bo'sh qoladi, hech qachon boshqa formaning nomi yozilmaydi.
+  let formName: string | null = params.formName ?? null;
+  let connectionId: string | null = null;
 
-  let facebookPageId: string | null = null;
+  if (formName === null || !params.pageId) {
+    const { data: formRow } = await supabaseAdmin
+      .from("facebook_lead_forms")
+      .select("connection_id, form_name")
+      .eq("form_id", params.formId)
+      .eq("clinic_id", params.clinicId)
+      .maybeSingle();
+    if (formRow) {
+      connectionId = formRow.connection_id;
+      if (formName === null) formName = formRow.form_name ?? null;
+    }
+  }
+
+  // MUHIM: sahifa nomi FAQAT payload'dagi page_id bo'yicha topiladi.
+  let facebookPageId: string | null = params.pageId ?? null;
   let facebookPageName: string | null = null;
 
-  if (formRow?.connection_id) {
+  if (params.pageId) {
+    const { data: conn } = await supabaseAdmin
+      .from("facebook_connections")
+      .select("page_name")
+      .eq("page_id", params.pageId)
+      .eq("clinic_id", params.clinicId)
+      .maybeSingle();
+    facebookPageName = conn?.page_name ?? null;
+  } else if (connectionId) {
     const { data: conn } = await supabaseAdmin
       .from("facebook_connections")
       .select("page_id, page_name")
-      .eq("id", formRow.connection_id)
+      .eq("id", connectionId)
       .maybeSingle();
     facebookPageId = conn?.page_id ?? null;
     facebookPageName = conn?.page_name ?? null;
   }
+
 
   // Round-robin: aylanma hisoblagich orqali navbatdagi operatorga beriladi.
   // Eski lidlar soni hisobga olinmaydi — faqat yangi lidlar teng taqsimlanadi.
@@ -82,7 +105,7 @@ export async function ingestFacebookLead(params: {
       facebook_page_id: facebookPageId,
       facebook_page_name: facebookPageName,
       facebook_form_id: params.formId,
-      facebook_form_name: formRow?.form_name ?? null,
+      facebook_form_name: formName,
       assigned_to: assignedTo,
     })
     .select("id")

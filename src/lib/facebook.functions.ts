@@ -231,14 +231,14 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: form, error: formErr } = await supabaseAdmin
       .from("facebook_lead_forms")
-      .select("form_id, connection_id")
+      .select("form_id, form_name, connection_id")
       .eq("id", data.formRowId)
       .eq("clinic_id", clinicId)
       .single();
     if (formErr || !form) throw new Error("Forma topilmadi");
     const { data: connection, error: connErr } = await supabaseAdmin
       .from("facebook_connections")
-      .select("page_access_token")
+      .select("page_id, page_access_token")
       .eq("id", form.connection_id)
       .single();
     if (connErr || !connection) throw new Error("Ulanish topilmadi");
@@ -255,6 +255,8 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
       const { inserted } = await ingestFacebookLead({
         clinicId,
         formId: form.form_id,
+        formName: form.form_name ?? null,
+        pageId: connection.page_id,
         leadgenId: lead.id,
         fieldData: lead.field_data,
       });
