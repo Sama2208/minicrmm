@@ -1,5 +1,7 @@
 // Meta Graph API bilan ishlash uchun yupqa server-only klient.
 // FACEBOOK_APP_SECRET kabi maxfiy qiymatlar shu yerdan tashqariga chiqmaydi.
+import process from "node:process";
+
 const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
 
 // Facebook server-side API chaqiruvlari uchun appsecret_proof hisoblash.
@@ -26,12 +28,17 @@ async function graphFetch<T>(path: string, params: Record<string, string>): Prom
   // /oauth/access_token chaqiruvlari client_secret orqali ishlaydi, proof shart emas.
   if (params.access_token && !path.startsWith("/oauth/")) {
     const appSecret = process.env.FACEBOOK_APP_SECRET;
-    if (appSecret) {
-      params = {
-        ...params,
-        appsecret_proof: await computeAppSecretProof(appSecret, params.access_token),
-      };
+    if (!appSecret) {
+      console.error(
+        "[graphFetch] FACEBOOK_APP_SECRET topilmadi! process.env keys:",
+        Object.keys(process.env).filter((k) => k.startsWith("FACEBOOK")),
+      );
+      throw new Error("FACEBOOK_APP_SECRET sozlanmagan — appsecret_proof yaratib bo'lmadi");
     }
+    params = {
+      ...params,
+      appsecret_proof: await computeAppSecretProof(appSecret, params.access_token),
+    };
   }
 
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
