@@ -358,6 +358,10 @@ export function LidlarKanban({
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
+  const [callbackPrompt, setCallbackPrompt] = useState<{
+    lead: KanbanLead;
+    status: LeadStatus;
+  } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
