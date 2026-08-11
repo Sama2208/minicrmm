@@ -105,7 +105,7 @@ export async function ingestFacebookLead(params: {
       facebook_page_id: facebookPageId,
       facebook_page_name: facebookPageName,
       facebook_form_id: params.formId,
-      facebook_form_name: formRow?.form_name ?? null,
+      facebook_form_name: formName,
       assigned_to: assignedTo,
     })
     .select("id")
