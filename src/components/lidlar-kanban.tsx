@@ -365,7 +365,7 @@ export function LidlarKanban({
   } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
+  const [formFilter, setFormFilter] = useState<string>("all");
   const [, setTick] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
@@ -489,10 +489,18 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
+  const uniqueForms = useMemo(() => {
+    const set = new Set<string>();
+    leads.forEach((l) => {
+      if (l.facebook_form_name) set.add(l.facebook_form_name);
+    });
+    return Array.from(set).sort();
+  }, [leads]);
+
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
     return leads.filter((l) => {
-      if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
+      if (formFilter !== "all" && l.facebook_form_name !== formFilter) return false;
       if (!q) return true;
       const haystack = [l.full_name, l.phone, l.nomer_asosiy, l.region]
         .filter(Boolean)
@@ -500,7 +508,8 @@ export function LidlarKanban({
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [leads, search, sourceFilter]);
+  }, [leads, search, formFilter]);
+
 
   const grouped = useMemo(() => {
     const m = new Map<string, KanbanLead[]>();
@@ -615,22 +624,20 @@ export function LidlarKanban({
             className="pl-8 h-9"
           />
         </div>
-        <Select
-          value={sourceFilter}
-          onValueChange={(v) => setSourceFilter(v as LeadSource | "all")}
-        >
-          <SelectTrigger className="h-9 w-full sm:w-44">
-            <SelectValue placeholder="Manba" />
+        <Select value={formFilter} onValueChange={setFormFilter}>
+          <SelectTrigger className="h-9 w-full sm:w-48">
+            <SelectValue placeholder="Forma" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha manbalar</SelectItem>
-            {SOURCE_LIST.map((s) => (
-              <SelectItem key={s} value={s}>
-                {SOURCE_LABEL[s]}
+            <SelectItem value="all">Barcha formalar</SelectItem>
+            {uniqueForms.map((f) => (
+              <SelectItem key={f} value={f}>
+                {f}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
         <div className="flex items-center gap-1 shrink-0 border rounded-md px-2 h-9 bg-white">
           <button
             type="button"
@@ -1045,6 +1052,11 @@ function CardBody({
               <ErtangiActions leadId={lead.id} />
             </div>
           )}
+          {lead.facebook_form_name && (
+            <div className="text-[10px] text-blue-500 truncate font-medium">
+              📋 {lead.facebook_form_name}
+            </div>
+          )}
           <div className="pt-1">
             <span
               className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}
@@ -1052,9 +1064,7 @@ function CardBody({
               {SOURCE_LABEL[lead.source]}
             </span>
           </div>
-          {lead.facebook_form_name && (
-            <div className="text-[10px] text-slate-400 truncate">{lead.facebook_form_name}</div>
-          )}
+
         </div>
         <div className="flex flex-col items-center gap-1 shrink-0">
           {lead.assigned_to && (
