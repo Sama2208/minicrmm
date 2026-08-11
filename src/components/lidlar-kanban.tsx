@@ -139,6 +139,164 @@ function slaLabel(minutes: number): string {
   return `${Math.floor(h / 24)} kun javobsiz`;
 }
 
+// ─── Qayta qo'ng'iroq: sana + soat (Asia/Tashkent = +05:00) ────────────────────
+
+const TASHKENT_TZ = "+05:00";
+const DEFAULT_FOLLOWUP_TIME = "10:00";
+
+const FOLLOWUP_TIMES: string[] = (() => {
+  const out: string[] = [];
+  for (let m = 8 * 60; m <= 20 * 60; m += 30) {
+    out.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
+  }
+  return out;
+})();
+
+// ISO (timestamptz) → Toshkent vaqtidagi {date, time}
+function splitFollowup(iso: string | null): { date: string; time: string } {
+  if (!iso) return { date: "", time: DEFAULT_FOLLOWUP_TIME };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { date: "", time: DEFAULT_FOLLOWUP_TIME };
+  const local = new Date(d.getTime() + TASHKENT_OFFSET_MS);
+  const date = local.toISOString().slice(0, 10);
+  const time = local.toISOString().slice(11, 16);
+  return { date, time };
+}
+
+function buildFollowupIso(date: string, time: string): string | null {
+  if (!date) return null;
+  const t = time || DEFAULT_FOLLOWUP_TIME;
+  const d = new Date(`${date}T${t}:00${TASHKENT_TZ}`);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+const UZ_MONTHS = [
+  "yan",
+  "fev",
+  "mar",
+  "apr",
+  "may",
+  "iyn",
+  "iyl",
+  "avg",
+  "sen",
+  "okt",
+  "noy",
+  "dek",
+];
+
+// "15-avg 14:00" ko'rinishida (Toshkent vaqti)
+function formatFollowup(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const local = new Date(d.getTime() + TASHKENT_OFFSET_MS);
+  const day = local.getUTCDate();
+  const month = UZ_MONTHS[local.getUTCMonth()];
+  const hh = String(local.getUTCHours()).padStart(2, "0");
+  const mm = String(local.getUTCMinutes()).padStart(2, "0");
+  return `${day}-${month} ${hh}:${mm}`;
+}
+
+const CALLBACK_STATUSES: LeadStatus[] = ["qayta_aloqa", "malumot_oldi"];
+
+function FollowupPicker({
+  date,
+  time,
+  onDateChange,
+  onTimeChange,
+}: {
+  date: string;
+  time: string;
+  onDateChange: (v: string) => void;
+  onTimeChange: (v: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 mt-1">
+      <Input
+        type="date"
+        value={date}
+        onChange={(e) => onDateChange(e.target.value)}
+        className="h-9"
+      />
+      <Select value={time || DEFAULT_FOLLOWUP_TIME} onValueChange={onTimeChange}>
+        <SelectTrigger className="h-9">
+          <SelectValue placeholder="Soat" />
+        </SelectTrigger>
+        <SelectContent className="max-h-64">
+          {FOLLOWUP_TIMES.map((t) => (
+            <SelectItem key={t} value={t}>
+              {t}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function CallbackPromptDialog({
+  open,
+  leadName,
+  onCancel,
+  onSave,
+}: {
+  open: boolean;
+  leadName: string;
+  onCancel: () => void;
+  onSave: (iso: string) => void;
+}) {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState(DEFAULT_FOLLOWUP_TIME);
+
+  useEffect(() => {
+    if (open) {
+      const now = new Date(Date.now() + TASHKENT_OFFSET_MS);
+      setDate(now.toISOString().slice(0, 10));
+      setTime(DEFAULT_FOLLOWUP_TIME);
+    }
+  }, [open]);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onCancel();
+      }}
+    >
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-base">Qayta qo'ng'iroq sanasi va vaqtini tanlang</DialogTitle>
+        </DialogHeader>
+        <div className="py-1">
+          <Label className="text-xs font-medium text-slate-600">{leadName}</Label>
+          <FollowupPicker date={date} time={time} onDateChange={setDate} onTimeChange={setTime} />
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Bekor qilish
+          </Button>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700"
+            disabled={!date}
+            onClick={() => {
+              const iso = buildFollowupIso(date, time);
+              if (!iso) {
+                toast.error("Sana tanlang");
+                return;
+              }
+              onSave(iso);
+            }}
+          >
+            Saqlash
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ErtangiActions({ leadId }: { leadId: string }) {
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
@@ -200,6 +358,10 @@ export function LidlarKanban({
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
+  const [callbackPrompt, setCallbackPrompt] = useState<{
+    lead: KanbanLead;
+    status: LeadStatus;
+  } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
@@ -369,21 +531,39 @@ export function LidlarKanban({
   
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
-      const { error } = await supabase
-        .from("leads")
-        .update({ status, last_contact_at: new Date().toISOString() })
-        .eq("id", id);
+    mutationFn: async ({
+      id,
+      status,
+      nextFollowup,
+    }: {
+      id: string;
+      status: LeadStatus;
+      nextFollowup?: string | null;
+    }) => {
+      const patch = {
+        status,
+        last_contact_at: new Date().toISOString(),
+        ...(nextFollowup !== undefined ? { next_followup_date: nextFollowup } : {}),
+      };
+      const { error } = await supabase.from("leads").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onMutate: async ({ id, status }) => {
+    onMutate: async ({ id, status, nextFollowup }) => {
       await qc.cancelQueries({ queryKey: ["leads"] });
       const snapshots = qc.getQueriesData({ queryKey: ["leads"] });
       snapshots.forEach(([key, data]) => {
         if (!Array.isArray(data)) return;
         qc.setQueryData(
           key,
-          (data as KanbanLead[]).map((l) => (l.id === id ? { ...l, status } : l)),
+          (data as KanbanLead[]).map((l) =>
+            l.id === id
+              ? {
+                  ...l,
+                  status,
+                  ...(nextFollowup !== undefined ? { next_followup_date: nextFollowup } : {}),
+                }
+              : l,
+          ),
         );
       });
       return { snapshots };
@@ -413,6 +593,11 @@ export function LidlarKanban({
     if (!col || !col.status) return;
     const lead = leads.find((l) => l.id === activeStr);
     if (!lead || lead.status === col.status) return;
+    // Qayta aloqa / Ma'lumot oldi — avval qo'ng'iroq vaqtini so'raymiz
+    if (CALLBACK_STATUSES.includes(col.status)) {
+      setCallbackPrompt({ lead, status: col.status });
+      return;
+    }
     updateStatus.mutate({ id: lead.id, status: col.status });
   };
 
@@ -623,6 +808,24 @@ export function LidlarKanban({
         />
       )}
 
+      {callbackPrompt && (
+        <CallbackPromptDialog
+          open={!!callbackPrompt}
+          leadName={callbackPrompt.lead.full_name}
+          onCancel={() => setCallbackPrompt(null)}
+          onSave={(iso) => {
+            updateStatus.mutate({
+              id: callbackPrompt.lead.id,
+              status: callbackPrompt.status,
+              nextFollowup: iso,
+            });
+            setCallbackPrompt(null);
+          }}
+        />
+      )}
+
+
+
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-slate-200 rounded-xl shadow-xl px-4 py-3">
           <span className="text-sm font-medium text-slate-700">
@@ -743,9 +946,9 @@ function CardBody({
       : "border border-slate-200";
   const opacityClass = accent === "muted" ? "opacity-70" : "";
 
-  const today = new Date().toISOString().split("T")[0];
-  const isCallbackToday = lead.next_followup_date === today;
-  const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
+  const isCallbackOverdue = lead.next_followup_date
+    ? new Date(lead.next_followup_date).getTime() < Date.now()
+    : false;
   const sla = getSla(lead);
   const slaCardClass =
     sla.level === "danger"
@@ -823,23 +1026,15 @@ function CardBody({
               {lead.appointment_time && ` ${formatTime(lead.appointment_time)}`}
             </div>
           )}
-          {/* Callback date */}
+          {/* Qayta qo'ng'iroq vaqti */}
           {lead.next_followup_date && (
             <div
               className={`text-[10px] font-medium flex items-center gap-0.5 ${
-                isCallbackOverdue
-                  ? "text-red-500"
-                  : isCallbackToday
-                    ? "text-amber-600"
-                    : "text-slate-400"
+                isCallbackOverdue ? "text-red-500" : "text-slate-400"
               }`}
             >
               <Calendar className="h-3 w-3" />
-              {isCallbackToday
-                ? "Bugun qo'ng'iroq!"
-                : isCallbackOverdue
-                  ? `O'tib ketgan: ${formatDate(lead.next_followup_date)}`
-                  : formatDate(lead.next_followup_date)}
+              {formatFollowup(lead.next_followup_date)}
             </div>
           )}
           {/* Ertangi konsultatsiya — kelish holati */}
@@ -907,8 +1102,9 @@ function LeadDetailDialog({
   const [phone, setPhone] = useState(lead.phone ?? "");
   const [nomerAsosiy, setNomerAsosiy] = useState(lead.nomer_asosiy ?? "");
   const [notes, setNotes] = useState(lead.notes ?? "");
-  const [nextFollowup, setNextFollowup] = useState(
-    lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "",
+  const [nextFollowup, setNextFollowup] = useState(() => splitFollowup(lead.next_followup_date).date);
+  const [nextFollowupTime, setNextFollowupTime] = useState(
+    () => splitFollowup(lead.next_followup_date).time,
   );
   const [assignedTo, setAssignedTo] = useState(lead.assigned_to ?? "__none__");
   const [appointmentDate, setAppointmentDate] = useState(
@@ -924,7 +1120,8 @@ function LeadDetailDialog({
     setPhone(lead.phone ?? "");
     setNomerAsosiy(lead.nomer_asosiy ?? "");
     setNotes(lead.notes ?? "");
-    setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
+    setNextFollowup(splitFollowup(lead.next_followup_date).date);
+    setNextFollowupTime(splitFollowup(lead.next_followup_date).time);
     setAssignedTo(lead.assigned_to ?? "__none__");
     setAppointmentDate(lead.appointment_date ? lead.appointment_date.split("T")[0] : "");
     setAppointmentTime(formatTime(lead.appointment_time));
@@ -940,7 +1137,7 @@ function LeadDetailDialog({
           phone: phone.trim() || null,
           nomer_asosiy: nomerAsosiy.trim() || null,
           notes: notes.trim() || null,
-          next_followup_date: nextFollowup || null,
+          next_followup_date: buildFollowupIso(nextFollowup, nextFollowupTime),
           appointment_date: appointmentDate || null,
           appointment_time: appointmentDate ? appointmentTime || null : null,
           assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
@@ -1081,16 +1278,19 @@ function LeadDetailDialog({
             <Label className="text-xs font-medium text-slate-600 flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" /> Qayta qo'ng'iroq sanasi
             </Label>
-            <Input
-              type="date"
-              value={nextFollowup}
-              onChange={(e) => setNextFollowup(e.target.value)}
-              className="mt-1 h-9"
+            <FollowupPicker
+              date={nextFollowup}
+              time={nextFollowupTime}
+              onDateChange={setNextFollowup}
+              onTimeChange={setNextFollowupTime}
             />
             {nextFollowup && (
               <button
                 type="button"
-                onClick={() => setNextFollowup("")}
+                onClick={() => {
+                  setNextFollowup("");
+                  setNextFollowupTime(DEFAULT_FOLLOWUP_TIME);
+                }}
                 className="text-[11px] text-slate-400 hover:text-red-500 mt-1"
               >
                 × Sanani o'chirish
