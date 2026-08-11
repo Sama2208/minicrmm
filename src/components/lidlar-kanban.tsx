@@ -946,9 +946,9 @@ function CardBody({
       : "border border-slate-200";
   const opacityClass = accent === "muted" ? "opacity-70" : "";
 
-  const today = new Date().toISOString().split("T")[0];
-  const isCallbackToday = lead.next_followup_date === today;
-  const isCallbackOverdue = lead.next_followup_date && lead.next_followup_date < today;
+  const isCallbackOverdue = lead.next_followup_date
+    ? new Date(lead.next_followup_date).getTime() < Date.now()
+    : false;
   const sla = getSla(lead);
   const slaCardClass =
     sla.level === "danger"
