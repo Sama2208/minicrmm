@@ -1137,7 +1137,7 @@ function LeadDetailDialog({
           phone: phone.trim() || null,
           nomer_asosiy: nomerAsosiy.trim() || null,
           notes: notes.trim() || null,
-          next_followup_date: nextFollowup || null,
+          next_followup_date: buildFollowupIso(nextFollowup, nextFollowupTime),
           appointment_date: appointmentDate || null,
           appointment_time: appointmentDate ? appointmentTime || null : null,
           assigned_to: assignedTo && assignedTo !== "__none__" ? assignedTo : null,
