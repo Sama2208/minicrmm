@@ -615,22 +615,20 @@ export function LidlarKanban({
             className="pl-8 h-9"
           />
         </div>
-        <Select
-          value={sourceFilter}
-          onValueChange={(v) => setSourceFilter(v as LeadSource | "all")}
-        >
-          <SelectTrigger className="h-9 w-full sm:w-44">
-            <SelectValue placeholder="Manba" />
+        <Select value={formFilter} onValueChange={setFormFilter}>
+          <SelectTrigger className="h-9 w-full sm:w-48">
+            <SelectValue placeholder="Forma" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha manbalar</SelectItem>
-            {SOURCE_LIST.map((s) => (
-              <SelectItem key={s} value={s}>
-                {SOURCE_LABEL[s]}
+            <SelectItem value="all">Barcha formalar</SelectItem>
+            {uniqueForms.map((f) => (
+              <SelectItem key={f} value={f}>
+                {f}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
         <div className="flex items-center gap-1 shrink-0 border rounded-md px-2 h-9 bg-white">
           <button
             type="button"
