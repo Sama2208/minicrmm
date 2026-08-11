@@ -1120,7 +1120,8 @@ function LeadDetailDialog({
     setPhone(lead.phone ?? "");
     setNomerAsosiy(lead.nomer_asosiy ?? "");
     setNotes(lead.notes ?? "");
-    setNextFollowup(lead.next_followup_date ? lead.next_followup_date.split("T")[0] : "");
+    setNextFollowup(splitFollowup(lead.next_followup_date).date);
+    setNextFollowupTime(splitFollowup(lead.next_followup_date).time);
     setAssignedTo(lead.assigned_to ?? "__none__");
     setAppointmentDate(lead.appointment_date ? lead.appointment_date.split("T")[0] : "");
     setAppointmentTime(formatTime(lead.appointment_time));
