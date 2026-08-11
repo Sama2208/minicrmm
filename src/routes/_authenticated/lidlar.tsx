@@ -99,21 +99,78 @@ function LidlarPage() {
     },
   });
 
+  // Sahifalar: faol facebook_connections + lidlardagi mavjud sahifalar
   const fbPagesQ = useQuery({
     queryKey: ["fb-pages-list"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("leads")
-        .select("facebook_page_id, facebook_page_name")
-        .not("facebook_page_id", "is", null);
-      const seen = new Set<string>();
-      return (data ?? []).filter((r) => {
-        if (!r.facebook_page_id || seen.has(r.facebook_page_id)) return false;
-        seen.add(r.facebook_page_id);
-        return true;
+      const [conns, leadPages] = await Promise.all([
+        supabase
+          .from("facebook_connections")
+          .select("page_id, page_name")
+          .eq("is_active", true),
+        supabase
+          .from("leads")
+          .select("facebook_page_id, facebook_page_name")
+          .not("facebook_page_id", "is", null),
+      ]);
+      const map = new Map<string, { facebook_page_id: string; facebook_page_name: string }>();
+      (conns.data ?? []).forEach((c: any) => {
+        if (c.page_id) map.set(c.page_id, { facebook_page_id: c.page_id, facebook_page_name: c.page_name ?? c.page_id });
       });
+      (leadPages.data ?? []).forEach((r: any) => {
+        if (r.facebook_page_id && !map.has(r.facebook_page_id))
+          map.set(r.facebook_page_id, {
+            facebook_page_id: r.facebook_page_id,
+            facebook_page_name: r.facebook_page_name ?? r.facebook_page_id,
+          });
+      });
+      return Array.from(map.values()).sort((a, b) =>
+        a.facebook_page_name.localeCompare(b.facebook_page_name),
+      );
     },
   });
+
+  // Formalar: faol facebook_lead_forms + lidlardagi mavjud forma nomlari
+  const fbFormsQ = useQuery({
+    queryKey: ["fb-forms-list"],
+    queryFn: async () => {
+      const [forms, conns, leadForms] = await Promise.all([
+        supabase
+          .from("facebook_lead_forms")
+          .select("form_name, connection_id")
+          .eq("is_syncing", true),
+        supabase.from("facebook_connections").select("id, page_id, page_name"),
+        supabase
+          .from("leads")
+          .select("facebook_form_name, facebook_page_id, facebook_page_name")
+          .not("facebook_form_name", "is", null),
+      ]);
+      const connById = new Map<string, any>();
+      (conns.data ?? []).forEach((c: any) => connById.set(c.id, c));
+      const map = new Map<string, { name: string; pageId: string | null; pageName: string }>();
+      (forms.data ?? []).forEach((f: any) => {
+        if (!f.form_name) return;
+        const c = f.connection_id ? connById.get(f.connection_id) : null;
+        map.set(f.form_name, {
+          name: f.form_name,
+          pageId: c?.page_id ?? null,
+          pageName: c?.page_name ?? "Boshqa",
+        });
+      });
+      (leadForms.data ?? []).forEach((r: any) => {
+        if (!r.facebook_form_name || map.has(r.facebook_form_name)) return;
+        map.set(r.facebook_form_name, {
+          name: r.facebook_form_name,
+          pageId: r.facebook_page_id ?? null,
+          pageName: r.facebook_page_name ?? "Boshqa",
+        });
+      });
+      return Array.from(map.values()).sort(
+        (a, b) => a.pageName.localeCompare(b.pageName) || a.name.localeCompare(b.name),
+      );
+    },
+  });
+
 
   // Faqat operator filteri tanlanganda ko'rsatiladi
   const todayCallbacks = useMemo(() => {
@@ -236,7 +293,7 @@ function LidlarPage() {
             ))}
           </SelectContent>
         </Select>
-        {(fbPagesQ.data ?? []).length > 1 && (
+        {(fbPagesQ.data ?? []).length > 0 && (
           <Select value={facebookPageFilter} onValueChange={setFacebookPageFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Facebook sahifa" />
@@ -244,13 +301,14 @@ function LidlarPage() {
             <SelectContent>
               <SelectItem value="all">Barcha sahifalar</SelectItem>
               {(fbPagesQ.data ?? []).map((p) => (
-                <SelectItem key={p.facebook_page_id!} value={p.facebook_page_id!}>
+                <SelectItem key={p.facebook_page_id} value={p.facebook_page_id}>
                   {p.facebook_page_name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
+
         <Input
           type="date"
           value={dateFrom}
@@ -271,7 +329,14 @@ function LidlarPage() {
       {leadsQ.isLoading ? (
         <div className="text-center text-muted-foreground py-8">Yuklanmoqda...</div>
       ) : (
-        <LidlarKanban leads={filtered} operators={opsQ.data ?? []} />
+        <LidlarKanban
+          leads={filtered}
+          operators={opsQ.data ?? []}
+          formOptions={(fbFormsQ.data ?? []).filter(
+            (f) => facebookPageFilter === "all" || f.pageId === facebookPageFilter,
+          )}
+        />
+
       )}
 
       <CreateLeadDialog

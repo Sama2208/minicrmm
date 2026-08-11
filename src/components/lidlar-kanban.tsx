@@ -22,6 +22,8 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectGroup,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -346,9 +348,11 @@ function ErtangiActions({ leadId }: { leadId: string }) {
 export function LidlarKanban({
   leads,
   operators,
+  formOptions,
 }: {
   leads: KanbanLead[];
   operators: KanbanOperator[];
+  formOptions?: { name: string; pageId: string | null; pageName: string }[];
 }) {
   const qc = useQueryClient();
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -489,13 +493,31 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
-  const uniqueForms = useMemo(() => {
-    const set = new Set<string>();
-    leads.forEach((l) => {
-      if (l.facebook_form_name) set.add(l.facebook_form_name);
+  // Forma ro'yxati: tashqaridan kelgan faol formalar + lidlardagi nomlar (dedupe)
+  const formGroups = useMemo(() => {
+    const map = new Map<string, { name: string; pageName: string }>();
+    (formOptions ?? []).forEach((f) => {
+      if (f.name) map.set(f.name, { name: f.name, pageName: f.pageName || "Boshqa" });
     });
-    return Array.from(set).sort();
-  }, [leads]);
+    if (!formOptions) {
+      leads.forEach((l) => {
+        if (l.facebook_form_name && !map.has(l.facebook_form_name))
+          map.set(l.facebook_form_name, {
+            name: l.facebook_form_name,
+            pageName: (l as any).facebook_page_name || "Boshqa",
+          });
+      });
+    }
+    const byPage = new Map<string, string[]>();
+    Array.from(map.values())
+      .sort((a, b) => a.pageName.localeCompare(b.pageName) || a.name.localeCompare(b.name))
+      .forEach((f) => {
+        if (!byPage.has(f.pageName)) byPage.set(f.pageName, []);
+        byPage.get(f.pageName)!.push(f.name);
+      });
+    return Array.from(byPage.entries()).map(([pageName, forms]) => ({ pageName, forms }));
+  }, [formOptions, leads]);
+
 
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -630,10 +652,15 @@ export function LidlarKanban({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha formalar</SelectItem>
-            {uniqueForms.map((f) => (
-              <SelectItem key={f} value={f}>
-                {f}
-              </SelectItem>
+            {formGroups.map((g) => (
+              <SelectGroup key={g.pageName}>
+                <SelectLabel className="text-[11px] text-slate-400">{g.pageName}</SelectLabel>
+                {g.forms.map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {f}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
