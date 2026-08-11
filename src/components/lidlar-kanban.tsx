@@ -536,11 +536,11 @@ export function LidlarKanban({
       status: LeadStatus;
       nextFollowup?: string | null;
     }) => {
-      const patch: Record<string, unknown> = {
+      const patch = {
         status,
         last_contact_at: new Date().toISOString(),
+        ...(nextFollowup !== undefined ? { next_followup_date: nextFollowup } : {}),
       };
-      if (nextFollowup !== undefined) patch.next_followup_date = nextFollowup;
       const { error } = await supabase.from("leads").update(patch).eq("id", id);
       if (error) throw error;
     },
