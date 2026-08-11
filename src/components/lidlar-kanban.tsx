@@ -808,6 +808,24 @@ export function LidlarKanban({
         />
       )}
 
+      {callbackPrompt && (
+        <CallbackPromptDialog
+          open={!!callbackPrompt}
+          leadName={callbackPrompt.lead.full_name}
+          onCancel={() => setCallbackPrompt(null)}
+          onSave={(iso) => {
+            updateStatus.mutate({
+              id: callbackPrompt.lead.id,
+              status: callbackPrompt.status,
+              nextFollowup: iso,
+            });
+            setCallbackPrompt(null);
+          }}
+        />
+      )}
+
+
+
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border border-slate-200 rounded-xl shadow-xl px-4 py-3">
           <span className="text-sm font-medium text-slate-700">
