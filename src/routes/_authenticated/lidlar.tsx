@@ -67,7 +67,6 @@ type Operator = { id: string; full_name: string; is_active: boolean };
 
 function LidlarPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [operatorFilter, setOperatorFilter] = useState<string>("all");
   const [facebookPageFilter, setFacebookPageFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -143,7 +142,6 @@ function LidlarPage() {
     const list = leadsQ.data ?? [];
     return list.filter((l) => {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
-      if (sourceFilter !== "all" && l.source !== sourceFilter) return false;
       if (operatorFilter !== "all" && l.assigned_to !== operatorFilter) return false;
       if (facebookPageFilter !== "all" && l.facebook_page_id !== facebookPageFilter) return false;
       if (dateFrom && new Date(l.created_at) < new Date(dateFrom)) return false;
@@ -165,7 +163,6 @@ function LidlarPage() {
   }, [
     leadsQ.data,
     statusFilter,
-    sourceFilter,
     operatorFilter,
     facebookPageFilter,
     dateFrom,
@@ -222,19 +219,6 @@ function LidlarPage() {
             {STATUS_ORDER.map((s) => (
               <SelectItem key={s} value={s}>
                 {STATUS_LABEL[s]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Manba" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Barcha manbalar</SelectItem>
-            {SOURCE_LIST.map((s) => (
-              <SelectItem key={s} value={s}>
-                {SOURCE_LABEL[s]}
               </SelectItem>
             ))}
           </SelectContent>
