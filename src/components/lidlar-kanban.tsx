@@ -87,6 +87,7 @@ export type KanbanLead = {
   next_followup_date: string | null;
   created_at: string;
   last_contact_at: string | null;
+  facebook_form_name?: string | null;
 };
 
 export type KanbanOperator = { id: string; full_name: string };
@@ -1051,6 +1052,9 @@ function CardBody({
               {SOURCE_LABEL[lead.source]}
             </span>
           </div>
+          {lead.facebook_form_name && (
+            <div className="text-[10px] text-slate-400 truncate">{lead.facebook_form_name}</div>
+          )}
         </div>
         <div className="flex flex-col items-center gap-1 shrink-0">
           {lead.assigned_to && (

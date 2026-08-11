@@ -60,6 +60,7 @@ type Lead = {
   created_at: string;
   facebook_page_id: string | null;
   facebook_page_name: string | null;
+  facebook_form_name: string | null;
 };
 
 type Operator = { id: string; full_name: string; is_active: boolean };

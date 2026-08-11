@@ -2224,6 +2224,8 @@ export type Database = {
           can_visit_clinic: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id: string
           created_at: string | null
+          facebook_form_id: string | null
+          facebook_form_name: string | null
           facebook_page_id: string | null
           facebook_page_name: string | null
           fbc: string | null
@@ -2255,6 +2257,8 @@ export type Database = {
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id: string
           created_at?: string | null
+          facebook_form_id?: string | null
+          facebook_form_name?: string | null
           facebook_page_id?: string | null
           facebook_page_name?: string | null
           fbc?: string | null
@@ -2286,6 +2290,8 @@ export type Database = {
           can_visit_clinic?: Database["public"]["Enums"]["clinic_visit"] | null
           clinic_id?: string
           created_at?: string | null
+          facebook_form_id?: string | null
+          facebook_form_name?: string | null
           facebook_page_id?: string | null
           facebook_page_name?: string | null
           fbc?: string | null
