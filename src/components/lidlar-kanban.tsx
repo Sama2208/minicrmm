@@ -491,13 +491,31 @@ export function LidlarKanban({
     return m;
   }, [operators]);
 
-  const uniqueForms = useMemo(() => {
-    const set = new Set<string>();
-    leads.forEach((l) => {
-      if (l.facebook_form_name) set.add(l.facebook_form_name);
+  // Forma ro'yxati: tashqaridan kelgan faol formalar + lidlardagi nomlar (dedupe)
+  const formGroups = useMemo(() => {
+    const map = new Map<string, { name: string; pageName: string }>();
+    (formOptions ?? []).forEach((f) => {
+      if (f.name) map.set(f.name, { name: f.name, pageName: f.pageName || "Boshqa" });
     });
-    return Array.from(set).sort();
-  }, [leads]);
+    if (!formOptions) {
+      leads.forEach((l) => {
+        if (l.facebook_form_name && !map.has(l.facebook_form_name))
+          map.set(l.facebook_form_name, {
+            name: l.facebook_form_name,
+            pageName: (l as any).facebook_page_name || "Boshqa",
+          });
+      });
+    }
+    const byPage = new Map<string, string[]>();
+    Array.from(map.values())
+      .sort((a, b) => a.pageName.localeCompare(b.pageName) || a.name.localeCompare(b.name))
+      .forEach((f) => {
+        if (!byPage.has(f.pageName)) byPage.set(f.pageName, []);
+        byPage.get(f.pageName)!.push(f.name);
+      });
+    return Array.from(byPage.entries()).map(([pageName, forms]) => ({ pageName, forms }));
+  }, [formOptions, leads]);
+
 
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
