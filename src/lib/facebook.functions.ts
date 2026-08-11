@@ -250,7 +250,6 @@ export const importHistoricalLeads = createServerFn({ method: "POST" })
     } catch (err) {
       throw err;
     }
-    }
     let imported = 0;
     for (const lead of historicalLeads) {
       const { inserted } = await ingestFacebookLead({
