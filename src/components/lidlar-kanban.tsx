@@ -527,21 +527,39 @@ export function LidlarKanban({
   
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: LeadStatus }) => {
-      const { error } = await supabase
-        .from("leads")
-        .update({ status, last_contact_at: new Date().toISOString() })
-        .eq("id", id);
+    mutationFn: async ({
+      id,
+      status,
+      nextFollowup,
+    }: {
+      id: string;
+      status: LeadStatus;
+      nextFollowup?: string | null;
+    }) => {
+      const patch: Record<string, unknown> = {
+        status,
+        last_contact_at: new Date().toISOString(),
+      };
+      if (nextFollowup !== undefined) patch.next_followup_date = nextFollowup;
+      const { error } = await supabase.from("leads").update(patch).eq("id", id);
       if (error) throw error;
     },
-    onMutate: async ({ id, status }) => {
+    onMutate: async ({ id, status, nextFollowup }) => {
       await qc.cancelQueries({ queryKey: ["leads"] });
       const snapshots = qc.getQueriesData({ queryKey: ["leads"] });
       snapshots.forEach(([key, data]) => {
         if (!Array.isArray(data)) return;
         qc.setQueryData(
           key,
-          (data as KanbanLead[]).map((l) => (l.id === id ? { ...l, status } : l)),
+          (data as KanbanLead[]).map((l) =>
+            l.id === id
+              ? {
+                  ...l,
+                  status,
+                  ...(nextFollowup !== undefined ? { next_followup_date: nextFollowup } : {}),
+                }
+              : l,
+          ),
         );
       });
       return { snapshots };
@@ -571,6 +589,11 @@ export function LidlarKanban({
     if (!col || !col.status) return;
     const lead = leads.find((l) => l.id === activeStr);
     if (!lead || lead.status === col.status) return;
+    // Qayta aloqa / Ma'lumot oldi — avval qo'ng'iroq vaqtini so'raymiz
+    if (CALLBACK_STATUSES.includes(col.status)) {
+      setCallbackPrompt({ lead, status: col.status });
+      return;
+    }
     updateStatus.mutate({ id: lead.id, status: col.status });
   };
 
