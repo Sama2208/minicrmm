@@ -1045,6 +1045,11 @@ function CardBody({
               <ErtangiActions leadId={lead.id} />
             </div>
           )}
+          {lead.facebook_form_name && (
+            <div className="text-[10px] text-blue-500 truncate font-medium">
+              📋 {lead.facebook_form_name}
+            </div>
+          )}
           <div className="pt-1">
             <span
               className={`inline-block text-[10px] px-1.5 py-0.5 rounded ${SOURCE_BADGE[lead.source]}`}
@@ -1052,9 +1057,7 @@ function CardBody({
               {SOURCE_LABEL[lead.source]}
             </span>
           </div>
-          {lead.facebook_form_name && (
-            <div className="text-[10px] text-slate-400 truncate">{lead.facebook_form_name}</div>
-          )}
+
         </div>
         <div className="flex flex-col items-center gap-1 shrink-0">
           {lead.assigned_to && (
