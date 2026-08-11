@@ -39,6 +39,21 @@ async function graphFetch<T>(path: string, params: Record<string, string>): Prom
     };
   }
 
+  console.log("[graphFetch DEBUG]", {
+    path,
+    hasAccessToken: !!params.access_token,
+    hasProof: !!params.appsecret_proof,
+    proofLength: params.appsecret_proof?.length,
+    appSecretFirst4:
+      typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
+        ? process.env.FACEBOOK_APP_SECRET.substring(0, 4)
+        : "NONE",
+    appSecretLength:
+      typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
+        ? process.env.FACEBOOK_APP_SECRET.length
+        : 0,
+  });
+
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
 
 
