@@ -39,30 +39,15 @@ async function graphFetch<T>(path: string, params: Record<string, string>): Prom
     };
   }
 
-  console.log("[graphFetch DEBUG]", {
-    path,
-    hasAccessToken: !!params.access_token,
-    hasProof: !!params.appsecret_proof,
-    proofLength: params.appsecret_proof?.length,
-    appSecretFirst4:
-      typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
-        ? process.env.FACEBOOK_APP_SECRET.substring(0, 4)
-        : "NONE",
-    appSecretLength:
-      typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
-        ? process.env.FACEBOOK_APP_SECRET.length
-        : 0,
-  });
-
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-
-
 
   const res = await fetch(url.toString());
   const body = await res.json();
   if (!res.ok || body.error) {
-    const message = body?.error?.message ?? `Facebook API xatosi (${res.status})`;
-    throw new Error(message);
+    const fbMessage = body?.error?.message ?? `Facebook API xatosi (${res.status})`;
+    // VAQTINCHALIK DEBUG: xato xabariga proof mavjudligi haqida info qo'shamiz
+    const debugInfo = `[proof=${params.appsecret_proof ? "YES(" + params.appsecret_proof.length + ")" : "NO"}, secret=${typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET ? process.env.FACEBOOK_APP_SECRET.substring(0, 4) + "..(" + process.env.FACEBOOK_APP_SECRET.length + ")" : "NONE"}]`;
+    throw new Error(`${fbMessage} ${debugInfo}`);
   }
   return body as T;
 }
