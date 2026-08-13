@@ -1033,9 +1033,9 @@ function CardBody({
           <div
             className={`text-[11px] truncate ${sla.level === "danger" ? "text-red-800 font-medium" : sla.level === "warn" ? "text-amber-800 font-medium" : "text-slate-600"}`}
           >
-            📞 {lead.phone ?? "—"}
+            📞 {lead.phone ?? lead.nomer_asosiy ?? "—"}
           </div>
-          {!compact && lead.nomer_asosiy && (
+          {lead.nomer_asosiy && (
             <div className="text-[11px] text-slate-500 truncate">📱 {lead.nomer_asosiy}</div>
           )}
           {!compact && lead.region && (
