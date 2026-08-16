@@ -99,29 +99,40 @@ type SlaLevel = "none" | "warn" | "danger";
 // Yakshanba ish kuni emas — SLA hisobida yakshanba daqiqalari chiqarib tashlanadi.
 // Vaqt mintaqasi: Asia/Tashkent (UTC+5).
 const TASHKENT_OFFSET_MS = 5 * 60 * 60 * 1000;
+// Ish vaqti: 08:30 – 17:00 (Dushanba – Shanba), Yakshanba dam olish
+const WORK_START_MIN = 8 * 60 + 30; // 510 daqiqa
+const WORK_END_MIN = 17 * 60;        // 1020 daqiqa
 
 function workingMinutes(startIso: string, endMs: number): number {
   const start = new Date(startIso).getTime();
   if (!start || endMs <= start) return 0;
 
-  let sundayMs = 0;
-  // Tashkent vaqtidagi kun boshlanishi (UTC ms da)
   const dayMs = 24 * 60 * 60 * 1000;
+  const minMs = 60 * 1000;
+
   const firstDay = Math.floor((start + TASHKENT_OFFSET_MS) / dayMs);
-  const lastDay = Math.floor((endMs + TASHKENT_OFFSET_MS) / dayMs);
+  const lastDay  = Math.floor((endMs - 1 + TASHKENT_OFFSET_MS) / dayMs);
+
+  let totalMs = 0;
 
   for (let d = firstDay; d <= lastDay; d++) {
+    // 1970-01-01 = payshanba (4). (d+4)%7: 0=Yakshanba,1=Dushanba,...,6=Shanba
+    const dow = (d + 4) % 7;
+    if (dow === 0) continue; // Yakshanba — ish kuni emas
+
     const dayStartUtc = d * dayMs - TASHKENT_OFFSET_MS;
-    const dayEndUtc = dayStartUtc + dayMs;
-    // 1970-01-01 payshanba edi → (d + 4) % 7 === 0 bo'lsa yakshanba
-    if ((d + 4) % 7 === 0) {
-      const segStart = Math.max(start, dayStartUtc);
-      const segEnd = Math.min(endMs, dayEndUtc);
-      if (segEnd > segStart) sundayMs += segEnd - segStart;
+    const workStartUtc = dayStartUtc + WORK_START_MIN * minMs; // 08:30 Toshkent
+    const workEndUtc   = dayStartUtc + WORK_END_MIN   * minMs; // 17:00 Toshkent
+
+    const segStart = Math.max(start, workStartUtc);
+    const segEnd   = Math.min(endMs, workEndUtc);
+
+    if (segEnd > segStart) {
+      totalMs += segEnd - segStart;
     }
   }
 
-  return Math.floor((endMs - start - sundayMs) / 60000);
+  return Math.floor(totalMs / minMs);
 }
 
 function getSla(lead: { status: string; last_contact_at: string | null; created_at: string }): {
