@@ -16,7 +16,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedUlanishRouteImport } from './routes/_authenticated/ulanish'
 import { Route as AuthenticatedSozlamalarRouteImport } from './routes/_authenticated/sozlamalar'
 import { Route as AuthenticatedLidlarRouteImport } from './routes/_authenticated/lidlar'
 import { Route as AuthenticatedHisobotlarRouteImport } from './routes/_authenticated/hisobotlar'
@@ -58,11 +57,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedUlanishRoute = AuthenticatedUlanishRouteImport.update({
-  id: '/ulanish',
-  path: '/ulanish',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSozlamalarRoute = AuthenticatedSozlamalarRouteImport.update({
   id: '/sozlamalar',
@@ -115,7 +109,6 @@ export interface FileRoutesByFullPath {
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
-  '/ulanish': typeof AuthenticatedUlanishRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -131,7 +124,6 @@ export interface FileRoutesByTo {
   '/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/lidlar': typeof AuthenticatedLidlarRoute
   '/sozlamalar': typeof AuthenticatedSozlamalarRoute
-  '/ulanish': typeof AuthenticatedUlanishRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -149,7 +141,6 @@ export interface FileRoutesById {
   '/_authenticated/hisobotlar': typeof AuthenticatedHisobotlarRoute
   '/_authenticated/lidlar': typeof AuthenticatedLidlarRoute
   '/_authenticated/sozlamalar': typeof AuthenticatedSozlamalarRoute
-  '/_authenticated/ulanish': typeof AuthenticatedUlanishRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -167,7 +158,6 @@ export interface FileRouteTypes {
     | '/hisobotlar'
     | '/lidlar'
     | '/sozlamalar'
-    | '/ulanish'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
@@ -183,7 +173,6 @@ export interface FileRouteTypes {
     | '/hisobotlar'
     | '/lidlar'
     | '/sozlamalar'
-    | '/ulanish'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   id:
@@ -200,7 +189,6 @@ export interface FileRouteTypes {
     | '/_authenticated/hisobotlar'
     | '/_authenticated/lidlar'
     | '/_authenticated/sozlamalar'
-    | '/_authenticated/ulanish'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
@@ -270,13 +258,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/ulanish': {
-      id: '/_authenticated/ulanish'
-      path: '/ulanish'
-      fullPath: '/ulanish'
-      preLoaderRoute: typeof AuthenticatedUlanishRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/sozlamalar': {
       id: '/_authenticated/sozlamalar'
       path: '/sozlamalar'
@@ -333,14 +314,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHisobotlarRoute: typeof AuthenticatedHisobotlarRoute
   AuthenticatedLidlarRoute: typeof AuthenticatedLidlarRoute
   AuthenticatedSozlamalarRoute: typeof AuthenticatedSozlamalarRoute
-  AuthenticatedUlanishRoute: typeof AuthenticatedUlanishRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHisobotlarRoute: AuthenticatedHisobotlarRoute,
   AuthenticatedLidlarRoute: AuthenticatedLidlarRoute,
   AuthenticatedSozlamalarRoute: AuthenticatedSozlamalarRoute,
-  AuthenticatedUlanishRoute: AuthenticatedUlanishRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
