@@ -149,6 +149,7 @@ const TITLES: Record<string, string> = {
   "/kalendar": "Qabul jadvali",
   "/hisobotlar": "Hisobotlar",
   "/sozlamalar": "Sozlamalar",
+  "/ulanish": "AI ulanishi",
   "/mening-lidlarim": "Mening lidlarim",
 };
 
