@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const OAUTH_SCOPE =
   "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement," +
-  "pages_messaging,instagram_basic,instagram_manage_messages";
+  "instagram_basic,instagram_manage_messages";
 
 async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
   const { data: isAdmin } = await supabase.rpc("has_role", { _role: "admin" });
