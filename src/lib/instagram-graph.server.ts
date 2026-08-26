@@ -5,6 +5,14 @@ import { computeAppSecretProof } from "./facebook-graph.server";
 
 const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
 
+// Instagram professional akkaunt edge'lari uchun rasmiy Instagram API bazasi.
+// Versiyani env orqali sozlash mumkin (standart: v24.0).
+const IG_API_VERSION =
+  (typeof process !== "undefined" && process.env?.INSTAGRAM_API_VERSION) || "v24.0";
+const IG_API_BASE = `https://graph.instagram.com/${IG_API_VERSION}`;
+
+export const INSTAGRAM_MESSAGING_FIELDS = ["messages", "messaging_postbacks"] as const;
+
 function requireAppSecret(): string {
   const appSecret =
     typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
@@ -13,6 +21,51 @@ function requireAppSecret(): string {
   if (!appSecret) throw new Error("FACEBOOK_APP_SECRET sozlanmagan");
   return appSecret;
 }
+
+/**
+ * Instagram professional akkauntni Instagram Webhooks (Direct xabarlari)
+ * maydonlariga obuna qiladi.
+ * POST https://graph.instagram.com/{version}/{ig_user_id}/subscribed_apps
+ * Facebook Page `subscribed_apps` edge'idan farqli — pages_messaging talab qilmaydi.
+ */
+export async function subscribeInstagramAccountToMessaging(
+  igUserId: string,
+  pageAccessToken: string,
+  fields: readonly string[] = INSTAGRAM_MESSAGING_FIELDS,
+): Promise<boolean> {
+  const url = new URL(`${IG_API_BASE}/${igUserId}/subscribed_apps`);
+  url.searchParams.set("subscribed_fields", fields.join(","));
+  url.searchParams.set("access_token", pageAccessToken);
+  const appSecret =
+    typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET
+      ? process.env.FACEBOOK_APP_SECRET
+      : undefined;
+  if (appSecret) {
+    url.searchParams.set(
+      "appsecret_proof",
+      await computeAppSecretProof(appSecret, pageAccessToken),
+    );
+  }
+
+  const res = await fetch(url.toString(), { method: "POST" });
+  const body = await res.json();
+  if (!res.ok || body?.error) {
+    throw new Error(body?.error?.message ?? `Instagram obuna xatosi (${res.status})`);
+  }
+  return body?.success === true;
+}
+
+/**
+ * instagram_enabled qiymati: faqat akkaunt topilgan VA obuna muvaffaqiyatli
+ * bo'lganda true bo'ladi.
+ */
+export function resolveInstagramEnabled(
+  hasAccount: boolean,
+  subscribeSucceeded: boolean,
+): boolean {
+  return hasAccount && subscribeSucceeded;
+}
+
 
 async function igFetch<T>(
   path: string,
