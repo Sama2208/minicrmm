@@ -6,7 +6,8 @@ import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 
 const OAUTH_SCOPE =
-  "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement";
+  "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement," +
+  "pages_messaging,instagram_basic,instagram_manage_messages";
 
 async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
   const { data: isAdmin } = await supabase.rpc("has_role", { _role: "admin" });
@@ -134,8 +135,21 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (connErr) throw new Error(connErr.message);
-    const { listLeadFormsForPage, subscribePageToLeadgen } =
+    const { listLeadFormsForPage, subscribePageToLeadgen, getPageInstagramAccount } =
       await import("./facebook-graph.server");
+
+    // Sahifaga ulangan Instagram Professional akkauntini aniqlaymiz (ixtiyoriy).
+    const igAccount = await getPageInstagramAccount(page.id, page.access_token);
+    if (igAccount) {
+      await supabaseAdmin
+        .from("facebook_connections")
+        .update({
+          instagram_business_account_id: igAccount.id,
+          instagram_username: igAccount.username,
+          instagram_enabled: true,
+        })
+        .eq("id", connection.id);
+    }
     const forms = await listLeadFormsForPage(page.id, page.access_token);
     if (forms.length > 0) {
       await supabaseAdmin.from("facebook_lead_forms").upsert(
@@ -150,13 +164,17 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
     }
     let subscribeError: string | null = null;
     try {
-      await subscribePageToLeadgen(page.id, page.access_token);
+      // Lead Ads (leadgen) o'zgarishsiz qoladi; Instagram ulangan bo'lsa
+      // xabar maydonlariga ham obuna bo'lamiz.
+      const fields = ["leadgen"];
+      if (igAccount) fields.push("messages", "messaging_postbacks");
+      await subscribePageToLeadgen(page.id, page.access_token, fields);
     } catch (err) {
       subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
       console.error("Facebook leadgen obuna xatosi:", err);
     }
     await supabaseAdmin.from("facebook_oauth_sessions").delete().eq("state", data.state);
-    return { ok: true, pageName: page.name, subscribeError };
+    return { ok: true, pageName: page.name, subscribeError, instagramUsername: igAccount?.username ?? null };
   });
 
 // O'ZGARTIRILDI: barcha faol page'larni qaytaradi (oldin faqat bitta)

@@ -53,6 +53,10 @@ export default {
       const { handleFacebookOAuthCallback } = await import("./lib/facebook-oauth.server");
       return handleFacebookOAuthCallback(request);
     }
+    if (url.pathname === "/api/instagram/webhook") {
+      const { handleInstagramWebhook } = await import("./lib/instagram-webhook.server");
+      return handleInstagramWebhook(request);
+    }
     if (url.pathname === "/api/ingest-lead") {
       const { handleWebLeadWebhook } = await import("./lib/web-lead-ingest.server");
       return handleWebLeadWebhook(request);

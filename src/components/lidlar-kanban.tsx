@@ -70,6 +70,7 @@ import {
   type ColumnDef,
 } from "@/lib/kanban";
 import { useClinicId } from "@/lib/clinic";
+import { InstagramChatPanel } from "@/components/instagram-chat";
 
 export type KanbanLead = {
   id: string;
@@ -1256,6 +1257,11 @@ function LeadDetailDialog({
               {lead.problem_type && <div>💬 {lead.problem_type}</div>}
               {lead.can_visit_clinic && <div>🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}</div>}
             </div>
+          )}
+
+          {/* Instagram Direct yozishmasi */}
+          {(lead.source === "instagram" || lead.status === "instagram_direct") && (
+            <InstagramChatPanel leadId={lead.id} />
           )}
 
           {/* Notes */}

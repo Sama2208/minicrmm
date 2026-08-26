@@ -7,6 +7,7 @@ const STATUSES = [
   "qayta_qongiroq",
   "sifatsiz",
   "malumot_oldi",
+  "instagram_direct",
   "konsultatsiyaga_yozildi",
   "ertangi_konsultatsiya",
   "bugungi_konsultatsiya",
