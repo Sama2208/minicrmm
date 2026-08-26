@@ -45,9 +45,7 @@ async function graphFetch<T>(path: string, params: Record<string, string>): Prom
   const body = await res.json();
   if (!res.ok || body.error) {
     const fbMessage = body?.error?.message ?? `Facebook API xatosi (${res.status})`;
-    // VAQTINCHALIK DEBUG: xato xabariga proof mavjudligi haqida info qo'shamiz
-    const debugInfo = `[proof=${params.appsecret_proof ? "YES(" + params.appsecret_proof.length + ")" : "NO"}, secret=${typeof process !== "undefined" && process.env?.FACEBOOK_APP_SECRET ? process.env.FACEBOOK_APP_SECRET.substring(0, 4) + "..(" + process.env.FACEBOOK_APP_SECRET.length + ")" : "NONE"}]`;
-    throw new Error(`${fbMessage} ${debugInfo}`);
+    throw new Error(fbMessage);
   }
   return body as T;
 }
