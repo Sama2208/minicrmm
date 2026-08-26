@@ -33,7 +33,7 @@ describe("subscribeInstagramAccountToMessaging", () => {
     const ok = await subscribeInstagramAccountToMessaging("17841400000000000", "page-token");
 
     expect(ok).toBe(true);
-    const [calledUrl, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [calledUrl, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     const url = new URL(calledUrl);
     expect(init.method).toBe("POST");
     expect(url.origin).toBe("https://graph.instagram.com");
@@ -45,7 +45,7 @@ describe("subscribeInstagramAccountToMessaging", () => {
   it("does not use the Facebook Page edge (which requires pages_messaging)", async () => {
     const fetchMock = mockFetch({ success: true });
     await subscribeInstagramAccountToMessaging("17841400000000000", "page-token");
-    const [calledUrl] = fetchMock.mock.calls[0] as [string];
+    const [calledUrl] = fetchMock.mock.calls[0] as unknown as [string];
     expect(calledUrl).not.toContain("graph.facebook.com");
   });
 
