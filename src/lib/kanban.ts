@@ -18,6 +18,7 @@ export const DEFAULT_COLUMNS: ColumnDef[] = [
   { key: "prioritet", status: "prioritet", title: "Prioritet", accent: "green" },
   { key: "qayta_aloqa", status: "qayta_aloqa", title: "Qayta aloqa" },
   { key: "malumot_oldi", status: "malumot_oldi", title: "Ma'lumot oldi" },
+  { key: "instagram_direct", status: "instagram_direct", title: "Direct" },
   { key: "konsultatsiyaga_yozildi", status: "konsultatsiyaga_yozildi", title: "Konsultatsiyaga yozildi" },
   { key: "viloyatga_qabul", status: "viloyatga_qabul", title: "Viloyatga qabul" },
   { key: "ertangi_konsultatsiya", status: "ertangi_konsultatsiya", title: "Ertangi konsultatsiya" },

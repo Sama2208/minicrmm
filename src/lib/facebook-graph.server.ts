@@ -5,7 +5,7 @@ const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
 
 // Facebook server-side API chaqiruvlari uchun appsecret_proof hisoblash.
 // Cloudflare Workers Web Crypto API (SubtleCrypto) orqali HMAC-SHA256.
-async function computeAppSecretProof(appSecret: string, accessToken: string): Promise<string> {
+export async function computeAppSecretProof(appSecret: string, accessToken: string): Promise<string> {
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -155,10 +155,11 @@ export async function listLeadsForForm(
 export async function subscribePageToLeadgen(
   pageId: string,
   pageAccessToken: string,
+  fields: string[] = ["leadgen"],
 ): Promise<boolean> {
   const appSecret = process.env.FACEBOOK_APP_SECRET;
   const url = new URL(`${GRAPH_API_BASE}/${pageId}/subscribed_apps`);
-  url.searchParams.set("subscribed_fields", "leadgen");
+  url.searchParams.set("subscribed_fields", fields.join(","));
   url.searchParams.set("access_token", pageAccessToken);
   if (appSecret) {
     url.searchParams.set(
@@ -172,4 +173,28 @@ export async function subscribePageToLeadgen(
     throw new Error(body?.error?.message ?? `Facebook obuna xatosi (${res.status})`);
   }
   return body.success === true;
+}
+
+// Sahifaga ulangan Instagram Professional/Business akkaunt ma'lumotlari.
+// Ulanmagan bo'lsa null qaytaradi (bu xatolik emas).
+export type PageInstagramAccount = { id: string; username: string | null };
+
+export async function getPageInstagramAccount(
+  pageId: string,
+  pageAccessToken: string,
+): Promise<PageInstagramAccount | null> {
+  try {
+    const data = await graphFetch<{
+      instagram_business_account?: { id: string; username?: string };
+      connected_instagram_account?: { id: string; username?: string };
+    }>(`/${pageId}`, {
+      access_token: pageAccessToken,
+      fields: "instagram_business_account{id,username},connected_instagram_account{id,username}",
+    });
+    const acc = data.instagram_business_account ?? data.connected_instagram_account;
+    if (!acc?.id) return null;
+    return { id: acc.id, username: acc.username ?? null };
+  } catch {
+    return null;
+  }
 }

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -1182,6 +1182,9 @@ export type Database = {
           connected_at: string
           connected_by: string | null
           id: string
+          instagram_business_account_id: string | null
+          instagram_enabled: boolean
+          instagram_username: string | null
           is_active: boolean
           page_access_token: string
           page_id: string
@@ -1192,6 +1195,9 @@ export type Database = {
           connected_at?: string
           connected_by?: string | null
           id?: string
+          instagram_business_account_id?: string | null
+          instagram_enabled?: boolean
+          instagram_username?: string | null
           is_active?: boolean
           page_access_token: string
           page_id: string
@@ -1202,6 +1208,9 @@ export type Database = {
           connected_at?: string
           connected_by?: string | null
           id?: string
+          instagram_business_account_id?: string | null
+          instagram_enabled?: boolean
+          instagram_username?: string | null
           is_active?: boolean
           page_access_token?: string
           page_id?: string
@@ -1651,6 +1660,163 @@ export type Database = {
             columns: ["reported_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instagram_conversations: {
+        Row: {
+          assigned_to: string | null
+          clinic_id: string
+          created_at: string
+          facebook_connection_id: string
+          id: string
+          instagram_business_account_id: string
+          instagram_user_id: string
+          instagram_username: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          lead_id: string | null
+          status: string
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          clinic_id: string
+          created_at?: string
+          facebook_connection_id: string
+          id?: string
+          instagram_business_account_id: string
+          instagram_user_id: string
+          instagram_username?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          lead_id?: string | null
+          status?: string
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          clinic_id?: string
+          created_at?: string
+          facebook_connection_id?: string
+          id?: string
+          instagram_business_account_id?: string
+          instagram_user_id?: string
+          instagram_username?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          lead_id?: string | null
+          status?: string
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_conversations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instagram_conversations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "v_operator_control"
+            referencedColumns: ["operator_id"]
+          },
+          {
+            foreignKeyName: "instagram_conversations_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instagram_conversations_facebook_connection_id_fkey"
+            columns: ["facebook_connection_id"]
+            isOneToOne: false
+            referencedRelation: "facebook_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instagram_conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instagram_conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_waiting_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instagram_messages: {
+        Row: {
+          clinic_id: string
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          instagram_message_id: string
+          media_type: string | null
+          media_url: string | null
+          message_text: string | null
+          payload: Json | null
+          recipient_id: string | null
+          sender_id: string | null
+          sent_at: string
+        }
+        Insert: {
+          clinic_id: string
+          conversation_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          instagram_message_id: string
+          media_type?: string | null
+          media_url?: string | null
+          message_text?: string | null
+          payload?: Json | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at: string
+        }
+        Update: {
+          clinic_id?: string
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          instagram_message_id?: string
+          media_type?: string | null
+          media_url?: string | null
+          message_text?: string | null
+          payload?: Json | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_messages_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instagram_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "instagram_conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -4508,6 +4674,7 @@ export type Database = {
         | "qayta_qongiroq"
         | "sifatsiz"
         | "malumot_oldi"
+        | "instagram_direct"
         | "konsultatsiyaga_yozildi"
         | "ertangi_konsultatsiya"
         | "bugungi_konsultatsiya"
@@ -4665,6 +4832,7 @@ export const Constants = {
         "qayta_qongiroq",
         "sifatsiz",
         "malumot_oldi",
+        "instagram_direct",
         "konsultatsiyaga_yozildi",
         "ertangi_konsultatsiya",
         "bugungi_konsultatsiya",
