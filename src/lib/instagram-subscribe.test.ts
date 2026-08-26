@@ -36,17 +36,18 @@ describe("subscribeInstagramAccountToMessaging", () => {
     const [calledUrl, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     const url = new URL(calledUrl);
     expect(init.method).toBe("POST");
-    expect(url.origin).toBe("https://graph.instagram.com");
+    expect(url.origin).toBe("https://graph.facebook.com");
     expect(url.pathname.endsWith("/17841400000000000/subscribed_apps")).toBe(true);
     expect(url.searchParams.get("subscribed_fields")).toBe("messages,messaging_postbacks");
     expect(url.searchParams.get("appsecret_proof")).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it("does not use the Facebook Page edge (which requires pages_messaging)", async () => {
+  it("uses the Facebook Graph host with the Instagram account edge", async () => {
     const fetchMock = mockFetch({ success: true });
     await subscribeInstagramAccountToMessaging("17841400000000000", "page-token");
     const [calledUrl] = fetchMock.mock.calls[0] as unknown as [string];
-    expect(calledUrl).not.toContain("graph.facebook.com");
+    expect(calledUrl).toContain("graph.facebook.com");
+    expect(calledUrl).toContain("/17841400000000000/subscribed_apps");
   });
 
   it("exposes the official Instagram messaging fields", () => {

@@ -5,11 +5,10 @@ import { computeAppSecretProof } from "./facebook-graph.server";
 
 const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
 
-// Instagram professional akkaunt edge'lari uchun rasmiy Instagram API bazasi.
-// Versiyani env orqali sozlash mumkin (standart: v24.0).
-const IG_API_VERSION =
-  (typeof process !== "undefined" && process.env?.INSTAGRAM_API_VERSION) || "v24.0";
-const IG_API_BASE = `https://graph.instagram.com/${IG_API_VERSION}`;
+// Bu Facebook Login oqimi: Instagram professional akkauntiga Page access
+// token bilan murojaat qilinadi, shuning uchun graph.facebook.com ishlatiladi.
+// graph.instagram.com bu token turi bilan almashtirilmaydi.
+const IG_API_BASE = GRAPH_API_BASE;
 
 export const INSTAGRAM_MESSAGING_FIELDS = ["messages", "messaging_postbacks"] as const;
 
@@ -25,7 +24,7 @@ function requireAppSecret(): string {
 /**
  * Instagram professional akkauntni Instagram Webhooks (Direct xabarlari)
  * maydonlariga obuna qiladi.
- * POST https://graph.instagram.com/{version}/{ig_user_id}/subscribed_apps
+ * POST https://graph.facebook.com/{version}/{ig_user_id}/subscribed_apps
  * Facebook Page `subscribed_apps` edge'idan farqli — pages_messaging talab qilmaydi.
  */
 export async function subscribeInstagramAccountToMessaging(
