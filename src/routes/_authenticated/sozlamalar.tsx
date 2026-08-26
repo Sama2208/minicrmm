@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Facebook, Download } from "lucide-react";
+import { Plus, Trash2, Facebook, Download, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { useClinicId } from "@/lib/clinic";
 import {
@@ -37,6 +37,7 @@ import {
   disconnectFacebook,
   syncFacebookForms,
   importHistoricalLeads,
+  toggleInstagramDirect,
 } from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
@@ -285,6 +286,24 @@ function FacebookConnectionCard() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const toggleDirect = useMutation({
+    mutationFn: (vars: { connectionId: string; enabled: boolean }) =>
+      toggleInstagramDirect({ data: vars }),
+    onSuccess: (result) => {
+      if (result.enabled) {
+        toast.success(
+          result.instagramUsername
+            ? `@${result.instagramUsername} Direct xabarlari qabul qilinadi`
+            : "Instagram Direct xabarlari qabul qilinadi",
+        );
+      } else {
+        toast.success("Bu Page'dan Direct xabarlarini qabul qilish o'chirildi");
+      }
+      qc.invalidateQueries({ queryKey: ["facebook-connection"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const importLeads = useMutation({
     mutationFn: (formRowId: string) => importHistoricalLeads({ data: { formRowId } }),
     onSuccess: (res) => {
@@ -300,7 +319,7 @@ function FacebookConnectionCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Facebook className="h-4 w-4" />
-          Facebook Lead Ads
+          Facebook va Instagram
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -368,6 +387,37 @@ function FacebookConnectionCard() {
                     </Button>
                   </div>
                 </div>
+                <div className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1.5 text-sm font-medium">
+                      <Instagram className="h-3.5 w-3.5 text-pink-600" />
+                      Instagram Direct
+                      {page.instagramEnabled ? (
+                        <span className="text-xs font-normal text-emerald-700">Faol</span>
+                      ) : (
+                        <span className="text-xs font-normal text-slate-500">O'chiq</span>
+                      )}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {page.instagramBusinessAccountId
+                        ? page.instagramUsername
+                          ? `@${page.instagramUsername}`
+                          : "Instagram akkaunti aniqlandi"
+                        : "Instagram Professional akkaunti topilmadi"}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={page.instagramEnabled}
+                    onCheckedChange={(enabled) =>
+                      toggleDirect.mutate({ connectionId: page.connectionId, enabled })
+                    }
+                    disabled={toggleDirect.isPending}
+                    aria-label={`${page.pageName} uchun Instagram Direct`}
+                  />
+                </div>
+                <p className="px-1 text-xs text-slate-400">
+                  Direct yoqilsa, faqat shu Page'ga ulangan Instagram xabarlari CRM'ga tushadi.
+                </p>
                 {page.forms.length === 0 ? (
                   <p className="text-sm text-slate-400 pl-5">Reklama lid formalari topilmadi</p>
                 ) : (

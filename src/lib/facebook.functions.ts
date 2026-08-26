@@ -219,7 +219,9 @@ export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
 
     const { data: connections } = await supabaseAdmin
       .from("facebook_connections")
-      .select("id, page_id, page_name")
+      .select(
+        "id, page_id, page_name, instagram_business_account_id, instagram_username, instagram_enabled",
+      )
       .eq("clinic_id", clinicId)
       .eq("is_active", true)
       .order("page_name");
@@ -239,12 +241,126 @@ export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
           connectionId: conn.id,
           pageId: conn.page_id,
           pageName: conn.page_name,
+          instagramBusinessAccountId: conn.instagram_business_account_id,
+          instagramUsername: conn.instagram_username,
+          instagramEnabled: conn.instagram_enabled,
           forms: forms ?? [],
         };
       }),
     );
 
     return { connected: true as const, pages };
+  });
+
+// Instagram Direct qabul qilishni bitta Page bilan cheklaydi. O'chirilgan
+// Page'lar Meta'dan webhook olayotgan bo'lsa ham CRM ularni qayta ishlamaydi.
+const ToggleInstagramDirectInput = z.object({
+  connectionId: z.string().uuid(),
+  enabled: z.boolean(),
+  clinicId: z.string().uuid().optional(),
+});
+
+export const toggleInstagramDirect = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ToggleInstagramDirectInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: connection, error: connectionError } = await supabaseAdmin
+      .from("facebook_connections")
+      .select("id, page_id, page_access_token")
+      .eq("id", data.connectionId)
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .single();
+    if (connectionError || !connection) throw new Error("Faol Facebook Page topilmadi");
+
+    if (!data.enabled) {
+      const { error } = await supabaseAdmin
+        .from("facebook_connections")
+        .update({ instagram_enabled: false })
+        .eq("id", connection.id)
+        .eq("clinic_id", clinicId);
+      if (error) throw new Error(error.message);
+      return { ok: true, enabled: false, instagramUsername: null };
+    }
+
+    const { getPageInstagramAccount } = await import("./facebook-graph.server");
+    const { subscribeInstagramAccountToMessaging } = await import("./instagram-graph.server");
+    const instagramAccount = await getPageInstagramAccount(
+      connection.page_id,
+      connection.page_access_token,
+    );
+
+    if (!instagramAccount) {
+      await supabaseAdmin
+        .from("facebook_connections")
+        .update({
+          instagram_business_account_id: null,
+          instagram_username: null,
+          instagram_enabled: false,
+        })
+        .eq("id", connection.id)
+        .eq("clinic_id", clinicId);
+      throw new Error("Bu Facebook Page'ga Instagram Professional akkaunti ulanmagan");
+    }
+
+    let subscribed = false;
+    try {
+      subscribed = await subscribeInstagramAccountToMessaging(
+        instagramAccount.id,
+        connection.page_access_token,
+      );
+    } catch (err) {
+      await supabaseAdmin
+        .from("facebook_connections")
+        .update({ instagram_enabled: false })
+        .eq("id", connection.id)
+        .eq("clinic_id", clinicId);
+      const message = err instanceof Error ? err.message : "Instagram Direct obunasida xato";
+      if (/access token|oauth token/i.test(message)) {
+        throw new Error(
+          "Facebook Page tokeni yangilanishi kerak. Page'ni uzib, Facebook orqali qaytadan ulang.",
+        );
+      }
+      throw err;
+    }
+    if (!subscribed) {
+      await supabaseAdmin
+        .from("facebook_connections")
+        .update({ instagram_enabled: false })
+        .eq("id", connection.id)
+        .eq("clinic_id", clinicId);
+      throw new Error("Instagram Direct obunasi tasdiqlanmadi");
+    }
+
+    // Faqat tanlangan Page Direct xabarlarini CRM'ga kiritadi. Lead Ads
+    // ulanishlari va boshqa Page'larning formalari o'z holicha qoladi.
+    const { error: disableOthersError } = await supabaseAdmin
+      .from("facebook_connections")
+      .update({ instagram_enabled: false })
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .neq("id", connection.id);
+    if (disableOthersError) throw new Error(disableOthersError.message);
+
+    const { error: enableError } = await supabaseAdmin
+      .from("facebook_connections")
+      .update({
+        instagram_business_account_id: instagramAccount.id,
+        instagram_username: instagramAccount.username,
+        instagram_enabled: true,
+      })
+      .eq("id", connection.id)
+      .eq("clinic_id", clinicId);
+    if (enableError) throw new Error(enableError.message);
+
+    return {
+      ok: true,
+      enabled: true,
+      instagramUsername: instagramAccount.username,
+    };
   });
 
 const ToggleInput = z.object({
