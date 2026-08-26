@@ -137,19 +137,11 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
     if (connErr) throw new Error(connErr.message);
     const { listLeadFormsForPage, subscribePageToLeadgen, getPageInstagramAccount } =
       await import("./facebook-graph.server");
+    const { subscribeInstagramAccountToMessaging, resolveInstagramEnabled } =
+      await import("./instagram-graph.server");
 
     // Sahifaga ulangan Instagram Professional akkauntini aniqlaymiz (ixtiyoriy).
     const igAccount = await getPageInstagramAccount(page.id, page.access_token);
-    if (igAccount) {
-      await supabaseAdmin
-        .from("facebook_connections")
-        .update({
-          instagram_business_account_id: igAccount.id,
-          instagram_username: igAccount.username,
-          instagram_enabled: true,
-        })
-        .eq("id", connection.id);
-    }
     const forms = await listLeadFormsForPage(page.id, page.access_token);
     if (forms.length > 0) {
       await supabaseAdmin.from("facebook_lead_forms").upsert(
@@ -162,20 +154,60 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
         { onConflict: "connection_id,form_id", ignoreDuplicates: true },
       );
     }
-    let subscribeError: string | null = null;
+
+    // 1) Lead Ads: Page edge FAQAT leadgen maydoniga obuna bo'ladi.
+    let leadgenError: string | null = null;
     try {
-      // Lead Ads (leadgen) o'zgarishsiz qoladi; Instagram ulangan bo'lsa
-      // xabar maydonlariga ham obuna bo'lamiz.
-      const fields = ["leadgen"];
-      if (igAccount) fields.push("messages", "messaging_postbacks");
-      await subscribePageToLeadgen(page.id, page.access_token, fields);
+      await subscribePageToLeadgen(page.id, page.access_token, ["leadgen"]);
     } catch (err) {
-      subscribeError = err instanceof Error ? err.message : "Noma'lum xatolik";
-      console.error("Facebook leadgen obuna xatosi:", err);
+      leadgenError = err instanceof Error ? err.message : "Noma'lum xatolik";
+      console.error("Facebook leadgen obuna xatosi");
     }
+
+    // 2) Instagram Direct: alohida Instagram akkaunt edge'i.
+    let instagramError: string | null = null;
+    let instagramSubscribed = false;
+    if (igAccount) {
+      try {
+        instagramSubscribed = await subscribeInstagramAccountToMessaging(
+          igAccount.id,
+          page.access_token,
+        );
+      } catch (err) {
+        instagramError = err instanceof Error ? err.message : "Noma'lum xatolik";
+        console.error("Instagram obuna xatosi");
+      }
+    }
+
+    if (igAccount) {
+      await supabaseAdmin
+        .from("facebook_connections")
+        .update({
+          instagram_business_account_id: igAccount.id,
+          instagram_username: igAccount.username,
+          instagram_enabled: resolveInstagramEnabled(true, instagramSubscribed),
+        })
+        .eq("id", connection.id);
+    }
+
+    const subscribeError =
+      [
+        leadgenError ? `Lead Ads obunasi: ${leadgenError}` : null,
+        instagramError ? `Instagram Direct obunasi: ${instagramError}` : null,
+      ]
+        .filter(Boolean)
+        .join(" | ") || null;
+
     await supabaseAdmin.from("facebook_oauth_sessions").delete().eq("state", data.state);
-    return { ok: true, pageName: page.name, subscribeError, instagramUsername: igAccount?.username ?? null };
+    return {
+      ok: true,
+      pageName: page.name,
+      subscribeError,
+      instagramUsername: igAccount?.username ?? null,
+      instagramEnabled: resolveInstagramEnabled(Boolean(igAccount), instagramSubscribed),
+    };
   });
+
 
 // O'ZGARTIRILDI: barcha faol page'larni qaytaradi (oldin faqat bitta)
 export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
