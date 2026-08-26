@@ -86,8 +86,17 @@ export async function getLongLivedUserToken(shortLivedToken: string): Promise<st
 export async function listPagesForUser(userAccessToken: string): Promise<FacebookPage[]> {
   const data = await graphFetch<{ data: FacebookPage[] }>("/me/accounts", {
     access_token: userAccessToken,
+    // Meta's default response does not guarantee access_token. Without an
+    // explicit field list, reconnecting can save an undefined/stale Page
+    // token and the Instagram webhook call then fails with "Cannot parse
+    // access token".
+    fields: "id,name,access_token",
   });
-  return data.data;
+  const pages = data.data ?? [];
+  if (pages.some((page) => !page.id || !page.name || !page.access_token)) {
+    throw new Error("Meta Page access tokenni qaytarmadi. Facebook ulanishini qayta tasdiqlang.");
+  }
+  return pages;
 }
 
 export type FacebookLeadForm = { id: string; name: string };
