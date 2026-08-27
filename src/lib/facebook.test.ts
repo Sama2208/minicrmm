@@ -113,4 +113,18 @@ describe("extractFacebookLeadFields", () => {
 
     expect(result.region).toBe("Qashqadaryo");
   });
+
+  it("maps Doctor Shoxyusupov OA disease question to the card problem field", () => {
+    const result = extractFacebookLeadFields([
+      { name: "qaysi_kasallik_sizni_bezovta_qiladi?", values: ["Bel og'rig'i"] },
+      { name: "qaysi_viloyatda_istiqomat_qilasiz?", values: ["Samarqand"] },
+      { name: "full_name", values: ["Shuxratovna"] },
+      { name: "phone_number", values: ["+998976310154"] },
+    ]);
+
+    expect(result.fullName).toBe("Shuxratovna");
+    expect(result.phone).toBe("+998976310154");
+    expect(result.region).toBe("Samarqand");
+    expect(result.problemType).toBe("Bel og'rig'i");
+  });
 });

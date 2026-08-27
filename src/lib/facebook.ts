@@ -119,11 +119,24 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
 
   // Kasallik turi — leads.problem_type ga saqlanadi
   const problemType =
-    get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?", "qaysi_turdagi_kasallik_bezovta_qiladi?") ||
+    get(
+      "qaysi_turdagi_kasallik_sizni_bezovta_qiladi?",
+      "qaysi_turdagi_kasallik_bezovta_qiladi?",
+      "qaysi_kasallik_sizni_bezovta_qiladi?",
+    ) ||
     findByKey((key) =>
-      ["ogriq", "оғриқ", "qismi", "қисми", "tanangiz", "танангиз", "pain", "боль"].some(
-        (part) => key.includes(part),
-      ),
+      [
+        "ogriq",
+        "оғриқ",
+        "qismi",
+        "қисми",
+        "tanangiz",
+        "танангиз",
+        "pain",
+        "боль",
+        "kasallik",
+        "болезн",
+      ].some((part) => key.includes(part)),
     ) ||
     null;
 
