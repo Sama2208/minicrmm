@@ -10,6 +10,7 @@ export type ExtractedFacebookLead = {
   phone: string | null;
   email: string | null;
   nomerAsosiy: string | null;
+  region: string | null;
   problemType: string | null;
   answers: FacebookLeadAnswer[];
 };
@@ -98,6 +99,24 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
   // nomer_asosiy: Facebook profilidan avtomatik to'ldirilgan raqam
   const nomerAsosiy = fbAutoPhone;
 
+  // Manzil/viloyat: custom savol nomi forma bo'yicha farq qiladi.
+  const region =
+    get("region", "viloyat", "manzil", "address", "область", "город") ||
+    findByKey((key) =>
+      [
+        "viloyat",
+        "вилоят",
+        "istiqomat",
+        "истиқомат",
+        "manzil",
+        "манзил",
+        "address",
+        "область",
+        "город",
+      ].some((part) => key.includes(part)),
+    ) ||
+    null;
+
   // Kasallik turi — leads.problem_type ga saqlanadi
   const problemType =
     get("qaysi_turdagi_kasallik_sizni_bezovta_qiladi?", "qaysi_turdagi_kasallik_bezovta_qiladi?") ||
@@ -122,6 +141,7 @@ export function extractFacebookLeadFields(fieldData: FacebookFieldDatum[]): Extr
     phone,
     email: get("email"),
     nomerAsosiy,
+    region,
     problemType,
     answers,
   };

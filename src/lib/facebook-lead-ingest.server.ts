@@ -32,7 +32,7 @@ export async function ingestFacebookLead(params: {
   });
   if (insertEventErr) return { inserted: false };
 
-  const { fullName, phone, nomerAsosiy, problemType, answers } = extractFacebookLeadFields(
+  const { fullName, phone, nomerAsosiy, region, problemType, answers } = extractFacebookLeadFields(
     params.fieldData,
   );
   if (!fullName && !phone) return { inserted: false };
@@ -96,6 +96,7 @@ export async function ingestFacebookLead(params: {
       full_name: fullName || "Facebook lid",
       phone: normalizedPhone,
       nomer_asosiy: normalizedNomerAsosiy,
+      region,
       problem_type: problemType,
       source: "facebook",
       source_detail: "Lead Ads",

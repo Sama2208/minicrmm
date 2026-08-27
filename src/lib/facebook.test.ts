@@ -13,6 +13,7 @@ describe("extractFacebookLeadFields", () => {
       phone: "+998901234567",
       email: "dilnoza@example.com",
       nomerAsosiy: null,
+      region: null,
       problemType: null,
       answers: [
         { question: "full_name", answer: "Dilnoza Karimova" },
@@ -101,5 +102,15 @@ describe("extractFacebookLeadFields", () => {
       { question: "Телефон рақамингиз(ишлайдиган)", answer: "+998901234567" },
       { question: "Рақамингизни текширинг!", answer: "+998909876543" },
     ]);
+  });
+
+  it("maps OA form's residence question to the card region field", () => {
+    const result = extractFacebookLeadFields([
+      { name: "qaysi_viloyatda_istiqomat_qilasiz?", values: ["Qashqadaryo"] },
+      { name: "full_name", values: ["Shuxratovna"] },
+      { name: "phone_number", values: ["+998976310154"] },
+    ]);
+
+    expect(result.region).toBe("Qashqadaryo");
   });
 });
