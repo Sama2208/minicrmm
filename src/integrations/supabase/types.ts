@@ -2397,6 +2397,7 @@ export type Database = {
           fbc: string | null
           fbclid: string | null
           fbp: string | null
+          facebook_field_data: Json | null
           full_name: string
           id: string
           last_contact_at: string | null
@@ -2430,6 +2431,7 @@ export type Database = {
           fbc?: string | null
           fbclid?: string | null
           fbp?: string | null
+          facebook_field_data?: Json | null
           full_name: string
           id?: string
           last_contact_at?: string | null
@@ -2463,6 +2465,7 @@ export type Database = {
           fbc?: string | null
           fbclid?: string | null
           fbp?: string | null
+          facebook_field_data?: Json | null
           full_name?: string
           id?: string
           last_contact_at?: string | null

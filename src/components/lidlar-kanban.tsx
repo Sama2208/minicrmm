@@ -91,7 +91,52 @@ export type KanbanLead = {
   created_at: string;
   last_contact_at: string | null;
   facebook_form_name?: string | null;
+  facebook_field_data?: unknown;
 };
+
+type FacebookLeadAnswer = { question: string; answer: string };
+
+function getFacebookCustomAnswers(value: unknown): FacebookLeadAnswer[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const question =
+      "question" in item && typeof item.question === "string"
+        ? item.question
+        : "name" in item && typeof item.name === "string"
+          ? item.name
+          : "";
+    const answer =
+      "answer" in item && typeof item.answer === "string"
+        ? item.answer
+        : "values" in item && Array.isArray(item.values)
+          ? item.values
+              .filter((entry: unknown): entry is string => typeof entry === "string")
+              .join(", ")
+          : "";
+    if (!question.trim() || !answer.trim()) return [];
+
+    const normalized = question
+      .trim()
+      .toLocaleLowerCase()
+      .replace(/[!?():,.;_\-]+/g, " ")
+      .replace(/\s+/g, " ");
+    const standardFields = new Set([
+      "full name",
+      "full_name",
+      "first name",
+      "last name",
+      "phone number",
+      "phone_number",
+      "phone",
+      "email",
+      "полное имя",
+      "номер телефона",
+    ]);
+    if (standardFields.has(normalized)) return [];
+    return [{ question: question.trim(), answer: answer.trim() }];
+  });
+}
 
 export type KanbanOperator = { id: string; full_name: string };
 
@@ -1151,6 +1196,7 @@ function LeadDetailDialog({
   operators: KanbanOperator[];
 }) {
   const qc = useQueryClient();
+  const formAnswers = getFacebookCustomAnswers(lead.facebook_field_data);
   const [fullName, setFullName] = useState(lead.full_name);
   const [phone, setPhone] = useState(lead.phone ?? "");
   const [nomerAsosiy, setNomerAsosiy] = useState(lead.nomer_asosiy ?? "");
@@ -1256,6 +1302,18 @@ function LeadDetailDialog({
               {lead.region && <div>📍 {lead.region}</div>}
               {lead.problem_type && <div>💬 {lead.problem_type}</div>}
               {lead.can_visit_clinic && <div>🏥 {CAN_VISIT_LABEL[lead.can_visit_clinic]}</div>}
+            </div>
+          )}
+
+          {formAnswers.length > 0 && (
+            <div className="rounded-md border border-blue-100 bg-blue-50/60 p-2.5 space-y-2">
+              <div className="text-xs font-semibold text-blue-800">Facebook forma javoblari</div>
+              {formAnswers.map((item, index) => (
+                <div key={`${item.question}-${index}`} className="text-[12px]">
+                  <div className="font-medium text-slate-600">{item.question}</div>
+                  <div className="text-slate-900 break-words">{item.answer}</div>
+                </div>
+              ))}
             </div>
           )}
 

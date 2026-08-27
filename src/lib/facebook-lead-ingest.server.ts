@@ -32,7 +32,9 @@ export async function ingestFacebookLead(params: {
   });
   if (insertEventErr) return { inserted: false };
 
-  const { fullName, phone, nomerAsosiy, problemType } = extractFacebookLeadFields(params.fieldData);
+  const { fullName, phone, nomerAsosiy, problemType, answers } = extractFacebookLeadFields(
+    params.fieldData,
+  );
   if (!fullName && !phone) return { inserted: false };
 
   const normalizedPhone = phone ? (normalizeUzPhone(phone) ?? phone) : null;
@@ -106,6 +108,7 @@ export async function ingestFacebookLead(params: {
       facebook_page_name: facebookPageName,
       facebook_form_id: params.formId,
       facebook_form_name: formName,
+      facebook_field_data: answers,
       assigned_to: assignedTo,
     })
     .select("id")

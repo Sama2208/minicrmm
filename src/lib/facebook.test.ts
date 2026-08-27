@@ -14,6 +14,11 @@ describe("extractFacebookLeadFields", () => {
       email: "dilnoza@example.com",
       nomerAsosiy: null,
       problemType: null,
+      answers: [
+        { question: "full_name", answer: "Dilnoza Karimova" },
+        { question: "phone_number", answer: "+998901234567" },
+        { question: "email", answer: "dilnoza@example.com" },
+      ],
     });
   });
 
@@ -70,5 +75,31 @@ describe("extractFacebookLeadFields", () => {
     ]);
     expect(result.phone).toBe("+998901111111");
     expect(result.nomerAsosiy).toBe("+998902222222");
+  });
+
+  it("maps the exact Cyrillic questions from the Oa grija form", () => {
+    const result = extractFacebookLeadFields([
+      {
+        name: "Танангизни қайси қисмида кўпроқ оғриқ бор?",
+        values: ["Бел соҳасида"],
+      },
+      { name: "Исмингиз", values: ["Шахзод" ] },
+      {
+        name: "Телефон рақамингиз(ишлайдиган)",
+        values: ["+998901234567"],
+      },
+      { name: "Рақамингизни текширинг!", values: ["+998909876543"] },
+    ]);
+
+    expect(result.fullName).toBe("Шахзод");
+    expect(result.phone).toBe("+998901234567");
+    expect(result.nomerAsosiy).toBe("+998909876543");
+    expect(result.problemType).toBe("Бел соҳасида");
+    expect(result.answers).toEqual([
+      { question: "Танангизни қайси қисмида кўпроқ оғриқ бор?", answer: "Бел соҳасида" },
+      { question: "Исмингиз", answer: "Шахзод" },
+      { question: "Телефон рақамингиз(ишлайдиган)", answer: "+998901234567" },
+      { question: "Рақамингизни текширинг!", answer: "+998909876543" },
+    ]);
   });
 });
