@@ -68,3 +68,25 @@ export const LS_TITLES = "kanban_column_titles_v3";
 export const LS_EXTRA = "kanban_extra_columns_v2";
 export const LS_COL_ORDER = "kanban_col_order_v3";
 export const LS_HIDDEN = "kanban_hidden_cols_v1";
+
+export type HorizontalDragScrollInput = {
+  clientX: number;
+  containerLeft: number;
+  containerRight: number;
+  edgeSize?: number;
+};
+
+/** Kursor doskaning chetiga yetganda gorizontal avtomatik scroll yo'nalishi. */
+export function getHorizontalDragScrollDirection({
+  clientX,
+  containerLeft,
+  containerRight,
+  edgeSize = 72,
+}: HorizontalDragScrollInput): -1 | 0 | 1 {
+  if (containerRight <= containerLeft) return 0;
+
+  const edge = Math.min(Math.max(edgeSize, 0), (containerRight - containerLeft) / 2);
+  if (clientX <= containerLeft + edge) return -1;
+  if (clientX >= containerRight - edge) return 1;
+  return 0;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -67,6 +67,7 @@ import {
   LS_EXTRA,
   
   LS_HIDDEN,
+  getHorizontalDragScrollDirection,
   type ColumnDef,
 } from "@/lib/kanban";
 import { useClinicId } from "@/lib/clinic";
@@ -419,6 +420,8 @@ export function LidlarKanban({
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [addOpenCol, setAddOpenCol] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const kanbanBoardRef = useRef<HTMLDivElement>(null);
+  const [dragScrollDirection, setDragScrollDirection] = useState<-1 | 0 | 1>(0);
   const [selectedLead, setSelectedLead] = useState<KanbanLead | null>(null);
   const [callbackPrompt, setCallbackPrompt] = useState<{
     lead: KanbanLead;
@@ -494,6 +497,62 @@ export function LidlarKanban({
   });
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const updateDragScrollDirection = useCallback((clientX: number) => {
+    const board = kanbanBoardRef.current;
+    if (!board) return;
+
+    const rect = board.getBoundingClientRect();
+    const nextDirection = getHorizontalDragScrollDirection({
+      clientX,
+      containerLeft: rect.left,
+      containerRight: rect.right,
+    });
+    setDragScrollDirection((current) => (current === nextDirection ? current : nextDirection));
+  }, []);
+
+  // dnd-kit cannot reliably auto-scroll a horizontal Kanban board when every
+  // column is also vertically scrollable. Track the real pointer position so
+  // the board still scrolls correctly at any browser or Kanban zoom level.
+  useEffect(() => {
+    if (!activeId) return;
+
+    const onPointerMove = (event: PointerEvent) => updateDragScrollDirection(event.clientX);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onPointerMove);
+  }, [activeId, updateDragScrollDirection]);
+
+  useEffect(() => {
+    if (!dragScrollDirection) return;
+
+    let frameId: number | null = null;
+    const scrollBoard = () => {
+      const board = kanbanBoardRef.current;
+      if (!board) {
+        setDragScrollDirection(0);
+        return;
+      }
+
+      const maxScroll = Math.max(0, board.scrollWidth - board.clientWidth);
+      const before = board.scrollLeft;
+      const zoomScale = Math.max(0.3, zoom / 100);
+      board.scrollBy({ left: (20 / zoomScale) * dragScrollDirection });
+
+      const atEdge =
+        dragScrollDirection < 0 ? board.scrollLeft <= 0 : board.scrollLeft >= maxScroll;
+      if (before === board.scrollLeft || atEdge) {
+        setDragScrollDirection(0);
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(scrollBoard);
+    };
+
+    frameId = window.requestAnimationFrame(scrollBoard);
+    return () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+    };
+  }, [dragScrollDirection, zoom]);
 
   useEffect(() => {
     try {
@@ -668,10 +727,12 @@ export function LidlarKanban({
   });
 
   const handleDragStart = (e: DragStartEvent) => {
+    setDragScrollDirection(0);
     setActiveId(String(e.active.id));
   };
 
   const handleDragEnd = (e: DragEndEvent) => {
+    setDragScrollDirection(0);
     setActiveId(null);
     if (!e.over) return;
     const activeStr = String(e.active.id);
@@ -773,11 +834,20 @@ export function LidlarKanban({
 
       <DndContext
         sensors={sensors}
+        autoScroll={{
+          // The board's horizontal scroll is handled above. Keep dnd-kit's
+          // native vertical scrolling inside individual columns.
+          canScroll: (element) => element !== kanbanBoardRef.current,
+        }}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveId(null)}
+        onDragCancel={() => {
+          setDragScrollDirection(0);
+          setActiveId(null);
+        }}
       >
         <div
+          ref={kanbanBoardRef}
           className="flex gap-3 overflow-x-auto pb-3 origin-top-left"
           style={{
             zoom: zoom / 100,

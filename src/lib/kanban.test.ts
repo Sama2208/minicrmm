@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_COLUMNS, initials, opColor, OP_COLORS } from "./kanban";
+import {
+  DEFAULT_COLUMNS,
+  getHorizontalDragScrollDirection,
+  initials,
+  opColor,
+  OP_COLORS,
+} from "./kanban";
 
 describe("opColor", () => {
   it("returns a colour from the palette", () => {
@@ -41,5 +47,25 @@ describe("DEFAULT_COLUMNS", () => {
       expect(col.status).toBeTruthy();
       expect(col.title).toBeTruthy();
     }
+  });
+});
+
+describe("getHorizontalDragScrollDirection", () => {
+  const board = { containerLeft: 100, containerRight: 900 };
+
+  it("scrolls left or right only when the pointer is near a board edge", () => {
+    expect(getHorizontalDragScrollDirection({ ...board, clientX: 150 })).toBe(-1);
+    expect(getHorizontalDragScrollDirection({ ...board, clientX: 500 })).toBe(0);
+    expect(getHorizontalDragScrollDirection({ ...board, clientX: 860 })).toBe(1);
+  });
+
+  it("does not scroll for an invalid board rectangle", () => {
+    expect(
+      getHorizontalDragScrollDirection({
+        containerLeft: 200,
+        containerRight: 200,
+        clientX: 200,
+      }),
+    ).toBe(0);
   });
 });
