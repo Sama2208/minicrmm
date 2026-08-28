@@ -37,6 +37,9 @@ import {
 import {
   DndContext,
   PointerSensor,
+  MeasuringStrategy,
+  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
   useDraggable,
@@ -834,6 +837,20 @@ export function LidlarKanban({
 
       <DndContext
         sensors={sensors}
+        collisionDetection={(args) => {
+          // While the board is moving horizontally, the pointer remains the
+          // reliable source of truth for the destination column. The fallback
+          // keeps ordinary card/column drops working if a pointer is outside.
+          const pointerCollisions = pointerWithin(args);
+          return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
+        }}
+        measuring={{
+          droppable: {
+            // Re-measure after each scroll so a far-away column does not lose
+            // its drop target before the pointer is released.
+            strategy: MeasuringStrategy.Always,
+          },
+        }}
         autoScroll={{
           // The board's horizontal scroll is handled above. Keep dnd-kit's
           // native vertical scrolling inside individual columns.
