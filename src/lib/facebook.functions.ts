@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
+import type { FacebookFormFieldMapping } from "./facebook";
 
 const OAUTH_SCOPE =
   "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement," +
@@ -234,7 +235,7 @@ export const getFacebookConnectionStatus = createServerFn({ method: "POST" })
       connections.map(async (conn) => {
         const { data: forms } = await supabaseAdmin
           .from("facebook_lead_forms")
-          .select("id, form_id, form_name, is_syncing")
+          .select("id, form_id, form_name, is_syncing, field_mapping")
           .eq("connection_id", conn.id)
           .order("form_name");
         return {
@@ -368,6 +369,101 @@ const ToggleInput = z.object({
   enabled: z.boolean(),
   clinicId: z.string().uuid().optional(),
 });
+
+const FieldMappingSchema = z
+  .object({
+    full_name: z.string().trim().min(1).max(500).optional(),
+    phone: z.string().trim().min(1).max(500).optional(),
+    nomer_asosiy: z.string().trim().min(1).max(500).optional(),
+    region: z.string().trim().min(1).max(500).optional(),
+    problem_type: z.string().trim().min(1).max(500).optional(),
+  })
+  .strict();
+
+const FormFieldMappingInput = z.object({
+  formRowId: z.string().uuid(),
+  mapping: FieldMappingSchema,
+  clinicId: z.string().uuid().optional(),
+});
+
+function parseStoredFormQuestions(rawPayloads: unknown[]): { key: string; label: string | null }[] {
+  const keys = new Set<string>();
+  for (const rawPayload of rawPayloads) {
+    if (!rawPayload || typeof rawPayload !== "object" || Array.isArray(rawPayload)) continue;
+    const fieldData = (rawPayload as { field_data?: unknown }).field_data;
+    if (!Array.isArray(fieldData)) continue;
+    for (const field of fieldData) {
+      if (!field || typeof field !== "object" || Array.isArray(field)) continue;
+      const name = (field as { name?: unknown }).name;
+      if (typeof name === "string" && name.trim()) keys.add(name.trim());
+    }
+  }
+  return [...keys].map((key) => ({ key, label: null }));
+}
+
+// Forma savollarini Meta'dan oladi; Meta vaqtincha javob bermasa, oldingi
+// lidlarda saqlangan savollarni qaytaradi. Token hech qachon brauzerga chiqmaydi.
+export const getFacebookFormFieldMapping = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ formRowId: z.string().uuid(), clinicId: z.string().uuid().optional() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveReadClinicId(context.supabase, data.clinicId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: form, error: formError } = await supabaseAdmin
+      .from("facebook_lead_forms")
+      .select("form_id, form_name, connection_id, field_mapping")
+      .eq("id", data.formRowId)
+      .eq("clinic_id", clinicId)
+      .single();
+    if (formError || !form) throw new Error("Forma topilmadi");
+
+    const mapping = FieldMappingSchema.catch({}).parse(form.field_mapping) as FacebookFormFieldMapping;
+    const { data: connection, error: connectionError } = await supabaseAdmin
+      .from("facebook_connections")
+      .select("page_access_token")
+      .eq("id", form.connection_id)
+      .eq("clinic_id", clinicId)
+      .eq("is_active", true)
+      .single();
+    if (connectionError || !connection) throw new Error("Facebook ulanish topilmadi");
+
+    let questions: { key: string; label: string | null }[] = [];
+    let fromStoredLeads = false;
+    try {
+      const { getLeadFormQuestions } = await import("./facebook-graph.server");
+      questions = await getLeadFormQuestions(form.form_id, connection.page_access_token);
+    } catch (error) {
+      console.error("Facebook forma savollarini olish xatosi:", error);
+      const { data: events } = await supabaseAdmin
+        .from("facebook_lead_events")
+        .select("raw_payload")
+        .eq("clinic_id", clinicId)
+        .eq("form_id", form.form_id)
+        .order("processed_at", { ascending: false })
+        .limit(20);
+      questions = parseStoredFormQuestions((events ?? []).map((event) => event.raw_payload));
+      fromStoredLeads = true;
+    }
+
+    return { formName: form.form_name, mapping, questions, fromStoredLeads };
+  });
+
+export const updateFacebookFormFieldMapping = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => FormFieldMappingInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const clinicId = await resolveWriteClinicId(context.supabase, data.clinicId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("facebook_lead_forms")
+      .update({ field_mapping: data.mapping })
+      .eq("id", data.formRowId)
+      .eq("clinic_id", clinicId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
 
 export const toggleFacebookFormSync = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

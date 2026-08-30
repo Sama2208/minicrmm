@@ -25,9 +25,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Facebook, Download, Instagram } from "lucide-react";
+import { Plus, Trash2, Facebook, Download, Instagram, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useClinicId } from "@/lib/clinic";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  FACEBOOK_FORM_MAPPING_TARGETS,
+  suggestFacebookFormFieldMapping,
+  type FacebookFormFieldMapping,
+  type FacebookFormMappingTarget,
+} from "@/lib/facebook";
 import {
   createFacebookOAuthState,
   listPendingFacebookPages,
@@ -38,6 +51,8 @@ import {
   syncFacebookForms,
   importHistoricalLeads,
   toggleInstagramDirect,
+  getFacebookFormFieldMapping,
+  updateFacebookFormFieldMapping,
 } from "@/lib/facebook.functions";
 
 export const Route = createFileRoute("/_authenticated/sozlamalar")({ component: SozlamalarPage });
@@ -208,6 +223,7 @@ function SozlamalarPage() {
 function FacebookConnectionCard() {
   const qc = useQueryClient();
   const [pendingState, setPendingState] = useState<string | null>(null);
+  const [mappingFormId, setMappingFormId] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -423,29 +439,45 @@ function FacebookConnectionCard() {
                 ) : (
                   <div className="space-y-1.5 pl-1">
                     {page.forms.map((f) => (
-                      <div
-                        key={f.id}
-                        className="flex items-center justify-between border rounded-md px-3 py-2"
-                      >
-                        <span className="text-sm">{f.form_name}</span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            title="Eski lidlarni import qilish"
-                            onClick={() => importLeads.mutate(f.id)}
-                            disabled={importLeads.isPending}
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                          </Button>
-                          <Switch
-                            checked={f.is_syncing}
-                            onCheckedChange={(v) =>
-                              toggleForm.mutate({ formRowId: f.id, enabled: v })
-                            }
-                          />
+                      <div key={f.id} className="border rounded-md px-3 py-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm">{f.form_name}</span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 gap-1 px-2 text-xs"
+                              title="Kartochka maydonlarini forma savollariga bog'lash"
+                              onClick={() => setMappingFormId((current) => (current === f.id ? null : f.id))}
+                            >
+                              <SlidersHorizontal className="h-3.5 w-3.5" />
+                              Maydonlar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              title="Eski lidlarni import qilish"
+                              onClick={() => importLeads.mutate(f.id)}
+                              disabled={importLeads.isPending}
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </Button>
+                            <Switch
+                              checked={f.is_syncing}
+                              onCheckedChange={(v) =>
+                                toggleForm.mutate({ formRowId: f.id, enabled: v })
+                              }
+                            />
+                          </div>
                         </div>
+                        {mappingFormId === f.id && (
+                          <FacebookFormMappingEditor
+                            formRowId={f.id}
+                            formName={f.form_name}
+                            onSaved={() => qc.invalidateQueries({ queryKey: ["facebook-connection"] })}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -478,6 +510,117 @@ function FacebookConnectionCard() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+const FACEBOOK_MAPPING_LABELS: Record<FacebookFormMappingTarget, string> = {
+  full_name: "Ism va familiya",
+  phone: "Telefon",
+  nomer_asosiy: "Raqam 2",
+  region: "Viloyat / manzil",
+  problem_type: "Muammo / shikoyat",
+};
+
+function FacebookFormMappingEditor({
+  formRowId,
+  formName,
+  onSaved,
+}: {
+  formRowId: string;
+  formName: string;
+  onSaved: () => void;
+}) {
+  const [mapping, setMapping] = useState<FacebookFormFieldMapping>({});
+  const mappingQ = useQuery({
+    queryKey: ["facebook-form-field-mapping", formRowId],
+    queryFn: () => getFacebookFormFieldMapping({ data: { formRowId } }),
+  });
+
+  useEffect(() => {
+    if (!mappingQ.data) return;
+    setMapping({
+      ...suggestFacebookFormFieldMapping(mappingQ.data.questions),
+      ...mappingQ.data.mapping,
+    });
+  }, [mappingQ.data]);
+
+  const save = useMutation({
+    mutationFn: () => updateFacebookFormFieldMapping({ data: { formRowId, mapping } }),
+    onSuccess: () => {
+      toast.success(`"${formName}" formasi uchun maydonlar saqlandi`);
+      onSaved();
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const setTarget = (target: FacebookFormMappingTarget, questionKey: string) => {
+    setMapping((current) => {
+      if (questionKey === "__auto__") {
+        const { [target]: _removed, ...rest } = current;
+        return rest;
+      }
+      return { ...current, [target]: questionKey };
+    });
+  };
+
+  return (
+    <div className="mt-3 border-t pt-3 space-y-3">
+      <div>
+        <p className="text-sm font-medium text-slate-700">Kartochka maydonlarini bog'lash</p>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Har bir savolni bir marta tanlang. Keyingi lidlar avtomatik shu maydonga tushadi.
+        </p>
+      </div>
+
+      {mappingQ.isLoading ? (
+        <p className="text-sm text-slate-500">Forma savollari yuklanmoqda...</p>
+      ) : mappingQ.isError ? (
+        <p className="text-sm text-red-600">Forma savollarini olishda xato yuz berdi.</p>
+      ) : (mappingQ.data?.questions.length ?? 0) === 0 ? (
+        <p className="text-sm text-amber-700">
+          Bu formadan hali savollar olinmadi. Avval formani yangilang yoki test lid yuboring.
+        </p>
+      ) : (
+        <>
+          {mappingQ.data?.fromStoredLeads && (
+            <p className="text-xs text-amber-700">
+              Savollar Meta'dan emas, avval tushgan lidlardan olindi.
+            </p>
+          )}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {FACEBOOK_FORM_MAPPING_TARGETS.map((target) => (
+              <div key={target}>
+                <Label className="text-xs text-slate-600">{FACEBOOK_MAPPING_LABELS[target]}</Label>
+                <Select
+                  value={mapping[target] ?? "__auto__"}
+                  onValueChange={(value) => setTarget(target, value)}
+                >
+                  <SelectTrigger className="mt-1 h-8 text-xs">
+                    <SelectValue placeholder="Savol tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__auto__">Avtomatik aniqlash</SelectItem>
+                    {(mappingQ.data?.questions ?? []).map((question) => (
+                      <SelectItem key={question.key} value={question.key}>
+                        {question.label ? `${question.label} (${question.key})` : question.key}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+          </div>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+          >
+            {save.isPending ? "Saqlanmoqda..." : "Maydonlarni saqlash"}
+          </Button>
+        </>
+      )}
+    </div>
   );
 }
 

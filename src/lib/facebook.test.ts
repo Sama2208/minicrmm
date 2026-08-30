@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractFacebookLeadFields } from "./facebook";
+import { extractFacebookLeadFields, suggestFacebookFormFieldMapping } from "./facebook";
 
 describe("extractFacebookLeadFields", () => {
   it("reads full_name, phone_number, and email directly", () => {
@@ -126,5 +126,43 @@ describe("extractFacebookLeadFields", () => {
     expect(result.phone).toBe("+998976310154");
     expect(result.region).toBe("Samarqand");
     expect(result.problemType).toBe("Bel og'rig'i");
+  });
+
+  it("uses a saved per-form mapping before the automatic fallback", () => {
+    const result = extractFacebookLeadFields(
+      [
+        { name: "mijoz_fio", values: ["Nigora Xolmatova"] },
+        { name: "aloqa_uchun_raqam", values: ["+998901112233"] },
+        { name: "hududingiz", values: ["Xorazm"] },
+        { name: "sizni_nima_bezovta_qiladi", values: ["Bosh aylanishi"] },
+      ],
+      {
+        full_name: "mijoz_fio",
+        phone: "aloqa_uchun_raqam",
+        region: "hududingiz",
+        problem_type: "sizni_nima_bezovta_qiladi",
+      },
+    );
+
+    expect(result.fullName).toBe("Nigora Xolmatova");
+    expect(result.phone).toBe("+998901112233");
+    expect(result.region).toBe("Xorazm");
+    expect(result.problemType).toBe("Bosh aylanishi");
+  });
+
+  it("suggests standard mappings from a new form's labels", () => {
+    expect(
+      suggestFacebookFormFieldMapping([
+        { key: "custom_name", label: "Ismingiz" },
+        { key: "working_number", label: "Telefon raqamingiz (ishlaydigan)" },
+        { key: "living_area", label: "Qaysi viloyatda istiqomat qilasiz?" },
+        { key: "complaint", label: "Qaysi kasallik sizni bezovta qiladi?" },
+      ]),
+    ).toEqual({
+      full_name: "custom_name",
+      phone: "working_number",
+      region: "living_area",
+      problem_type: "complaint",
+    });
   });
 });

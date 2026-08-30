@@ -99,6 +99,12 @@ export async function listPagesForUser(userAccessToken: string): Promise<Faceboo
 
 export type FacebookLeadForm = { id: string; name: string };
 
+export type FacebookLeadFormQuestion = {
+  key?: string;
+  label?: string | null;
+  type?: string | null;
+};
+
 export async function listLeadFormsForPage(
   pageId: string,
   pageAccessToken: string,
@@ -108,6 +114,23 @@ export async function listLeadFormsForPage(
     limit: "100",
   });
   return data.data;
+}
+
+// Forma savollarini lid kelishini kutmasdan olish uchun ishlatiladi.
+// `key` Meta webhook'ida keladigan field_data.name bilan bir xil bo'ladi.
+export async function getLeadFormQuestions(
+  formId: string,
+  pageAccessToken: string,
+): Promise<{ key: string; label: string | null }[]> {
+  const data = await graphFetch<{ questions?: FacebookLeadFormQuestion[] }>(`/${formId}`, {
+    access_token: pageAccessToken,
+    fields: "questions",
+  });
+  return (data.questions ?? [])
+    .filter((question): question is FacebookLeadFormQuestion & { key: string } =>
+      typeof question.key === "string" && question.key.trim().length > 0,
+    )
+    .map((question) => ({ key: question.key.trim(), label: question.label?.trim() || null }));
 }
 
 export type FacebookLeadData = { field_data: { name: string; values: string[] }[] };

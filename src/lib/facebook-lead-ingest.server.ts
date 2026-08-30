@@ -1,4 +1,8 @@
-import { extractFacebookLeadFields, type FacebookFieldDatum } from "./facebook";
+import {
+  extractFacebookLeadFields,
+  type FacebookFieldDatum,
+  type FacebookFormFieldMapping,
+} from "./facebook";
 import { normalizeUzPhone } from "./phone";
 
 // Webhook orqali kelgan real-time hodisa va tarixiy (backfill) import — ikkalasi
@@ -32,8 +36,18 @@ export async function ingestFacebookLead(params: {
   });
   if (insertEventErr) return { inserted: false };
 
+  // Formaga biriktirilgan mapping bo'lsa, umumiy taxminlardan oldin u ishlaydi.
+  // Mapping mavjud bo'lmasa eski avtomatik aniqlash saqlanib qoladi.
+  const { data: formRow } = await supabaseAdmin
+    .from("facebook_lead_forms")
+    .select("connection_id, form_name, field_mapping")
+    .eq("form_id", params.formId)
+    .eq("clinic_id", params.clinicId)
+    .maybeSingle();
+  const fieldMapping = (formRow?.field_mapping ?? {}) as FacebookFormFieldMapping;
   const { fullName, phone, nomerAsosiy, region, problemType, answers } = extractFacebookLeadFields(
     params.fieldData,
+    fieldMapping,
   );
   if (!fullName && !phone) return { inserted: false };
 
@@ -42,21 +56,8 @@ export async function ingestFacebookLead(params: {
 
   // MUHIM: forma nomi FAQAT payload'dagi form_id bo'yicha topiladi.
   // Topilmasa — bo'sh qoladi, hech qachon boshqa formaning nomi yozilmaydi.
-  let formName: string | null = params.formName ?? null;
-  let connectionId: string | null = null;
-
-  if (formName === null || !params.pageId) {
-    const { data: formRow } = await supabaseAdmin
-      .from("facebook_lead_forms")
-      .select("connection_id, form_name")
-      .eq("form_id", params.formId)
-      .eq("clinic_id", params.clinicId)
-      .maybeSingle();
-    if (formRow) {
-      connectionId = formRow.connection_id;
-      if (formName === null) formName = formRow.form_name ?? null;
-    }
-  }
+  let formName: string | null = params.formName ?? formRow?.form_name ?? null;
+  const connectionId: string | null = formRow?.connection_id ?? null;
 
   // MUHIM: sahifa nomi FAQAT payload'dagi page_id bo'yicha topiladi.
   let facebookPageId: string | null = params.pageId ?? null;

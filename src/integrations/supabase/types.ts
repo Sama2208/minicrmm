@@ -1283,6 +1283,7 @@ export type Database = {
           clinic_id: string
           connection_id: string
           created_at: string
+          field_mapping: Json
           form_id: string
           form_name: string
           id: string
@@ -1292,6 +1293,7 @@ export type Database = {
           clinic_id: string
           connection_id: string
           created_at?: string
+          field_mapping?: Json
           form_id: string
           form_name: string
           id?: string
@@ -1301,6 +1303,7 @@ export type Database = {
           clinic_id?: string
           connection_id?: string
           created_at?: string
+          field_mapping?: Json
           form_id?: string
           form_name?: string
           id?: string
