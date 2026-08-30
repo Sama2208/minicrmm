@@ -1,8 +1,10 @@
 import {
   exchangeCodeForUserToken,
+  getFacebookUserId,
   getLongLivedUserToken,
   listPagesForUser,
 } from "./facebook-graph.server";
+import { hashFacebookUserId } from "./facebook-privacy.server";
 
 // Facebook mijozning brauzerini shu manzilga GET so'rov bilan qaytaradi
 // (?code=...&state=...). Bu createServerFn emas — chunki bu Meta'dan
@@ -39,7 +41,10 @@ export async function handleFacebookOAuthCallback(request: Request): Promise<Res
     const redirectUri = `${url.origin}/api/facebook/oauth-callback`;
     const shortLivedToken = await exchangeCodeForUserToken(code, redirectUri);
     const userToken = await getLongLivedUserToken(shortLivedToken);
-    const pages = await listPagesForUser(userToken);
+    const [facebookUserId, pages] = await Promise.all([
+      getFacebookUserId(userToken),
+      listPagesForUser(userToken),
+    ]);
 
     if (pages.length === 0) {
       return redirectTo("fb_error=no_pages");
@@ -47,7 +52,7 @@ export async function handleFacebookOAuthCallback(request: Request): Promise<Res
 
     const { error: updateErr } = await supabaseAdmin
       .from("facebook_oauth_sessions")
-      .update({ pages })
+      .update({ pages, facebook_user_id_hash: await hashFacebookUserId(facebookUserId) })
       .eq("state", state);
     if (updateErr) throw new Error(updateErr.message);
 

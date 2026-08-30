@@ -1181,6 +1181,7 @@ export type Database = {
           clinic_id: string
           connected_at: string
           connected_by: string | null
+          facebook_user_id_hash: string | null
           id: string
           instagram_business_account_id: string | null
           instagram_enabled: boolean
@@ -1194,6 +1195,7 @@ export type Database = {
           clinic_id: string
           connected_at?: string
           connected_by?: string | null
+          facebook_user_id_hash?: string | null
           id?: string
           instagram_business_account_id?: string | null
           instagram_enabled?: boolean
@@ -1207,6 +1209,7 @@ export type Database = {
           clinic_id?: string
           connected_at?: string
           connected_by?: string | null
+          facebook_user_id_hash?: string | null
           id?: string
           instagram_business_account_id?: string | null
           instagram_enabled?: boolean
@@ -1225,6 +1228,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      facebook_data_deletion_requests: {
+        Row: {
+          completed_at: string | null
+          confirmation_code: string
+          created_at: string
+          disabled_connection_count: number
+          facebook_user_id_hash: string
+          id: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmation_code: string
+          created_at?: string
+          disabled_connection_count?: number
+          facebook_user_id_hash: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          confirmation_code?: string
+          created_at?: string
+          disabled_connection_count?: number
+          facebook_user_id_hash?: string
+          id?: string
+          status?: string
+        }
+        Relationships: []
       }
       facebook_lead_events: {
         Row: {
@@ -1331,6 +1364,7 @@ export type Database = {
           clinic_id: string
           created_at: string
           expires_at: string
+          facebook_user_id_hash: string | null
           pages: Json | null
           state: string
           user_id: string
@@ -1339,6 +1373,7 @@ export type Database = {
           clinic_id: string
           created_at?: string
           expires_at?: string
+          facebook_user_id_hash?: string | null
           pages?: Json | null
           state: string
           user_id: string
@@ -1347,6 +1382,7 @@ export type Database = {
           clinic_id?: string
           created_at?: string
           expires_at?: string
+          facebook_user_id_hash?: string | null
           pages?: Json | null
           state?: string
           user_id?: string

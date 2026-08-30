@@ -53,6 +53,16 @@ export default {
       const { handleFacebookOAuthCallback } = await import("./lib/facebook-oauth.server");
       return handleFacebookOAuthCallback(request);
     }
+    if (url.pathname === "/api/facebook/data-deletion") {
+      const { handleFacebookDataDeletionRequest } = await import(
+        "./lib/facebook-privacy.server"
+      );
+      return handleFacebookDataDeletionRequest(request);
+    }
+    if (url.pathname === "/api/facebook/data-deletion-status") {
+      const { handleFacebookDataDeletionStatus } = await import("./lib/facebook-privacy.server");
+      return handleFacebookDataDeletionStatus(request);
+    }
     if (url.pathname === "/api/instagram/webhook") {
       const { handleInstagramWebhook } = await import("./lib/instagram-webhook.server");
       return handleInstagramWebhook(request);

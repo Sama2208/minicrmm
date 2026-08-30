@@ -109,7 +109,7 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: session, error: sessionErr } = await supabaseAdmin
       .from("facebook_oauth_sessions")
-      .select("clinic_id, pages, expires_at")
+      .select("clinic_id, pages, expires_at, facebook_user_id_hash")
       .eq("state", data.state)
       .single();
     if (sessionErr || !session) throw new Error("Sessiya topilmadi");
@@ -129,6 +129,7 @@ export const confirmFacebookPage = createServerFn({ method: "POST" })
           page_name: page.name,
           page_access_token: page.access_token,
           connected_by: context.userId,
+          facebook_user_id_hash: session.facebook_user_id_hash,
           is_active: true,
         },
         { onConflict: "clinic_id,page_id" },

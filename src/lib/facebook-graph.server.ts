@@ -81,6 +81,15 @@ export async function getLongLivedUserToken(shortLivedToken: string): Promise<st
   return data.access_token;
 }
 
+export async function getFacebookUserId(userAccessToken: string): Promise<string> {
+  const data = await graphFetch<{ id?: string }>("/me", {
+    access_token: userAccessToken,
+    fields: "id",
+  });
+  if (!data.id) throw new Error("Meta foydalanuvchisi aniqlanmadi");
+  return data.id;
+}
+
 export async function listPagesForUser(userAccessToken: string): Promise<FacebookPage[]> {
   const data = await graphFetch<{ data: FacebookPage[] }>("/me/accounts", {
     access_token: userAccessToken,
