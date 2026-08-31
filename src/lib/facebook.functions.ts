@@ -7,7 +7,7 @@ import { z } from "zod";
 import type { FacebookFormFieldMapping } from "./facebook";
 
 const OAUTH_SCOPE =
-  "pages_show_list,pages_manage_metadata,pages_manage_ads,leads_retrieval,business_management,pages_read_engagement," +
+  "pages_show_list,pages_manage_metadata,leads_retrieval,pages_read_engagement," +
   "instagram_basic,instagram_manage_messages";
 
 async function requireClinicAdmin(supabase: SupabaseClient<Database>) {
