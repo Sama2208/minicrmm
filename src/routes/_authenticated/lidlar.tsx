@@ -81,15 +81,24 @@ function LidlarPage() {
   const leadsQ = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(0, 99999);
-      if (error) throw error;
-      return (data ?? []) as unknown as Lead[];
+      // Serverda 1000 qatorlik cheklov bor — hammasini bo'lib-bo'lib yuklaymiz
+      const PAGE = 1000;
+      const all: Lead[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("leads")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const chunk = (data ?? []) as unknown as Lead[];
+        all.push(...chunk);
+        if (chunk.length < PAGE || all.length > 100000) break;
+      }
+      return all;
     },
   });
+
 
   const opsQ = useQuery({
     queryKey: ["operators"],
